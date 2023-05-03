@@ -11,7 +11,6 @@ RC_INPUT::RC_INPUT(){
     is_offboard = true;
     enter_offboard = false;
     is_command = true;
-    enter_command = false;
     enter_reboot = false;
 
     for (int i = 0; i < 4; ++i){
@@ -59,11 +58,6 @@ void RC_INPUT::process(const mavros_msgs::RCIn::ConstPtr& msg){
 
     // Set command
     if (is_offboard){
-        if (last_command_switch < COMMAND_THRESHOLD && command_switch > COMMAND_THRESHOLD)
-            enter_command = true;
-        else
-            enter_command = false;
-
         if (command_switch > COMMAND_THRESHOLD)
             is_command = true;
         else

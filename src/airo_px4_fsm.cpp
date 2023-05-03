@@ -20,6 +20,15 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
     reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
 
+    // ROS Parameters
+    nh.getParam("airo_px4_node/message_timeout",MESSAGE_TIMEOUT);
+    nh.getParam("airo_px4_node/motor_speedup_time",MOTOR_SPEEDUP_TIME);
+    nh.getParam("airo_px4_node/hover_thrust",HOVER_THRUST);
+    nh.getParam("airo_px4_node/takeoff_height",TAKEOFF_HEIGHT);
+    nh.getParam("airo_px4_node/takeoff_land_speed",TAKEOFF_LAND_SPEED);
+    nh.getParam("airo_px4_node/hover_max_velocity",HOVER_MAX_VELOCITY);
+    nh.getParam("airo_px4_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
+
     // Ref to controller
     ref.resize(11);
     ref<<0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0;
@@ -50,7 +59,6 @@ void AIRO_PX4_FSM::process(){
     
     // Step 6: Reset all triggers
 	rc_input.enter_offboard = false;
-	rc_input.enter_command = false;
 	rc_input.enter_reboot = false;
 }
 
@@ -110,7 +118,7 @@ void AIRO_PX4_FSM::fsm(){
             }
 
             else{
-                ROS_INFO_STREAM_THROTTLE(3.0,"[AIRo PX4] Waiting for commands in RC_MANUAL mode!");
+                ROS_INFO_STREAM_THROTTLE(5.0,"[AIRo PX4] Waiting for commands in RC_MANUAL mode!");
             }
 
             break;

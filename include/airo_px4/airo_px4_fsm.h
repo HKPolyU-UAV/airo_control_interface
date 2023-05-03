@@ -30,13 +30,13 @@ class AIRO_PX4_FSM{
 	};
 
 	// Parameters
-	const double MESSAGE_TIMEOUT = 0.5;
-	const double MOTOR_SPEEDUP_TIME = 5.0;
-	const double HOVER_THRUST = 0.56;
-	const double TAKEOFF_HEIGHT = 1.0;
-	const double TAKEOFF_LAND_SPEED = 0.3;
-	const double HOVER_MAX_VELOCITY = 0.5;
-	const double SAFETY_VOLUMN[6] = {-2.0, 2.0, -2.0, 2.0, -100, 4.0}; // min_x max_x min_y max_y min_z max_z
+	double MESSAGE_TIMEOUT;
+	double MOTOR_SPEEDUP_TIME;
+	double HOVER_THRUST;
+	double TAKEOFF_HEIGHT;
+	double TAKEOFF_LAND_SPEED;
+	double HOVER_MAX_VELOCITY;
+	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y min_z max_z
 
 	// Variables
 	STATE_FSM state_fsm;
@@ -86,7 +86,7 @@ class AIRO_PX4_FSM{
 
 	public:
 
-	AIRO_PX4_FSM(ros::NodeHandle& nh);
+	AIRO_PX4_FSM(ros::NodeHandle&);
 	void process();
 	void fsm();
 	void publish_control_commands(mavros_msgs::AttitudeTarget,ros::Time);

@@ -25,9 +25,7 @@ def main():
     ocp.dims.N = N
 
     # set cost
-    # W_x = np.diag([120, 120, 120, 10, 10, 10, 10, 10, 1000])    #Q_mat
-    # W_u = np.diag([5000, 2000, 2000, 100])                     #R_mat
-    W_x = np.diag([120, 120, 120, 10, 10, 10, 10, 10])    #Q_mat
+    W_x = np.diag([60, 60, 60, 30, 30, 30, 10, 10])    #Q_mat
     W_u = np.diag([5000, 2000, 2000])                     #R_mat
     W = block_diag(W_x, W_u)
     ocp.cost.W_e = W_x

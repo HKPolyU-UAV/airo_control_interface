@@ -15,7 +15,6 @@ class RC_INPUT{
     bool is_offboard;
     bool enter_offboard;
     bool is_command;
-    bool enter_command;
     bool enter_reboot;
     bool init_indicator;
 
