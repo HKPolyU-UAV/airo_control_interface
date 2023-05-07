@@ -14,7 +14,7 @@ QUADROTOR_MPC::QUADROTOR_MPC()
     for(unsigned int i=0; i < QUADROTOR_NX; i++) acados_in.x0[i] = 0.0;
 }
 
-mavros_msgs::AttitudeTarget QUADROTOR_MPC::run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, Eigen::VectorXd ref)
+mavros_msgs::AttitudeTarget QUADROTOR_MPC::run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, Eigen::VectorXd ref, SolverParam param)
 {
     for (int i = 0; i < QUADROTOR_N+1; ++i){
         for (int j = 0; j < QUADROTOR_NY; ++j){
@@ -22,10 +22,10 @@ mavros_msgs::AttitudeTarget QUADROTOR_MPC::run(const geometry_msgs::PoseStamped&
         }
     }
 
-    return solve(pose,twist);
+    return solve(pose,twist,param);
 }
 
-mavros_msgs::AttitudeTarget QUADROTOR_MPC::run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, std::vector<Eigen::VectorXd> ref)
+mavros_msgs::AttitudeTarget QUADROTOR_MPC::run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, std::vector<Eigen::VectorXd> ref, SolverParam param)
 {
     for (int i = 0; i < QUADROTOR_N+1; ++i){
         for (int j = 0; j < QUADROTOR_NY; ++j){
@@ -33,10 +33,10 @@ mavros_msgs::AttitudeTarget QUADROTOR_MPC::run(const geometry_msgs::PoseStamped&
         }
     }
 
-    return solve(pose,twist);
+    return solve(pose,twist,param);
 }
 
-mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist)
+mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, SolverParam param)
 {
     tf::quaternionMsgToTF(pose.pose.orientation,tf_quaternion);
     tf::Matrix3x3(tf_quaternion).getRPY(local_euler.phi, local_euler.theta, local_euler.psi);
@@ -49,14 +49,21 @@ mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStampe
     acados_in.x0[w] = twist.twist.linear.z;
     acados_in.x0[phi] = local_euler.phi;
     acados_in.x0[theta] = local_euler.theta;
+    acados_param[3] = local_euler.psi;
+
+    acados_param[0] = param.hover_thrust;
+    acados_param[1] = param.tau_phi;
+    acados_param[2] = param.tau_theta;
+
+    for (unsigned int i = 0; i <= QUADROTOR_N; i++){
+        quadrotor_acados_update_params(mpc_capsule,i,acados_param,QUADROTOR_NP);
+    }
 
     ocp_nlp_constraints_model_set(mpc_capsule->nlp_config,mpc_capsule->nlp_dims,mpc_capsule->nlp_in, 0, "lbx", acados_in.x0);
     ocp_nlp_constraints_model_set(mpc_capsule->nlp_config,mpc_capsule->nlp_dims,mpc_capsule->nlp_in, 0, "ubx", acados_in.x0);
-
-    for (unsigned int i = 0; i <= QUADROTOR_N; i++)
-        {
+    for (unsigned int i = 0; i <= QUADROTOR_N; i++){
         ocp_nlp_cost_model_set(mpc_capsule->nlp_config, mpc_capsule->nlp_dims, mpc_capsule->nlp_in, i, "yref", acados_in.yref[i]);
-        }
+    }
 
     acados_status = quadrotor_acados_solve(mpc_capsule);
 

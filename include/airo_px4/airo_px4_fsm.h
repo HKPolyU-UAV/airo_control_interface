@@ -32,15 +32,18 @@ class AIRO_PX4_FSM{
 	// Parameters
 	double MESSAGE_TIMEOUT;
 	double MOTOR_SPEEDUP_TIME;
-	double HOVER_THRUST;
 	double TAKEOFF_HEIGHT;
 	double TAKEOFF_LAND_SPEED;
 	double HOVER_MAX_VELOCITY;
 	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y min_z max_z
+	double HOVER_THRUST;
+	double TAU_PHI;
+	double TAU_THETA;
 
 	// Variables
 	STATE_FSM state_fsm;
 	RC_INPUT rc_input;
+	QUADROTOR_MPC::SolverParam solver_param;
 	bool solve_controller;
 	bool is_landed;
 	bool is_armed;

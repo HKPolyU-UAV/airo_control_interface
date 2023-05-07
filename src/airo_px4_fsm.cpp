@@ -23,12 +23,18 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     // ROS Parameters
     nh.getParam("airo_px4_node/message_timeout",MESSAGE_TIMEOUT);
     nh.getParam("airo_px4_node/motor_speedup_time",MOTOR_SPEEDUP_TIME);
-    nh.getParam("airo_px4_node/hover_thrust",HOVER_THRUST);
     nh.getParam("airo_px4_node/takeoff_height",TAKEOFF_HEIGHT);
     nh.getParam("airo_px4_node/takeoff_land_speed",TAKEOFF_LAND_SPEED);
     nh.getParam("airo_px4_node/hover_max_velocity",HOVER_MAX_VELOCITY);
     nh.getParam("airo_px4_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
+    nh.getParam("airo_px4_node/hover_thrust",HOVER_THRUST);
+    nh.getParam("airo_px4_node/tau_phi",TAU_PHI);
+    nh.getParam("airo_px4_node/tau_theta",TAU_THETA);
 
+    solver_param.hover_thrust = HOVER_THRUST;
+    solver_param.tau_phi = TAU_PHI;
+    solver_param.tau_theta = TAU_THETA;
+    
     // Ref to controller
     ref.resize(11);
     ref<<0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0;
@@ -45,7 +51,7 @@ void AIRO_PX4_FSM::process(){
 
     // Step 3: Solve position controller if needed
     if(solve_controller){
-        attitude_target = controller.run(local_pose,local_twist,ref);
+        attitude_target = controller.run(local_pose,local_twist,ref,solver_param);
     }
 
     // Step 4: Publish control commands and fsm state

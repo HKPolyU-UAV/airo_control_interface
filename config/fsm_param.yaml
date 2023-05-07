@@ -1,7 +1,12 @@
+# FSM
 message_timeout:    0.5
 motor_speedup_time: 5.0
-hover_thrust:       0.56
 takeoff_height:     1.0
 takeoff_land_speed: 0.3
 hover_max_velcity:  0.5
 safety_volumn:      [-2.0, 2.0, -2.0, 2.0, -100, 4.0] # min_x max_x min_y max_y min_z max_z. Small min_z used for auto disarm
+
+# MPC
+hover_thrust:       0.56
+tau_phi:            0.1667
+tau_theta:          0.1667

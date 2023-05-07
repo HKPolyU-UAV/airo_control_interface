@@ -69,6 +69,7 @@ class QUADROTOR_MPC{
     // Acados variables
     SolverInput acados_in;
     SolverOutput acados_out;
+    double acados_param[QUADROTOR_NP];  // hover_thrust, tau_phi, tau_theta, psi
     int acados_status;   
     quadrotor_solver_capsule * mpc_capsule = quadrotor_acados_create_capsule();
 
@@ -76,13 +77,20 @@ class QUADROTOR_MPC{
     tf::Quaternion tf_quaternion;
     int cout_counter = 0;
 
-    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist);
-
+    
     public:
 
+    struct SolverParam{
+        double hover_thrust;
+        double tau_phi;
+        double tau_theta;
+    };
+
     QUADROTOR_MPC();
-    mavros_msgs::AttitudeTarget run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, Eigen::VectorXd ref);
-    mavros_msgs::AttitudeTarget run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, std::vector<Eigen::VectorXd> ref);
+    mavros_msgs::AttitudeTarget run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, Eigen::VectorXd ref, SolverParam param);
+    mavros_msgs::AttitudeTarget run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, std::vector<Eigen::VectorXd> ref, SolverParam param);
+    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, SolverParam param);
+
 };
 
 #endif

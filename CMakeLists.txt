@@ -67,7 +67,7 @@ target_link_libraries(example_mission_node
   ${catkin_LIBRARIES}
 )
 
-add_executable(lala src/lala.cpp)
-target_link_libraries(lala
+add_executable(system_identification src/system_identification.cpp)
+target_link_libraries(system_identification
   ${catkin_LIBRARIES}
 )

@@ -5,6 +5,7 @@
 #include <mavros_msgs/State.h>
 #include <airo_px4/FSM_Info.h>
 #include <airo_px4/TakeoffLandTrigger.h>
+#include <mavros_msgs/AttitudeTarget.h>
 
 geometry_msgs::PoseStamped local_pose;
 geometry_msgs::PoseStamped target_pose_1;

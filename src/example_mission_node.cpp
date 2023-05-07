@@ -12,7 +12,7 @@ geometry_msgs::PoseStamped target_pose_2;
 airo_px4::FSM_Info fsm_info;
 airo_px4::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
-
+ 
 enum State{
     TAKEOFF,
     COMMAND,
