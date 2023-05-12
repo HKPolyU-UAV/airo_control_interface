@@ -75,6 +75,7 @@ class AIRO_PX4_FSM{
 	geometry_msgs::PoseStamped local_pose;
 	geometry_msgs::PoseStamped takeoff_land_pose;
 	geometry_msgs::PoseStamped command_pose;
+	geometry_msgs::PoseStamped ref_pose;
 	geometry_msgs::TwistStamped local_twist;
 	mavros_msgs::AttitudeTarget attitude_target;
 	mavros_msgs::State current_state;

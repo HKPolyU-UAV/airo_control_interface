@@ -34,10 +34,18 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     solver_param.hover_thrust = HOVER_THRUST;
     solver_param.tau_phi = TAU_PHI;
     solver_param.tau_theta = TAU_THETA;
-    
+
     // Ref to controller
     ref.resize(11);
     ref<<0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0;
+
+    ref_pose.pose.position.x = 0;
+    ref_pose.pose.position.y = 0;
+    ref_pose.pose.position.z = 0;
+    ref_pose.pose.orientation.w = 1;
+    ref_pose.pose.orientation.x = 0;
+    ref_pose.pose.orientation.y = 0;
+    ref_pose.pose.orientation.z = 0;
 }
 
 void AIRO_PX4_FSM::process(){
@@ -62,7 +70,7 @@ void AIRO_PX4_FSM::process(){
 
     // Step 5: Detect if landed
     land_detector();
-    
+
     // Step 6: Reset all triggers
 	rc_input.enter_offboard = false;
 	rc_input.enter_reboot = false;
@@ -253,7 +261,6 @@ void AIRO_PX4_FSM::fsm(){
                 else{
                 ROS_ERROR("[AIRo PX4] No odom! Switching to RC_MANUAL mode.");
                 }
-
             }
 
             // To AUTO_HOVER
@@ -311,7 +318,7 @@ bool AIRO_PX4_FSM::toggle_offboard(bool flag){
             if (setmode_srv.call(offboard_setmode) && offboard_setmode.response.mode_sent){
                     ROS_INFO("[AIRo PX4] Offboard enabled!");
                     return true;
-                }
+            }
             setpoint_pub.publish(attitude_target);
             ros::spinOnce();
             ros::Duration(0.01).sleep();
@@ -431,6 +438,7 @@ void AIRO_PX4_FSM::land_detector(){
 
 	static ros::Time time_C12_reached;
 	static bool is_last_C12_satisfy;
+
 	if (is_landed){
 		time_C12_reached = ros::Time::now();
 		is_last_C12_satisfy = false;

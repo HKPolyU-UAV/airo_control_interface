@@ -1,6 +1,6 @@
-<mxfile host="Electron" modified="2023-05-03T07:01:41.246Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.2.1 Chrome/112.0.5615.87 Electron/24.1.2 Safari/537.36" etag="OeSxYsCQQe1pOhCEm3mS" version="21.2.1" type="device">
+<mxfile host="Electron" modified="2023-05-12T05:56:54.155Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.2.1 Chrome/112.0.5615.87 Electron/24.1.2 Safari/537.36" etag="LgJkmApYtJ2qRikss-82" version="21.2.1" type="device">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
-    <mxGraphModel dx="1104" dy="695" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="761" dy="479" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
         <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
@@ -81,7 +81,7 @@
           <mxGeometry x="540" y="255" width="40" height="30" as="geometry" />
         </mxCell>
         <mxCell id="xZ0XVGUIxLxzNmTCteq_-18" value="&lt;font color=&quot;#ff0000&quot;&gt;POS_COMMAND&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
-          <mxGeometry x="300" y="530" width="120" height="60" as="geometry" />
+          <mxGeometry x="300" y="550" width="120" height="60" as="geometry" />
         </mxCell>
         <mxCell id="xZ0XVGUIxLxzNmTCteq_-19" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="xZ0XVGUIxLxzNmTCteq_-3" target="xZ0XVGUIxLxzNmTCteq_-18" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -106,9 +106,9 @@
             <mxPoint x="390" y="495" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="xZ0XVGUIxLxzNmTCteq_-23" value="!command mode" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="xZ0XVGUIxLxzNmTCteq_-22" vertex="1" connectable="0">
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-23" value="!command mode&lt;br&gt;OR&lt;br&gt;position command not received" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="xZ0XVGUIxLxzNmTCteq_-22" vertex="1" connectable="0">
           <mxGeometry x="-0.0857" y="-1" relative="1" as="geometry">
-            <mxPoint x="-42" y="16" as="offset" />
+            <mxPoint x="-2" y="26" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="xZ0XVGUIxLxzNmTCteq_-24" value="&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;1. Any mode can switch to RC_MANUAL mode if !FSM mode or no odom received.&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;2. States that can only be used in command mode are highlighted in &lt;/span&gt;&lt;font style=&quot;background-color: initial;&quot; color=&quot;#ff0000&quot;&gt;red&lt;/font&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;.&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;3. FSM switched means transition from !FSM mode to FSM mode.&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;4. If vehicle is landed, FSM go back to RC_MANUAL mode&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=default;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
