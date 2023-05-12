@@ -92,6 +92,6 @@ void RC_INPUT::check_validity(){
 }
 
 bool RC_INPUT::check_centered(){
-    bool centered = abs(channel[0]) < JOYSTICK_DEADZONE && abs(channel[1]) < JOYSTICK_DEADZONE && abs(channel[2]) < JOYSTICK_DEADZONE && abs(channel[3]) < JOYSTICK_DEADZONE;
+    bool centered = abs(channel[0]) < CHECK_CENTERED_THRESHOLD && abs(channel[1]) < CHECK_CENTERED_THRESHOLD && abs(channel[2]) < CHECK_CENTERED_THRESHOLD && abs(channel[3]) < CHECK_CENTERED_THRESHOLD;
     return centered;
 }

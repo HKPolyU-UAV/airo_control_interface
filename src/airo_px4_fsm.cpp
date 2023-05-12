@@ -25,8 +25,10 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_px4_node/motor_speedup_time",MOTOR_SPEEDUP_TIME);
     nh.getParam("airo_px4_node/takeoff_height",TAKEOFF_HEIGHT);
     nh.getParam("airo_px4_node/takeoff_land_speed",TAKEOFF_LAND_SPEED);
+    nh.getParam("airo_px4_node/reject_takeoff_twist_threshold",REJECT_TAKEOFF_TWIST_THRESHOLD);
     nh.getParam("airo_px4_node/hover_max_velocity",HOVER_MAX_VELOCITY);
     nh.getParam("airo_px4_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
+    nh.getParam("airo_px4_node/without_rc",WITHOUT_RC);
     nh.getParam("airo_px4_node/hover_thrust",HOVER_THRUST);
     nh.getParam("airo_px4_node/tau_phi",TAU_PHI);
     nh.getParam("airo_px4_node/tau_theta",TAU_THETA);
@@ -38,14 +40,6 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     // Ref to controller
     ref.resize(11);
     ref<<0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0;
-
-    ref_pose.pose.position.x = 0;
-    ref_pose.pose.position.y = 0;
-    ref_pose.pose.position.z = 0;
-    ref_pose.pose.orientation.w = 1;
-    ref_pose.pose.orientation.x = 0;
-    ref_pose.pose.orientation.y = 0;
-    ref_pose.pose.orientation.z = 0;
 }
 
 void AIRO_PX4_FSM::process(){
@@ -95,9 +89,18 @@ void AIRO_PX4_FSM::fsm(){
                     ROS_ERROR("[AIRo PX4] Reject AUTO_TAKEOFF. No odom!");
                     break;
                 }
-                if (twist_norm(local_twist) > 0.15){
+                if (twist_norm(local_twist) > REJECT_TAKEOFF_TWIST_THRESHOLD){
                     ROS_ERROR("[AIRo PX4] Reject AUTO_TAKEOFF. Norm Twist=%fm/s, dynamic takeoff is not allowed!", twist_norm(local_twist));
                     break;
+                }
+                if (!rc_received(current_time)){
+                    if (WITHOUT_RC){
+                        ROS_WARN("[AIRo PX4] Takeoff without RC. Take extra caution!");
+                    }
+                    else{
+                        ROS_ERROR("[AIRo PX4] RC not connected. Reject takeoff!");
+                        break;
+                    }
                 }
                 if ((!rc_input.is_offboard || !rc_input.check_centered()) && rc_received(current_time)){
                     ROS_ERROR("[AIRo PX4] Reject AUTO_TAKEOFF. Center the joysticks and enable offboard switch!");
@@ -403,7 +406,7 @@ void AIRO_PX4_FSM::set_ref_with_rc(){
 
     ref_rc = check_safety_volumn(ref_rc);
     set_ref(ref_rc(0),ref_rc(1),ref_rc(2));
-    
+
     last_hover_time = current_time;
 }
 

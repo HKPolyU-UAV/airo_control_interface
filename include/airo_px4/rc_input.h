@@ -22,6 +22,7 @@ class RC_INPUT{
     static constexpr double OFFBOARD_THRESHOLD = 0.75;
     static constexpr double REBOOT_THRESHOLD = 0.5;
     static constexpr double JOYSTICK_DEADZONE = 0.1;
+    static constexpr double CHECK_CENTERED_THRESHOLD = 0.25;
     static constexpr int OFFBOARD_SWITCH_CHANNEL = 5; // Channel in QGC
     static constexpr int COMMAND_SWITCH_CHANNEL = 7; // Channel in QGC
     static constexpr int REBOOT_SWITCH_CHANNEL = 8; // Channel in QGC

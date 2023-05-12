@@ -34,8 +34,10 @@ class AIRO_PX4_FSM{
 	double MOTOR_SPEEDUP_TIME;
 	double TAKEOFF_HEIGHT;
 	double TAKEOFF_LAND_SPEED;
+	double REJECT_TAKEOFF_TWIST_THRESHOLD;
 	double HOVER_MAX_VELOCITY;
 	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y min_z max_z
+	bool WITHOUT_RC;
 	double HOVER_THRUST;
 	double TAU_PHI;
 	double TAU_THETA;
