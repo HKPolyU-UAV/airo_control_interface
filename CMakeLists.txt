@@ -26,10 +26,11 @@ set(quadrotor_model ${PROJECT_SOURCE_DIR}/scripts/c_generated_code)
 add_message_files(
   FILES
   TakeoffLandTrigger.msg
-  FSM_Info.msg
+  FSMInfo.msg
+  MPCReference.msg
 )
 
-generate_messages(DEPENDENCIES std_msgs)
+generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 catkin_package(
  INCLUDE_DIRS include
@@ -50,24 +51,24 @@ include_directories(
 )
 link_directories(${quadrotor_model})
 
-add_executable(airo_px4_node
-  src/airo_px4_node.cpp
-  src/airo_px4_fsm.cpp
-  src/quadrotor_mpc.cpp
-  src/rc_input.cpp
-)
-target_link_libraries(airo_px4_node
-  ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
-  ${acados_lib}/libacados.so
-  ${catkin_LIBRARIES}
-)
+# add_executable(airo_px4_node
+#   src/airo_px4_node.cpp
+#   src/airo_px4_fsm.cpp
+#   src/quadrotor_mpc.cpp
+#   src/rc_input.cpp
+# )
+# target_link_libraries(airo_px4_node
+#   ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
+#   ${acados_lib}/libacados.so
+#   ${catkin_LIBRARIES}
+# )
 
-add_executable(example_mission_node src/example_mission_node.cpp)
-target_link_libraries(example_mission_node
-  ${catkin_LIBRARIES}
-)
+# add_executable(example_mission_node src/example_mission_node.cpp)
+# target_link_libraries(example_mission_node
+#   ${catkin_LIBRARIES}
+# )
 
-add_executable(system_identification src/system_identification.cpp)
-target_link_libraries(system_identification
-  ${catkin_LIBRARIES}
-)
+# add_executable(system_identification src/system_identification.cpp)
+# target_link_libraries(system_identification
+#   ${catkin_LIBRARIES}
+# )

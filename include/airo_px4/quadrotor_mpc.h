@@ -6,6 +6,7 @@
 #include <vector>
 #include <eigen3/Eigen/Dense>
 #include <mavros_msgs/AttitudeTarget.h>
+#include <airo_px4/MPCReference.h>
 
 #include <iostream>
 #include <fstream>
@@ -65,6 +66,7 @@ class QUADROTOR_MPC{
     mavros_msgs::AttitudeTarget attitude_target;
     Euler local_euler;
     Euler target_euler;
+    Euler ref_euler;
 
     // Acados variables
     SolverInput acados_in;
@@ -76,7 +78,6 @@ class QUADROTOR_MPC{
     // Other variables
     tf::Quaternion tf_quaternion;
     int cout_counter = 0;
-
     
     public:
 
@@ -87,10 +88,8 @@ class QUADROTOR_MPC{
     };
 
     QUADROTOR_MPC();
-    mavros_msgs::AttitudeTarget run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, Eigen::VectorXd ref, SolverParam param);
-    mavros_msgs::AttitudeTarget run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, std::vector<Eigen::VectorXd> ref, SolverParam param);
-    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, SolverParam param);
-
+    void set_ref(const airo_px4::MPCReference&, const SolverParam&);
+    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const airo_px4::MPCReference&, const SolverParam&);
 };
 
 #endif
