@@ -26,7 +26,7 @@ set(quadrotor_model ${PROJECT_SOURCE_DIR}/scripts/c_generated_code)
 add_message_files(
   FILES
   TakeoffLandTrigger.msg
-  FSM_Info.msg
+  FSMInfo.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs)
@@ -67,7 +67,7 @@ target_link_libraries(example_mission_node
   ${catkin_LIBRARIES}
 )
 
-add_executable(system_identification src/system_identification.cpp)
-target_link_libraries(system_identification
-  ${catkin_LIBRARIES}
-)
+# add_executable(system_identification src/system_identification.cpp)
+# target_link_libraries(system_identification
+#   ${catkin_LIBRARIES}
+# )

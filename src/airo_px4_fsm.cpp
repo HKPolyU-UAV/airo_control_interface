@@ -13,7 +13,7 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     command_sub = nh.subscribe<geometry_msgs::PoseStamped>("/airo_px4/position_setpoint",100,&AIRO_PX4_FSM::command_cb,this);
     takeoff_land_sub = nh.subscribe<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10,&AIRO_PX4_FSM::takeoff_land_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
-    fsm_info_pub = nh.advertise<airo_px4::FSM_Info>("/airo_px4/fsm_info",10);
+    fsm_info_pub = nh.advertise<airo_px4::FSMInfo>("/airo_px4/fsm_info",10);
 
     // ROS Services
     setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
@@ -33,6 +33,22 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_px4_node/tau_phi",TAU_PHI);
     nh.getParam("airo_px4_node/tau_theta",TAU_THETA);
 
+    nh.getParam("airo_px4_node/throttle_channel",rc_param.THROTTLE_CHANNEL);
+    nh.getParam("airo_px4_node/yaw_channel",rc_param.YAW_CHANNEL);
+    nh.getParam("airo_px4_node/pitch_channel",rc_param.PITCH_CHANNEL);
+    nh.getParam("airo_px4_node/roll_channel",rc_param.ROLL_CHANNEL);
+    nh.getParam("airo_px4_node/fsm_channel",rc_param.FSM_CHANNEL);
+    nh.getParam("airo_px4_node/command_channel",rc_param.COMMAND_CHANNEL);
+    nh.getParam("airo_px4_node/reboot_channel",rc_param.REBOOT_CHANNEL);
+    nh.getParam("airo_px4_node/reverse_throttle",rc_param.REVERSE_THROTTLE);
+    nh.getParam("airo_px4_node/reverse_yaw",rc_param.REVERSE_YAW);
+    nh.getParam("airo_px4_node/reverse_pitch",rc_param.REVERSE_PITCH);
+    nh.getParam("airo_px4_node/reverse_roll",rc_param.REVERSE_ROLL);
+    nh.getParam("airo_px4_node/switch_threshold",rc_param.SWITCH_THRESHOLD);
+    nh.getParam("airo_px4_node/joystick_deadzone",rc_param.JOYSTICK_DEADZONE);
+    nh.getParam("airo_px4_node/check_cetered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
+
+    rc_input.set_rc_param(rc_param);
     solver_param.hover_thrust = HOVER_THRUST;
     solver_param.tau_phi = TAU_PHI;
     solver_param.tau_theta = TAU_THETA;
@@ -66,7 +82,7 @@ void AIRO_PX4_FSM::process(){
     land_detector();
 
     // Step 6: Reset all triggers
-	rc_input.enter_offboard = false;
+	rc_input.enter_fsm = false;
 	rc_input.enter_reboot = false;
 }
 
@@ -74,7 +90,7 @@ void AIRO_PX4_FSM::fsm(){
     switch (state_fsm){
         case RC_MANUAL:{
             // To AUTO_HOVER
-            if (rc_input.enter_offboard && !is_landed){
+            if (rc_input.enter_fsm && !is_landed){
                 if (toggle_offboard(true)){
                     auto_hover_init();
                     state_fsm = AUTO_HOVER;
@@ -83,7 +99,7 @@ void AIRO_PX4_FSM::fsm(){
             }
 
             // To AUTO_TAKEOFF
-            else if ((rc_input.enter_offboard && !rc_input.is_command && is_landed)
+            else if ((rc_input.enter_fsm && !rc_input.is_command && is_landed)
                   || (takeoff_trigered(current_time) && rc_input.is_command && is_landed)){
                 if (!odom_received(current_time)){
                     ROS_ERROR("[AIRo PX4] Reject AUTO_TAKEOFF. No odom!");
@@ -102,12 +118,12 @@ void AIRO_PX4_FSM::fsm(){
                         break;
                     }
                 }
-                if ((!rc_input.is_offboard || !rc_input.check_centered()) && rc_received(current_time)){
+                if ((!rc_input.is_fsm || !rc_input.check_centered()) && rc_received(current_time)){
                     ROS_ERROR("[AIRo PX4] Reject AUTO_TAKEOFF. Center the joysticks and enable offboard switch!");
                     while (ros::ok()){
                         ros::Duration(0.1).sleep();
                         ros::spinOnce();
-                        if (rc_input.is_offboard && rc_input.check_centered()){
+                        if (rc_input.is_fsm && rc_input.check_centered()){
                             current_time = ros::Time::now();
                             break;
                         }
@@ -143,10 +159,10 @@ void AIRO_PX4_FSM::fsm(){
 
         case AUTO_TAKEOFF:{
             // To RC_MANUAL
-            if (!rc_input.is_offboard || !odom_received(current_time)){
+            if (!rc_input.is_fsm || !odom_received(current_time)){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
-                if(!rc_input.is_offboard){
+                if(!rc_input.is_fsm){
                 ROS_INFO("\033[32m[AIRo PX4] AUTO_TAKEOFF ==>> RC_CONTROL\033[32m");
                 }
                 else{
@@ -160,7 +176,6 @@ void AIRO_PX4_FSM::fsm(){
                     state_fsm = AUTO_HOVER;
                     ROS_INFO("\033[32m[AIRo PX4] AUTO_TAKEOFF ==>> AUTO_HOVER\033[32m");
                 }
-
                 // Send takeoff reference
                 else{
                     get_takeoff_land_ref(TAKEOFF_LAND_SPEED);
@@ -172,10 +187,10 @@ void AIRO_PX4_FSM::fsm(){
 
         case AUTO_HOVER:{
             // To RC_MANUAL
-            if (!rc_input.is_offboard || !odom_received(current_time)){
+            if (!rc_input.is_fsm || !odom_received(current_time)){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
-                if(!rc_input.is_offboard){
+                if(!rc_input.is_fsm){
                 ROS_INFO("\033[32m[AIRo PX4] AUTO_HOVER ==>> RC_MANUAL\033[32m");
                 }
                 else{
@@ -223,10 +238,10 @@ void AIRO_PX4_FSM::fsm(){
 
         case AUTO_LAND:{
             // To RC_MANUAL
-            if (!rc_input.is_offboard || !odom_received(current_time)){
+            if (!rc_input.is_fsm || !odom_received(current_time)){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
-                if(!rc_input.is_offboard){
+                if(!rc_input.is_fsm){
                 ROS_INFO("\033[32m[AIRo PX4] AUTO_LAND ==>> RC_MANUAL\033[32m");
                 }
                 else{
@@ -255,10 +270,10 @@ void AIRO_PX4_FSM::fsm(){
 
         case POS_COMMAND:{
             // To RC_MANUAL
-            if (!rc_input.is_offboard || !odom_received(current_time)){
+            if (!rc_input.is_fsm || !odom_received(current_time)){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
-                if(!rc_input.is_offboard){
+                if(!rc_input.is_fsm){
                 ROS_INFO("\033[32m[AIRo PX4] POS_COMMAND ==>> RC_MANUAL\033[32m");
                 }
                 else{
@@ -302,7 +317,6 @@ bool AIRO_PX4_FSM::toggle_offboard(bool flag){
     dummy_target.orientation.y = 0.0;
     dummy_target.orientation.z = 0.0;
 
-    ROS_WARN("[AIRo PX4] Setting offboard mode");
 	if (flag){
 		previous_state = current_state;
 		if (previous_state.mode == "OFFBOARD"){
@@ -319,7 +333,7 @@ bool AIRO_PX4_FSM::toggle_offboard(bool flag){
         ros::Time offboard_start;
         while(ros::ok() && (ros::Time::now() - offboard_start).toSec() > 2.0){
             if (setmode_srv.call(offboard_setmode) && offboard_setmode.response.mode_sent){
-                    ROS_INFO("[AIRo PX4] Offboard enabled!");
+                    ROS_INFO("[AIRo PX4] Offboard mode enabled!");
                     return true;
             }
             setpoint_pub.publish(attitude_target);
@@ -335,6 +349,9 @@ bool AIRO_PX4_FSM::toggle_offboard(bool flag){
 			ROS_ERROR("[AIRo PX4] Exit OFFBOARD rejected by PX4!");
 			return false;
 		}
+        else{
+            ROS_WARN("[AIRo PX4] Exiting OFFBOARD mode!");
+        }
 	}
 	return true;
 }
@@ -365,7 +382,7 @@ bool AIRO_PX4_FSM::toggle_arm(bool flag){
 void AIRO_PX4_FSM::get_motor_speedup(){
     while(ros::ok() && (current_time - takeoff_land_time).toSec() < MOTOR_SPEEDUP_TIME){
         double delta_t = (current_time - takeoff_land_time).toSec();
-	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*HOVER_THRUST*0.8 + 0.005;
+	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*HOVER_THRUST*0.6 + 0.005;
 
         attitude_target.thrust = ref_thrust;
         attitude_target.orientation.w = takeoff_land_pose.pose.orientation.w;
@@ -400,9 +417,9 @@ void AIRO_PX4_FSM::set_ref(double x, double y, double z){
 void AIRO_PX4_FSM::set_ref_with_rc(){
     double delta_t = (current_time - last_hover_time).toSec();
     Eigen::Vector3d ref_rc(3);
-    ref_rc(0) = ref(0) + rc_input.channel[0]*HOVER_MAX_VELOCITY*delta_t;
-    ref_rc(1) = ref(1) - rc_input.channel[1]*HOVER_MAX_VELOCITY*delta_t;
-    ref_rc(2) = ref(2) + rc_input.channel[3]*HOVER_MAX_VELOCITY*delta_t;
+    ref_rc(0) = ref(0) + rc_input.channel[rc_param.PITCH_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_PITCH ? -1 : 1);
+    ref_rc(1) = ref(1) - rc_input.channel[rc_param.ROLL_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_ROLL ? -1 : 1);
+    ref_rc(2) = ref(2) + rc_input.channel[rc_param.THROTTLE_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_THROTTLE ? -1 : 1);
 
     ref_rc = check_safety_volumn(ref_rc);
     set_ref(ref_rc(0),ref_rc(1),ref_rc(2));

@@ -11,7 +11,7 @@
 #include <mavros_msgs/CommandLong.h>
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/SetMode.h>
-#include <airo_px4/FSM_Info.h>
+#include <airo_px4/FSMInfo.h>
 #include <airo_px4/TakeoffLandTrigger.h>
 
 #include "airo_px4/rc_input.h"
@@ -45,6 +45,7 @@ class AIRO_PX4_FSM{
 	// Variables
 	STATE_FSM state_fsm;
 	RC_INPUT rc_input;
+	RC_INPUT::RC_PARAM rc_param;
 	QUADROTOR_MPC::SolverParam solver_param;
 	bool solve_controller;
 	bool is_landed;
@@ -73,7 +74,7 @@ class AIRO_PX4_FSM{
 
 	// Messages
 	airo_px4::TakeoffLandTrigger takeoff_land_trigger; // 1 for takeoff 0 for landing
-	airo_px4::FSM_Info fsm_info;
+	airo_px4::FSMInfo fsm_info;
 	geometry_msgs::PoseStamped local_pose;
 	geometry_msgs::PoseStamped takeoff_land_pose;
 	geometry_msgs::PoseStamped command_pose;

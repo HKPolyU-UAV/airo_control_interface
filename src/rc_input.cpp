@@ -3,13 +3,12 @@
 RC_INPUT::RC_INPUT(){
     stamp = ros::Time(0);
 
-    last_offboard_switch = -1;
-    last_command_switch = -1;
+    last_fsm_switch = -1;
     last_reboot_switch = -1;
 
     // Important for no RC flight
-    is_offboard = true;
-    enter_offboard = false;
+    is_fsm = true;
+    enter_fsm = false;
     is_command = true;
     enter_reboot = false;
 
@@ -23,50 +22,47 @@ void RC_INPUT::process(const mavros_msgs::RCIn::ConstPtr& msg){
 
     for (int i = 0; i < 4; ++i){
         channel[i] = ((double)msg->channels[i] - 1500.0) / 500.0;
-        if (channel[i] > JOYSTICK_DEADZONE)
-            channel[i] = (channel[i] - JOYSTICK_DEADZONE) / (1 - JOYSTICK_DEADZONE);
-        else if (channel[i] < -JOYSTICK_DEADZONE)
-            channel[i] = (channel[i] + JOYSTICK_DEADZONE) / (1 - JOYSTICK_DEADZONE);
+        if (channel[i] > rc_param.JOYSTICK_DEADZONE)
+            channel[i] = (channel[i] - rc_param.JOYSTICK_DEADZONE) / (1 - rc_param.JOYSTICK_DEADZONE);
+        else if (channel[i] < -rc_param.JOYSTICK_DEADZONE)
+            channel[i] = (channel[i] + rc_param.JOYSTICK_DEADZONE) / (1 - rc_param.JOYSTICK_DEADZONE);
         else
             channel[i] = 0;
     }
 
-    offboard_switch = ((double)msg->channels[OFFBOARD_SWITCH_CHANNEL - 1] - 1000.0) / 1000.0;
-    command_switch = ((double)msg->channels[COMMAND_SWITCH_CHANNEL - 1] - 1000.0) / 1000.0;
-    reboot_switch = ((double)msg->channels[REBOOT_SWITCH_CHANNEL - 1] - 1000.0) / 1000.0;
+    fsm_switch = ((double)msg->channels[rc_param.FSM_CHANNEL - 1] - 1000.0) / 1000.0;
+    command_switch = ((double)msg->channels[rc_param.COMMAND_CHANNEL - 1] - 1000.0) / 1000.0;
+    reboot_switch = ((double)msg->channels[rc_param.REBOOT_CHANNEL - 1] - 1000.0) / 1000.0;
 
     check_validity();
 
     // Init last indicators for first run
     if (!init_indicator){
         init_indicator = true;
-        last_offboard_switch = offboard_switch;
-        last_command_switch = command_switch;
+        last_fsm_switch = fsm_switch;
         last_reboot_switch = reboot_switch;
     }
 
-    // Set offboard
-    if (last_offboard_switch < OFFBOARD_THRESHOLD && offboard_switch > OFFBOARD_THRESHOLD)
-        enter_offboard = true;
+    // Set fsm
+    if (last_fsm_switch < rc_param.SWITCH_THRESHOLD && fsm_switch > rc_param.SWITCH_THRESHOLD)
+        enter_fsm = true;
     else
-        enter_offboard = false;
+        enter_fsm = false;
 
-    if (offboard_switch > OFFBOARD_THRESHOLD)
-        is_offboard = true;
+    if (fsm_switch > rc_param.SWITCH_THRESHOLD)
+        is_fsm = true;
     else
-        is_offboard = false;
+        is_fsm = false;
 
     // Set command
-    if (is_offboard){
-        if (command_switch > COMMAND_THRESHOLD)
-            is_command = true;
-        else
-            is_command = false;
-    }
+    if (command_switch > rc_param.SWITCH_THRESHOLD)
+        is_command = true;
+    else
+        is_command = false;
 
     // Set reboot
-    if (!is_offboard && !is_command){
-        if (last_reboot_switch < REBOOT_THRESHOLD && reboot_switch > REBOOT_THRESHOLD)
+    if (!is_fsm && !is_command){
+        if (last_reboot_switch < rc_param.SWITCH_THRESHOLD && reboot_switch > rc_param.SWITCH_THRESHOLD)
             enter_reboot = true;
         else
             enter_reboot = false;
@@ -75,23 +71,26 @@ void RC_INPUT::process(const mavros_msgs::RCIn::ConstPtr& msg){
         enter_reboot = false;
 
     // Update last indicators
-    last_offboard_switch = offboard_switch;
-    last_command_switch = command_switch;
+    last_fsm_switch = fsm_switch;
     last_reboot_switch = reboot_switch;
 }
 
 void RC_INPUT::check_validity(){
-    if (offboard_switch >= -1.1 && offboard_switch <= 1.1 && command_switch >= -1.1 && command_switch <= 1.1 && reboot_switch >= -1.1 && reboot_switch <= 1.1)
+    if (fsm_switch >= -1.1 && fsm_switch <= 1.1 && command_switch >= -1.1 && command_switch <= 1.1 && reboot_switch >= -1.1 && reboot_switch <= 1.1)
     {
         // pass
     }
     else
     {
-        ROS_ERROR("RC input validity check fail. offboard=%f, command=%f, reboot=%f", offboard_switch, command_switch, reboot_switch);
+        ROS_ERROR("RC input validity check fail. fsm=%f, command=%f, reboot=%f", fsm_switch, command_switch, reboot_switch);
     }
 }
 
 bool RC_INPUT::check_centered(){
-    bool centered = abs(channel[0]) < CHECK_CENTERED_THRESHOLD && abs(channel[1]) < CHECK_CENTERED_THRESHOLD && abs(channel[2]) < CHECK_CENTERED_THRESHOLD && abs(channel[3]) < CHECK_CENTERED_THRESHOLD;
+    bool centered = abs(channel[0]) < rc_param.CHECK_CENTERED_THRESHOLD && abs(channel[1]) < rc_param.CHECK_CENTERED_THRESHOLD && abs(channel[2]) < rc_param.CHECK_CENTERED_THRESHOLD && abs(channel[3]) < rc_param.CHECK_CENTERED_THRESHOLD;
     return centered;
+}
+
+void RC_INPUT::set_rc_param(RC_INPUT::RC_PARAM& param){
+    rc_param = param;
 }
