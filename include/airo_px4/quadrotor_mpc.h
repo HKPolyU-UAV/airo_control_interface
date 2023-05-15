@@ -6,7 +6,7 @@
 #include <vector>
 #include <eigen3/Eigen/Dense>
 #include <mavros_msgs/AttitudeTarget.h>
-#include <airo_px4/MPCReference.h>
+#include "airo_px4/MPCReference.h"
 
 #include <iostream>
 #include <fstream>

@@ -57,11 +57,11 @@ add_executable(airo_px4_node
   src/quadrotor_mpc.cpp
   src/rc_input.cpp
 )
-# target_link_libraries(airo_px4_node
-#   ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
-#   ${acados_lib}/libacados.so
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(airo_px4_node
+  ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
+  ${acados_lib}/libacados.so
+  ${catkin_LIBRARIES}
+)
 
 # add_executable(example_mission_node src/example_mission_node.cpp)
 # target_link_libraries(example_mission_node

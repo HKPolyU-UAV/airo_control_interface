@@ -381,8 +381,12 @@ void AIRO_PX4_FSM::get_motor_speedup(){
 
 void AIRO_PX4_FSM::set_ref(const geometry_msgs::PoseStamped& pose){
     mpc_ref.header.stamp = pose.header.stamp;
-    mpc_ref.ref_pose.position = pose.pose.position;
-    mpc_ref.ref_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, extract_yaw_from_quaternion(pose.pose.orientation));
+    geometry_msgs::Pose dummy_pose;
+    dummy_pose.position = pose.pose.position;
+    dummy_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, extract_yaw_from_quaternion(pose.pose.orientation));
+    mpc_ref.ref_pose.push_back(dummy_pose);
+    // mpc_ref.ref_pose.position = pose.pose.position;
+    // mpc_ref.ref_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, extract_yaw_from_quaternion(pose.pose.orientation));
     mpc_ref.is_preview = false;
 }
 
@@ -405,11 +409,11 @@ void AIRO_PX4_FSM::set_ref_with_rc(){
     geometry_msgs::PoseStamped rc_ref;
     double rc_psi, mpc_psi;
 
-    mpc_psi = extract_yaw_from_quaternion(mpc_ref.ref_pose.orientation);
+    mpc_psi = extract_yaw_from_quaternion(mpc_ref.ref_pose[0].orientation);
     rc_ref.header.stamp = current_time;
-    rc_ref.pose.position.x = mpc_ref.ref_pose.position.x + rc_input.channel[0]*HOVER_MAX_VELOCITY*delta_t;
-    rc_ref.pose.position.y = mpc_ref.ref_pose.position.y + rc_input.channel[1]*HOVER_MAX_VELOCITY*delta_t;
-    rc_ref.pose.position.z = mpc_ref.ref_pose.position.z + rc_input.channel[3]*HOVER_MAX_VELOCITY*delta_t;
+    rc_ref.pose.position.x = mpc_ref.ref_pose[0].position.x + rc_input.channel[0]*HOVER_MAX_VELOCITY*delta_t;
+    rc_ref.pose.position.y = mpc_ref.ref_pose[0].position.y + rc_input.channel[1]*HOVER_MAX_VELOCITY*delta_t;
+    rc_ref.pose.position.z = mpc_ref.ref_pose[0].position.z + rc_input.channel[3]*HOVER_MAX_VELOCITY*delta_t;
     rc_psi = mpc_psi + rc_input.channel[2]*HOVER_MAX_RATE*delta_t;
     if (rc_psi > M_PI){
         rc_psi = rc_psi - M_PI;
@@ -438,19 +442,19 @@ void AIRO_PX4_FSM::set_ref_with_command(){
 }
 
 void AIRO_PX4_FSM::reference_init(){
-    mpc_ref.is_preview = false;
-    for(unsigned int i = 0; i <= QUADROTOR_N; i++){
-        mpc_ref.ref_pose.position.x = 0;
-        mpc_ref.ref_pose.position.y = 0;
-        mpc_ref.ref_pose.position.z = 0;
-        mpc_ref.ref_pose.orientation.w = 1;
-        mpc_ref.ref_pose.orientation.x = 0;
-        mpc_ref.ref_pose.orientation.y = 0;
-        mpc_ref.ref_pose.orientation.z = 0;
-        mpc_ref.ref_twist.linear.x = 0;
-        mpc_ref.ref_twist.linear.y = 0;
-        mpc_ref.ref_twist.linear.z = 0;
-    }
+//     mpc_ref.is_preview = false;
+//     for(unsigned int i = 0; i <= QUADROTOR_N; i++){
+//         mpc_ref.ref_pose.position.x = 0;
+//         mpc_ref.ref_pose.position.y = 0;
+//         mpc_ref.ref_pose.position.z = 0;
+//         mpc_ref.ref_pose.orientation.w = 1;
+//         mpc_ref.ref_pose.orientation.x = 0;
+//         mpc_ref.ref_pose.orientation.y = 0;
+//         mpc_ref.ref_pose.orientation.z = 0;
+//         mpc_ref.ref_twist.linear.x = 0;
+//         mpc_ref.ref_twist.linear.y = 0;
+//         mpc_ref.ref_twist.linear.z = 0;
+//     }
 }
 
 double AIRO_PX4_FSM::extract_yaw_from_quaternion(const geometry_msgs::Quaternion& quaternion){
@@ -486,7 +490,7 @@ void AIRO_PX4_FSM::land_detector(){
 		is_last_C12_satisfy = false;
 	}
 	else{
-		bool C12_satisfy = (mpc_ref.ref_pose.position.z - local_pose.pose.position.z) < POSITION_DEVIATION && twist_norm(local_twist) < VELOCITY_THRESHOLD;
+		bool C12_satisfy = (mpc_ref.ref_pose[0].position.z - local_pose.pose.position.z) < POSITION_DEVIATION && twist_norm(local_twist) < VELOCITY_THRESHOLD;
 		if (C12_satisfy && !is_last_C12_satisfy){
 			time_C12_reached = ros::Time::now();
 		}
