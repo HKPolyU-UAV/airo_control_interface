@@ -3,13 +3,13 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
-#include <airo_px4/FSM_Info.h>
+#include <airo_px4/FSMInfo.h>
 #include <airo_px4/TakeoffLandTrigger.h>
 
 geometry_msgs::PoseStamped local_pose;
 geometry_msgs::PoseStamped target_pose_1;
 geometry_msgs::PoseStamped target_pose_2;
-airo_px4::FSM_Info fsm_info;
+airo_px4::FSMInfo fsm_info;
 airo_px4::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
  
@@ -24,7 +24,7 @@ void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
     local_pose.pose = msg->pose;
 }
 
-void fsm_info_cb(const airo_px4::FSM_Info::ConstPtr& msg){
+void fsm_info_cb(const airo_px4::FSMInfo::ConstPtr& msg){
     fsm_info.header = msg->header;
     fsm_info.is_landed = msg->is_landed;
     fsm_info.is_waiting_for_command = msg->is_waiting_for_command;
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     State state = TAKEOFF;
 
     ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
-    ros::Subscriber fsm_info_sub = nh.subscribe<airo_px4::FSM_Info>("/airo_px4/fsm_info",10,fsm_info_cb);
+    ros::Subscriber fsm_info_sub = nh.subscribe<airo_px4::FSMInfo>("/airo_px4/fsm_info",10,fsm_info_cb);
     ros::Publisher command_pub = nh.advertise<geometry_msgs::PoseStamped>("/airo_px4/position_setpoint",10);
     ros::Publisher takeoff_land_pub = nh.advertise<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10);
 

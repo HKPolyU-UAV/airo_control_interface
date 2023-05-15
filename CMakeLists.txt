@@ -51,12 +51,12 @@ include_directories(
 )
 link_directories(${quadrotor_model})
 
-# add_executable(airo_px4_node
-#   src/airo_px4_node.cpp
-#   src/airo_px4_fsm.cpp
-#   src/quadrotor_mpc.cpp
-#   src/rc_input.cpp
-# )
+add_executable(airo_px4_node
+  src/airo_px4_node.cpp
+  src/airo_px4_fsm.cpp
+  src/quadrotor_mpc.cpp
+  src/rc_input.cpp
+)
 # target_link_libraries(airo_px4_node
 #   ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
 #   ${acados_lib}/libacados.so
