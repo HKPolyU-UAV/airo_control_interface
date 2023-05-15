@@ -27,9 +27,10 @@ add_message_files(
   FILES
   TakeoffLandTrigger.msg
   FSMInfo.msg
+  MPCReference.msg
 )
 
-generate_messages(DEPENDENCIES std_msgs)
+generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 catkin_package(
  INCLUDE_DIRS include
@@ -62,12 +63,12 @@ target_link_libraries(airo_px4_node
   ${catkin_LIBRARIES}
 )
 
-add_executable(example_mission_node src/example_mission_node.cpp)
-target_link_libraries(example_mission_node
-  ${catkin_LIBRARIES}
-)
-
-# add_executable(system_identification src/system_identification.cpp)
-# target_link_libraries(system_identification
+# add_executable(example_mission_node src/example_mission_node.cpp)
+# target_link_libraries(example_mission_node
 #   ${catkin_LIBRARIES}
 # )
+
+# # add_executable(system_identification src/system_identification.cpp)
+# # target_link_libraries(system_identification
+# #   ${catkin_LIBRARIES}
+# # )

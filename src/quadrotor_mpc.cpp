@@ -14,32 +14,47 @@ QUADROTOR_MPC::QUADROTOR_MPC()
     for(unsigned int i=0; i < QUADROTOR_NX; i++) acados_in.x0[i] = 0.0;
 }
 
-mavros_msgs::AttitudeTarget QUADROTOR_MPC::run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, Eigen::VectorXd ref, SolverParam param)
-{
-    for (int i = 0; i < QUADROTOR_N+1; ++i){
-        for (int j = 0; j < QUADROTOR_NY; ++j){
-            acados_in.yref[i][j] = ref(j);
+void QUADROTOR_MPC::set_ref(const airo_px4::MPCReference& ref, const SolverParam& param){
+    if(ref.is_preview){
+        // for (int i = 0; i < QUADROTOR_N+1; ++i){
+        //     acados_in.yref[i][0] = ref.ref_pose[i].position.x;
+        //     acados_in.yref[i][1] = ref.ref_pose[i].position.y;
+        //     acados_in.yref[i][2] = ref.ref_pose[i].position.z;
+        //     acados_in.yref[i][3] = ref.ref_twist[i].linear.x;
+        //     acados_in.yref[i][4] = ref.ref_twist[i].linear.y;
+        //     acados_in.yref[i][5] = ref.ref_twist[i].linear.z;
+        //     acados_in.yref[i][6] = 0;
+        //     acados_in.yref[i][7] = 0;
+        //     acados_in.yref[i][8] = param.hover_thrust;
+        //     acados_in.yref[i][9] = 0;
+        //     acados_in.yref[i][10] = 0;
+        // }        
+    }
+    else{
+        for (int i = 0; i < QUADROTOR_N+1; ++i){
+            acados_in.yref[i][0] = ref.ref_pose[0].position.x;
+            acados_in.yref[i][1] = ref.ref_pose[0].position.y;
+            acados_in.yref[i][2] = ref.ref_pose[0].position.z;
+            acados_in.yref[i][3] = 0;
+            acados_in.yref[i][4] = 0;
+            acados_in.yref[i][5] = 0;
+            acados_in.yref[i][6] = 0;
+            acados_in.yref[i][7] = 0;
+            acados_in.yref[i][8] = param.hover_thrust;
+            acados_in.yref[i][9] = 0;
+            acados_in.yref[i][10] = 0;
         }
     }
-
-    return solve(pose,twist,param);
 }
 
-mavros_msgs::AttitudeTarget QUADROTOR_MPC::run(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, std::vector<Eigen::VectorXd> ref, SolverParam param)
-{
-    for (int i = 0; i < QUADROTOR_N+1; ++i){
-        for (int j = 0; j < QUADROTOR_NY; ++j){
-            acados_in.yref[i][j] = ref[i][j];
-        }
-    }
+mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, const airo_px4::MPCReference& ref, const SolverParam& param){
+    
+    set_ref(ref,param);
 
-    return solve(pose,twist,param);
-}
-
-mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, SolverParam param)
-{
     tf::quaternionMsgToTF(pose.pose.orientation,tf_quaternion);
     tf::Matrix3x3(tf_quaternion).getRPY(local_euler.phi, local_euler.theta, local_euler.psi);
+    tf::quaternionMsgToTF(ref.ref_pose[0].orientation,tf_quaternion);
+    tf::Matrix3x3(tf_quaternion).getRPY(ref_euler.phi, ref_euler.theta, ref_euler.psi);
     
     acados_in.x0[x] = pose.pose.position.x;
     acados_in.x0[y] = pose.pose.position.y;
@@ -81,7 +96,7 @@ mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStampe
     attitude_target.thrust = acados_out.u0[0];  
     target_euler.phi = acados_out.u0[1];
     target_euler.theta = acados_out.u0[2];
-    target_euler.psi = 0;
+    target_euler.psi = ref_euler.psi;
 
     geometry_msgs::Quaternion target_quaternion = tf::createQuaternionMsgFromRollPitchYaw(target_euler.phi, target_euler.theta, target_euler.psi);
 

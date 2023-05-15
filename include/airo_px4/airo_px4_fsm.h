@@ -12,6 +12,7 @@
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/SetMode.h>
 #include <airo_px4/FSMInfo.h>
+#include <airo_px4/FSMInfo.h>
 #include <airo_px4/TakeoffLandTrigger.h>
 
 #include "airo_px4/rc_input.h"
@@ -36,6 +37,7 @@ class AIRO_PX4_FSM{
 	double TAKEOFF_LAND_SPEED;
 	double REJECT_TAKEOFF_TWIST_THRESHOLD;
 	double HOVER_MAX_VELOCITY;
+	double HOVER_MAX_RATE;
 	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y min_z max_z
 	bool WITHOUT_RC;
 	double HOVER_THRUST;
@@ -75,6 +77,7 @@ class AIRO_PX4_FSM{
 	// Messages
 	airo_px4::TakeoffLandTrigger takeoff_land_trigger; // 1 for takeoff 0 for landing
 	airo_px4::FSMInfo fsm_info;
+	airo_px4::MPCReference mpc_ref;
 	geometry_msgs::PoseStamped local_pose;
 	geometry_msgs::PoseStamped takeoff_land_pose;
 	geometry_msgs::PoseStamped command_pose;
@@ -89,7 +92,8 @@ class AIRO_PX4_FSM{
 	QUADROTOR_MPC controller;
 
 	//Ref
-	Eigen::VectorXd ref;
+	// Eigen::VectorXd ref;
+	
 
 	public:
 
@@ -100,15 +104,17 @@ class AIRO_PX4_FSM{
 	bool toggle_offboard(bool);
 	bool toggle_arm(bool);
 	void get_motor_speedup();
-	void get_takeoff_land_ref(const double);
-	void set_ref(double, double, double);
+	void set_ref(const geometry_msgs::PoseStamped&);
+	void set_takeoff_land_ref(const double);
 	void set_ref_with_rc();
 	void set_ref_with_command();
+	void reference_init();
+	double extract_yaw_from_quaternion(const geometry_msgs::Quaternion&);
 	void land_detector();
 	void motor_idle_and_disarm();
 	void takeoff_land_init();
 	void auto_hover_init();
-	Eigen::Vector3d check_safety_volumn(const Eigen::Vector3d);
+	geometry_msgs::Point check_safety_volumn(const geometry_msgs::Point&);
 	void pose_cb(const geometry_msgs::PoseStamped::ConstPtr&);
 	void twist_cb(const geometry_msgs::TwistStamped::ConstPtr&);
 	void state_cb(const mavros_msgs::State::ConstPtr&);
@@ -120,8 +126,8 @@ class AIRO_PX4_FSM{
 	bool odom_received(const ros::Time&);
 	bool command_received(const ros::Time&);
 	bool takeoff_land_received(const ros::Time&);
-	bool takeoff_trigered(const ros::Time& time);
-	bool land_trigered(const ros::Time& time);
+	bool takeoff_trigered(const ros::Time&);
+	bool land_trigered(const ros::Time&);
 	double twist_norm(const geometry_msgs::TwistStamped);
 	void reboot();
 };

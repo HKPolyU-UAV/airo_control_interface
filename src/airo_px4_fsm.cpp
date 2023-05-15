@@ -14,6 +14,7 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     takeoff_land_sub = nh.subscribe<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10,&AIRO_PX4_FSM::takeoff_land_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
     fsm_info_pub = nh.advertise<airo_px4::FSMInfo>("/airo_px4/fsm_info",10);
+    fsm_info_pub = nh.advertise<airo_px4::FSMInfo>("/airo_px4/fsm_info",10);
 
     // ROS Services
     setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
@@ -27,6 +28,7 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_px4_node/takeoff_land_speed",TAKEOFF_LAND_SPEED);
     nh.getParam("airo_px4_node/reject_takeoff_twist_threshold",REJECT_TAKEOFF_TWIST_THRESHOLD);
     nh.getParam("airo_px4_node/hover_max_velocity",HOVER_MAX_VELOCITY);
+    nh.getParam("airo_px4_node/hover_max_rate",HOVER_MAX_RATE);
     nh.getParam("airo_px4_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
     nh.getParam("airo_px4_node/without_rc",WITHOUT_RC);
     nh.getParam("airo_px4_node/hover_thrust",HOVER_THRUST);
@@ -53,9 +55,7 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     solver_param.tau_phi = TAU_PHI;
     solver_param.tau_theta = TAU_THETA;
 
-    // Ref to controller
-    ref.resize(11);
-    ref<<0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0;
+    // reference_init();
 }
 
 void AIRO_PX4_FSM::process(){
@@ -69,7 +69,7 @@ void AIRO_PX4_FSM::process(){
 
     // Step 3: Solve position controller if needed
     if(solve_controller){
-        attitude_target = controller.run(local_pose,local_twist,ref,solver_param);
+        attitude_target = controller.solve(local_pose,local_twist,mpc_ref,solver_param);
     }
 
     // Step 4: Publish control commands and fsm state
@@ -178,7 +178,7 @@ void AIRO_PX4_FSM::fsm(){
                 }
                 // Send takeoff reference
                 else{
-                    get_takeoff_land_ref(TAKEOFF_LAND_SPEED);
+                    set_takeoff_land_ref(TAKEOFF_LAND_SPEED);
                 }
             }
 
@@ -258,7 +258,7 @@ void AIRO_PX4_FSM::fsm(){
 
             // Send land reference
             else if (!is_landed){
-                get_takeoff_land_ref(-TAKEOFF_LAND_SPEED);
+                set_takeoff_land_ref(-TAKEOFF_LAND_SPEED);
             }
             else{
                 motor_idle_and_disarm();
@@ -397,46 +397,94 @@ void AIRO_PX4_FSM::get_motor_speedup(){
     }
 }
 
-void AIRO_PX4_FSM::get_takeoff_land_ref(const double speed){
-    current_time = ros::Time::now();
-    double delta_t = (current_time - takeoff_land_time).toSec() - (speed > 0 ? MOTOR_SPEEDUP_TIME : 0);
-    Eigen::Vector3d takeoff_land_ref;
-    takeoff_land_ref(0) = takeoff_land_pose.pose.position.x;
-    takeoff_land_ref(1) = takeoff_land_pose.pose.position.y;
-    takeoff_land_ref(2) = takeoff_land_pose.pose.position.z + speed * delta_t;
-    takeoff_land_ref = check_safety_volumn(takeoff_land_ref);
-
-	set_ref(takeoff_land_ref(0),takeoff_land_ref(1),takeoff_land_ref(2));
+void AIRO_PX4_FSM::set_ref(const geometry_msgs::PoseStamped& pose){
+    mpc_ref.header.stamp = pose.header.stamp;
+    geometry_msgs::Pose dummy_pose;
+    dummy_pose.position = pose.pose.position;
+    dummy_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, extract_yaw_from_quaternion(pose.pose.orientation));
+    mpc_ref.ref_pose.push_back(dummy_pose);
+    // mpc_ref.ref_pose.position = pose.pose.position;
+    // mpc_ref.ref_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, extract_yaw_from_quaternion(pose.pose.orientation));
+    mpc_ref.is_preview = false;
 }
 
-void AIRO_PX4_FSM::set_ref(double x, double y, double z){
-    ref<<x,y,z,0.0,0.0,0.0,0.0,0.0,HOVER_THRUST,0.0,0.0;
-    solve_controller = true;
+void AIRO_PX4_FSM::set_takeoff_land_ref(const double speed){
+    current_time = ros::Time::now();
+    double delta_t = (current_time - takeoff_land_time).toSec() - (speed > 0 ? MOTOR_SPEEDUP_TIME : 0);
+    geometry_msgs::PoseStamped takeoff_land_ref;
+    takeoff_land_ref.header.stamp = current_time;
+    takeoff_land_ref.pose.position.x = takeoff_land_pose.pose.position.x;
+    takeoff_land_ref.pose.position.y = takeoff_land_pose.pose.position.y;
+    takeoff_land_ref.pose.position.z = takeoff_land_pose.pose.position.z + speed * delta_t;
+    takeoff_land_ref.pose.position = check_safety_volumn(takeoff_land_ref.pose.position);
+
+	set_ref(takeoff_land_ref);
 }
 
 void AIRO_PX4_FSM::set_ref_with_rc(){
+    current_time = ros::Time::now();
     double delta_t = (current_time - last_hover_time).toSec();
-    Eigen::Vector3d ref_rc(3);
-    ref_rc(0) = ref(0) + rc_input.channel[rc_param.PITCH_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_PITCH ? -1 : 1);
-    ref_rc(1) = ref(1) - rc_input.channel[rc_param.ROLL_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_ROLL ? -1 : 1);
-    ref_rc(2) = ref(2) + rc_input.channel[rc_param.THROTTLE_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_THROTTLE ? -1 : 1);
+    // Eigen::Vector3d ref_rc(3);
+    // ref_rc(0) = ref(0) + rc_input.channel[rc_param.PITCH_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_PITCH ? -1 : 1);
+    // ref_rc(1) = ref(1) - rc_input.channel[rc_param.ROLL_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_ROLL ? -1 : 1);
+    // ref_rc(2) = ref(2) + rc_input.channel[rc_param.THROTTLE_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_THROTTLE ? -1 : 1);
+    geometry_msgs::PoseStamped rc_ref;
+    double rc_psi, mpc_psi;
 
-    ref_rc = check_safety_volumn(ref_rc);
-    set_ref(ref_rc(0),ref_rc(1),ref_rc(2));
+    mpc_psi = extract_yaw_from_quaternion(mpc_ref.ref_pose[0].orientation);
+    rc_ref.header.stamp = current_time;
+    rc_ref.pose.position.x = mpc_ref.ref_pose[0].position.x + rc_input.channel[0]*HOVER_MAX_VELOCITY*delta_t;
+    rc_ref.pose.position.y = mpc_ref.ref_pose[0].position.y + rc_input.channel[1]*HOVER_MAX_VELOCITY*delta_t;
+    rc_ref.pose.position.z = mpc_ref.ref_pose[0].position.z + rc_input.channel[3]*HOVER_MAX_VELOCITY*delta_t;
+    rc_psi = mpc_psi + rc_input.channel[2]*HOVER_MAX_RATE*delta_t;
+    if (rc_psi > M_PI){
+        rc_psi = rc_psi - M_PI;
+    }
+    else if (rc_psi < -M_PI){
+        rc_psi = rc_psi + M_PI;
+    }
+    rc_ref.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, rc_psi);
+
+    rc_ref.pose.position = check_safety_volumn(rc_ref.pose.position);
+    set_ref(rc_ref);
 
     last_hover_time = current_time;
 }
 
 void AIRO_PX4_FSM::set_ref_with_command(){
-    Eigen::Vector3d ref_command(3);
-    ref_command(0) = command_pose.pose.position.x;
-    ref_command(1) = command_pose.pose.position.y;
-    ref_command(2) = command_pose.pose.position.z;
+    geometry_msgs::PoseStamped command_ref;
+    command_ref.header.stamp = current_time;
+    command_ref.pose.position = command_pose.pose.position;
+    command_ref.pose.orientation = command_pose.pose.orientation;
 
-    ref_command = check_safety_volumn(ref_command);
-    set_ref(ref_command(0),ref_command(1),ref_command(2));
+    command_ref.pose.position = check_safety_volumn(command_ref.pose.position);
+    set_ref(command_ref);
 
     fsm_info.is_waiting_for_command = true;
+}
+
+void AIRO_PX4_FSM::reference_init(){
+//     mpc_ref.is_preview = false;
+//     for(unsigned int i = 0; i <= QUADROTOR_N; i++){
+//         mpc_ref.ref_pose.position.x = 0;
+//         mpc_ref.ref_pose.position.y = 0;
+//         mpc_ref.ref_pose.position.z = 0;
+//         mpc_ref.ref_pose.orientation.w = 1;
+//         mpc_ref.ref_pose.orientation.x = 0;
+//         mpc_ref.ref_pose.orientation.y = 0;
+//         mpc_ref.ref_pose.orientation.z = 0;
+//         mpc_ref.ref_twist.linear.x = 0;
+//         mpc_ref.ref_twist.linear.y = 0;
+//         mpc_ref.ref_twist.linear.z = 0;
+//     }
+}
+
+double AIRO_PX4_FSM::extract_yaw_from_quaternion(const geometry_msgs::Quaternion& quaternion){
+    tf::Quaternion tf_quaternion;
+    tf::quaternionMsgToTF(quaternion,tf_quaternion);
+    double phi,theta,psi;
+    tf::Matrix3x3(tf_quaternion).getRPY(phi, theta, psi);
+    return psi;
 }
 
 void AIRO_PX4_FSM::land_detector(){
@@ -464,7 +512,7 @@ void AIRO_PX4_FSM::land_detector(){
 		is_last_C12_satisfy = false;
 	}
 	else{
-		bool C12_satisfy = (ref(2) - local_pose.pose.position.z) < POSITION_DEVIATION && twist_norm(local_twist) < VELOCITY_THRESHOLD;
+		bool C12_satisfy = (mpc_ref.ref_pose[0].position.z - local_pose.pose.position.z) < POSITION_DEVIATION && twist_norm(local_twist) < VELOCITY_THRESHOLD;
 		if (C12_satisfy && !is_last_C12_satisfy){
 			time_C12_reached = ros::Time::now();
 		}
@@ -511,39 +559,39 @@ void AIRO_PX4_FSM::takeoff_land_init(){
 
 void AIRO_PX4_FSM::auto_hover_init(){
     last_hover_time = current_time;
-    set_ref(local_pose.pose.position.x,local_pose.pose.position.y,local_pose.pose.position.z);
+    set_ref(local_pose);
 }
 
-Eigen::Vector3d AIRO_PX4_FSM::check_safety_volumn(const Eigen::Vector3d ref_rc){
-    Eigen::Vector3d ref_safe(3);
+geometry_msgs::Point AIRO_PX4_FSM::check_safety_volumn(const geometry_msgs::Point& ref_point){
+    geometry_msgs::Point safe_point;
 
-    if(ref_rc(0) < SAFETY_VOLUMN[0]){ // x_ref < x_min
-        ref_safe(0) = SAFETY_VOLUMN[0];
+    if(ref_point.x < SAFETY_VOLUMN[0]){ // x_ref < x_min
+        safe_point.x = SAFETY_VOLUMN[0];
         ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] X command too large!");
     }
-    else if (ref_rc(0) > SAFETY_VOLUMN[1]){ // x_ref > x_max
-        ref_safe(0) = SAFETY_VOLUMN[1];
+    else if (ref_point.x > SAFETY_VOLUMN[1]){ // x_ref > x_max
+        safe_point.x = SAFETY_VOLUMN[1];
         ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] X command too small!");
     }
-    else ref_safe(0) = ref_rc(0); // x_min < x_ref < x_max
+    else safe_point.x = ref_point.x; // x_min < x_ref < x_max
 
-    if(ref_rc(1) < SAFETY_VOLUMN[2]){ // y_ref < y_min
-        ref_safe(1) = SAFETY_VOLUMN[2];
+    if(ref_point.y < SAFETY_VOLUMN[2]){ // y_ref < y_min
+        safe_point.y = SAFETY_VOLUMN[2];
         ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] Y command too large!");
     }
-    else if (ref_rc(1) > SAFETY_VOLUMN[3]){ // y_ref > y_max
-        ref_safe(1) = SAFETY_VOLUMN[3];
+    else if (ref_point.x > SAFETY_VOLUMN[3]){ // y_ref > y_max
+        safe_point.y = SAFETY_VOLUMN[3];
         ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] Y command too small!");
     }
-    else ref_safe(1) = ref_rc(1); // y_min < y_ref < y_max
+    else safe_point.y = ref_point.x; // y_min < y_ref < y_max
 
-    if (ref_rc(2) > SAFETY_VOLUMN[5]){ // z_ref > z_max
-        ref_safe(2) = SAFETY_VOLUMN[5];
+    if (ref_point.z > SAFETY_VOLUMN[5]){ // z_ref > z_max
+        safe_point.z = SAFETY_VOLUMN[5];
         ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] Z command too large!");
     }
-    else ref_safe(2) = ref_rc(2); // z_ref < z_max
+    else safe_point.z = ref_point.z; // z_ref < z_max
 
-    return ref_safe;
+    return safe_point;
 }
 
 void AIRO_PX4_FSM::pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
