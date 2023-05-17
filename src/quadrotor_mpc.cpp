@@ -14,42 +14,21 @@ QUADROTOR_MPC::QUADROTOR_MPC()
     for(unsigned int i=0; i < QUADROTOR_NX; i++) acados_in.x0[i] = 0.0;
 }
 
-void QUADROTOR_MPC::set_ref(const airo_px4::MPCReference& ref, const SolverParam& param){
-    if(ref.is_preview){
-        // for (int i = 0; i < QUADROTOR_N+1; ++i){
-        //     acados_in.yref[i][0] = ref.ref_pose[i].position.x;
-        //     acados_in.yref[i][1] = ref.ref_pose[i].position.y;
-        //     acados_in.yref[i][2] = ref.ref_pose[i].position.z;
-        //     acados_in.yref[i][3] = ref.ref_twist[i].linear.x;
-        //     acados_in.yref[i][4] = ref.ref_twist[i].linear.y;
-        //     acados_in.yref[i][5] = ref.ref_twist[i].linear.z;
-        //     acados_in.yref[i][6] = 0;
-        //     acados_in.yref[i][7] = 0;
-        //     acados_in.yref[i][8] = param.hover_thrust;
-        //     acados_in.yref[i][9] = 0;
-        //     acados_in.yref[i][10] = 0;
-        // }        
-    }
-    else{
-        for (int i = 0; i < QUADROTOR_N+1; ++i){
-            acados_in.yref[i][0] = ref.ref_pose[0].position.x;
-            acados_in.yref[i][1] = ref.ref_pose[0].position.y;
-            acados_in.yref[i][2] = ref.ref_pose[0].position.z;
-            acados_in.yref[i][3] = 0;
-            acados_in.yref[i][4] = 0;
-            acados_in.yref[i][5] = 0;
-            acados_in.yref[i][6] = 0;
-            acados_in.yref[i][7] = 0;
-            acados_in.yref[i][8] = param.hover_thrust;
-            acados_in.yref[i][9] = 0;
-            acados_in.yref[i][10] = 0;
-        }
-    }
-}
-
-mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, const airo_px4::MPCReference& ref, const SolverParam& param){
+mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, const airo_px4::Reference& ref, const SolverParam& param){
     
-    set_ref(ref,param);
+    for (int i = 0; i < QUADROTOR_N+1; ++i){
+        acados_in.yref[i][0] = ref.ref_pose[i].position.x;
+        acados_in.yref[i][1] = ref.ref_pose[i].position.y;
+        acados_in.yref[i][2] = ref.ref_pose[i].position.z;
+        acados_in.yref[i][3] = ref.ref_twist[i].linear.x;
+        acados_in.yref[i][4] = ref.ref_twist[i].linear.y;
+        acados_in.yref[i][5] = ref.ref_twist[i].linear.z;
+        acados_in.yref[i][6] = 0;
+        acados_in.yref[i][7] = 0;
+        acados_in.yref[i][8] = param.hover_thrust;
+        acados_in.yref[i][9] = 0;
+        acados_in.yref[i][10] = 0;
+    }
 
     tf::quaternionMsgToTF(pose.pose.orientation,tf_quaternion);
     tf::Matrix3x3(tf_quaternion).getRPY(local_euler.phi, local_euler.theta, local_euler.psi);

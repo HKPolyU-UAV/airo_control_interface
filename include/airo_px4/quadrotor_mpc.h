@@ -6,7 +6,7 @@
 #include <vector>
 #include <eigen3/Eigen/Dense>
 #include <mavros_msgs/AttitudeTarget.h>
-#include "airo_px4/MPCReference.h"
+#include <airo_px4/Reference.h>
 
 #include <iostream>
 #include <fstream>
@@ -88,8 +88,7 @@ class QUADROTOR_MPC{
     };
 
     QUADROTOR_MPC();
-    void set_ref(const airo_px4::MPCReference&, const SolverParam&);
-    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const airo_px4::MPCReference&, const SolverParam&);
+    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const airo_px4::Reference&, const SolverParam&);
 };
 
 #endif
