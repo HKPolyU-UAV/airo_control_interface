@@ -9,6 +9,7 @@ add_compile_options(-std=c++11)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
+  roslib
   std_msgs
   roslaunch
   geometry_msgs
@@ -18,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Eigen3 REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 set(acados_include "/home/rocky/acados/include")
 set(acados_lib "/home/rocky/acados/lib")
@@ -68,7 +70,8 @@ target_link_libraries(example_mission_node
   ${catkin_LIBRARIES}
 )
 
-# # add_executable(system_identification src/system_identification.cpp)
-# # target_link_libraries(system_identification
-# #   ${catkin_LIBRARIES}
-# # )
+add_executable(system_identification src/system_identification.cpp)
+target_link_libraries(system_identification
+  ${catkin_LIBRARIES}
+  yaml-cpp
+)

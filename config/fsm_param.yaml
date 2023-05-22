@@ -1,32 +1,27 @@
-# FSM
-message_timeout:                0.5
-motor_speedup_time:             5.0
-takeoff_height:                 1.0
-takeoff_land_speed:             0.3
+message_timeout: 0.5
+motor_speedup_time: 5.0
+takeoff_height: 1.0
+takeoff_land_speed: 0.3
 reject_takeoff_twist_threshold: 0.15
-hover_max_velocity:             0.5
-hover_max_rate:                 0.5 # yaw rate in rad/s
-check_safety_volumn:            true
-safety_volumn:                  [-2.0, 2.0, -2.0, 2.0, -10, 4.0] # min_x max_x min_y max_y min_z max_z. Small min_z used for auto disarm
-without_rc:                     true
-
-# RC
-throttle_channel:               4 # In QGC & start from 1
-yaw_channel:                    3
-pitch_channel:                  1
-roll_channel:                   2
-fsm_channel:                    5
-command_channel:                7
-reboot_channel:                 8
-reverse_throttle:               false
-reverse_yaw:                    false
-reverse_pitch:                  false
-reverse_roll:                   false
-switch_threshold:               0.75
-joystick_deadzone:              0.10
-check_centered_threshold:       0.2
-
-# MPC
-hover_thrust:                   0.56
-tau_phi:                        0.1667
-tau_theta:                      0.1667
+hover_max_velocity: 0.5
+hover_max_rate: 0.5
+check_safety_volumn: true
+safety_volumn: [-2.0, 2.0, -2.0, 2.0, -10, 4.0]
+without_rc: true
+throttle_channel: 4
+yaw_channel: 3
+pitch_channel: 1
+roll_channel: 2
+fsm_channel: 5
+command_channel: 7
+reboot_channel: 8
+reverse_throttle: false
+reverse_yaw: false
+reverse_pitch: false
+reverse_roll: false
+switch_threshold: 0.75
+joystick_deadzone: 0.10
+check_centered_threshold: 0.2
+hover_thrust: 0.5658340311050415
+tau_phi: 0.1667
+tau_theta: 0.1667
