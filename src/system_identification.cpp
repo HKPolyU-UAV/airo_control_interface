@@ -6,16 +6,15 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <mavros_msgs/CommandBool.h>
+#include <mavros_msgs/CommandTOL.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/ActuatorControl.h>
-#include <airo_px4/FSMInfo.h>
-#include <airo_px4/TakeoffLandTrigger.h>
 #include <mavros_msgs/AttitudeTarget.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 
 mavros_msgs::State current_state;
 geometry_msgs::PoseStamped local_pose,takeoff_pose,x_maneuver_pose,y_maneuver_pose,yaw_maneuver_pose;
@@ -25,7 +24,9 @@ bool hover_thrust_id = false;
 bool tau_phi_id = false;
 bool tau_theta_id = false;
 bool tau_psi_id = false;
+bool local_pose_received = false;
 ros::Time last_state_time;
+ros::Timer fsm_timer;
 std::string package_path = ros::package::getPath("airo_px4");
 std::string yaml_path = package_path + "/config/fsm_param.yaml";
 tf::Quaternion tf_quaternion;
@@ -46,6 +47,7 @@ void state_cb(const mavros_msgs::State::ConstPtr& msg){
 void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
     local_pose.header = msg->header;
     local_pose.pose = msg->pose;
+    local_pose_received = true;
 }
 
 Eigen::Vector3d q2rpy(geometry_msgs::Quaternion q){
@@ -55,7 +57,12 @@ Eigen::Vector3d q2rpy(geometry_msgs::Quaternion q){
     return euler;
 }
 
-void sync_cb(const geometry_msgs::PoseStamped::ConstPtr& attitude_msg, mavros_msgs::AttitudeTarget::ConstPtr& attitude_target_msg, geometry_msgs::TwistStamped::ConstPtr& angular_rate_msg){
+geometry_msgs::Quaternion rpy2q(Eigen::Vector3d euler){
+    geometry_msgs::Quaternion quaternion = tf::createQuaternionMsgFromRollPitchYaw(euler.x(), euler.y(), euler.z());
+    return quaternion;
+}
+
+void sync_cb(const geometry_msgs::PoseStampedConstPtr& attitude_msg, const mavros_msgs::AttitudeTargetConstPtr& attitude_target_msg, const geometry_msgs::TwistStampedConstPtr& angular_rate_msg){
     Eigen::Vector3d current_target_euler = q2rpy(attitude_target_msg->orientation);
     Eigen::Vector3d current_euler = q2rpy(attitude_msg->pose.orientation);
     
@@ -87,14 +94,39 @@ bool target_reached(const geometry_msgs::PoseStamped& msg){
 }
 
 void update_x_maneuver(){
-    
+    x_maneuver_pose.pose.position.x = takeoff_pose.pose.position.x + 1.5*sin(2*(ros::Time::now().toSec() - last_state_time.toSec()));
+    x_maneuver_pose.pose.position.y = takeoff_pose.pose.position.y;
+    x_maneuver_pose.pose.position.z = takeoff_pose.pose.position.z;
+    x_maneuver_pose.pose.orientation.w = 1;
+    x_maneuver_pose.pose.orientation.x = 0;
+    x_maneuver_pose.pose.orientation.y = 0;
+    x_maneuver_pose.pose.orientation.z = 0;
+}
+
+void update_y_maneuver(){
+    y_maneuver_pose.pose.position.x = takeoff_pose.pose.position.x;
+    y_maneuver_pose.pose.position.y = takeoff_pose.pose.position.y + 1.5*sin(2*(ros::Time::now().toSec() - last_state_time.toSec()));
+    y_maneuver_pose.pose.position.z = takeoff_pose.pose.position.z;
+    y_maneuver_pose.pose.orientation.w = 1;
+    y_maneuver_pose.pose.orientation.x = 0;
+    y_maneuver_pose.pose.orientation.y = 0;
+    y_maneuver_pose.pose.orientation.z = 0;
+}
+
+void update_yaw_maneuver(){
+    double yaw_angle = M_PI/2 * sin(2*(ros::Time::now().toSec() - last_state_time.toSec()));
+    Eigen::Vector3d euler{0,0,yaw_angle};
+    yaw_maneuver_pose.pose.orientation = rpy2q(euler);
+    yaw_maneuver_pose.pose.position.x = takeoff_pose.pose.position.x;
+    yaw_maneuver_pose.pose.position.y = takeoff_pose.pose.position.y;
+    yaw_maneuver_pose.pose.position.z = takeoff_pose.pose.position.z;
 }
 
 int main(int argc, char **argv){
 
     ros::init(argc, argv, "system_identification");
     ros::NodeHandle nh;
-    ros::Rate rate(40.0);
+    ros::Rate rate(40);
     State state = TAKEOFF;
     YAML::Node yaml_config =  YAML::LoadFile(yaml_path);
     std::ofstream yaml_file(yaml_path);
@@ -104,25 +136,26 @@ int main(int argc, char **argv){
     ros::Subscriber target_actuator_control_sub = nh.subscribe<mavros_msgs::ActuatorControl>("/mavros/target_actuator_control",100,target_actuator_control_cb);
     ros::Publisher command_pub = nh.advertise<geometry_msgs::PoseStamped>("/mavros/setpoint_position/local",10);
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
+    ros::ServiceClient landing_client = nh.serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/land");
     ros::ServiceClient set_mode_client = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
 
     message_filters::Subscriber<geometry_msgs::PoseStamped> attitude_sub(nh,"/mavros/local_position/pose",10);
     message_filters::Subscriber<mavros_msgs::AttitudeTarget> attitude_target_sub(nh,"/mavros/setpoint_raw/target_attitude",10);
     message_filters::Subscriber<geometry_msgs::TwistStamped> angular_rate_sub(nh,"/mavros/local_position/velocity_local",10);
-
     typedef message_filters::sync_policies::ApproximateTime<geometry_msgs::PoseStamped, mavros_msgs::AttitudeTarget, geometry_msgs::TwistStamped> my_sync_policy;
-
     message_filters::Synchronizer<my_sync_policy> sync(my_sync_policy(10), attitude_sub,attitude_target_sub,angular_rate_sub);
     sync.registerCallback(boost::bind(&sync_cb,_1,_2,_3));
 
-    while(ros::ok() && !current_state.connected){
+    while(ros::ok() && (!current_state.connected || ! local_pose_received)){
         ros::spinOnce();
         rate.sleep();
     }
 
-    takeoff_pose.pose.position.x = 0;
-    takeoff_pose.pose.position.y = 0;
-    takeoff_pose.pose.position.z = 1;
+    double takeoff_height = yaml_config["takeoff_height"].as<double>();
+
+    takeoff_pose.pose.position.x = local_pose.pose.position.x;
+    takeoff_pose.pose.position.y = local_pose.pose.position.y;
+    takeoff_pose.pose.position.z = local_pose.pose.position.z + takeoff_height;
     takeoff_pose.pose.orientation.w = 1;
     takeoff_pose.pose.orientation.x = 0;
     takeoff_pose.pose.orientation.y = 0;
@@ -139,6 +172,12 @@ int main(int argc, char **argv){
 
     mavros_msgs::CommandBool arm_cmd;
     arm_cmd.request.value = true;
+
+    mavros_msgs::CommandTOL land_cmd;
+    land_cmd.request.yaw = 0;
+    land_cmd.request.latitude = 0;
+    land_cmd.request.longitude = 0;
+    land_cmd.request.altitude = 0;
 
     ros::Time last_request = ros::Time::now();
 
@@ -177,19 +216,19 @@ int main(int argc, char **argv){
                     mean_thrust = sum_thrust/thrust.size();
                     yaml_config["hover_thrust"] = mean_thrust;
                     state = X_MANEUVER;
-                    tau_phi_id = true;
+                    tau_theta_id = true;
                     last_state_time = ros::Time::now();
                 }
                 break;
             }
 
             case X_MANEUVER:{
-                if (ros::Time::now().toSec() - last_state_time.toSec() > 10.0){
-                    tau_phi_id = false;
-                    mean_tau_phi = sum_tau_psi/tau_phi.size();
-                    yaml_config["tau_phi"] = mean_tau_phi;
+                if (ros::Time::now().toSec() - last_state_time.toSec() > 30.0){
+                    tau_theta_id = false;
+                    mean_tau_theta = sum_tau_theta/tau_theta.size();
+                    yaml_config["tau_theta"] = mean_tau_theta;
                     state = Y_MANEUVER;
-                    tau_theta_id = true;
+                    tau_phi_id = true;
                     last_state_time = ros::Time::now();
                     while(ros::ok()){
                         command_pub.publish(takeoff_pose);
@@ -207,10 +246,69 @@ int main(int argc, char **argv){
                 break;
             }
 
+            case Y_MANEUVER:{
+                if (ros::Time::now().toSec() - last_state_time.toSec() > 30.0){
+                    tau_phi_id = false;
+                    mean_tau_phi = sum_tau_phi/tau_phi.size();
+                    yaml_config["tau_phi"] = mean_tau_phi;
+                    state = YAW_MANEUVER;
+                    tau_psi_id = true;
+                    last_state_time = ros::Time::now();
+                    while(ros::ok()){
+                        command_pub.publish(takeoff_pose);
+                        if (target_reached(takeoff_pose)){
+                            break;
+                        }
+                        ros::spinOnce();
+                        ros::Duration(rate).sleep();                        
+                    }
+                }
+                else{
+                    update_y_maneuver();
+                    command_pub.publish(y_maneuver_pose);
+                }
 
+                break;
+            }
+
+            case YAW_MANEUVER:{
+                if (ros::Time::now().toSec() - last_state_time.toSec() > 30.0){
+                    tau_psi_id = false;
+                    mean_tau_psi = sum_tau_psi/tau_psi.size();
+                    yaml_config["tau_psi"] = mean_tau_psi;
+                    state = LAND;
+                    yaml_file << yaml_config;
+                    yaml_file.close();
+                    while(ros::ok()){
+                        command_pub.publish(takeoff_pose);
+                        if (target_reached(takeoff_pose)){
+                            break;
+                        }
+                        ros::spinOnce();
+                        ros::Duration(rate).sleep();                        
+                    }
+                }
+                else{
+                    update_yaw_maneuver();
+                    command_pub.publish(yaw_maneuver_pose);
+                }
+
+                break;
+            }
+
+            case LAND:{
+                landing_client.call(land_cmd);
+                if (land_cmd.response.success){
+                    std::cout<<"hover_thrust = "<<mean_thrust<<std::endl;
+                    std::cout<<"tau_phi = "<<mean_tau_phi<<std::endl;
+                    std::cout<<"tau_theta = "<<mean_tau_theta<<std::endl;
+                    std::cout<<"tau_psi = "<<mean_tau_psi<<std::endl;
+                    std::cout<<"System identification finished!"<<std::endl;
+                    return 0;
+                }
+            }
         }
-                    // yaml_file << yaml_config;
-                    // yaml_file.close();
+
         ros::spinOnce();
         ros::Duration(rate).sleep();
     }

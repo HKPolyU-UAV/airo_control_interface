@@ -22,6 +22,7 @@ reverse_roll: false
 switch_threshold: 0.75
 joystick_deadzone: 0.10
 check_centered_threshold: 0.2
-hover_thrust: 0.5658340311050415
-tau_phi: 0.1667
-tau_theta: 0.1667
+hover_thrust: 0.5661515682935715
+tau_phi: -0.0008555501656665047
+tau_theta: -0.1139583510895322
+tau_psi: 1.694830355146349
