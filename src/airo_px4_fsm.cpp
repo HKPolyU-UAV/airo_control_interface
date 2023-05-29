@@ -448,12 +448,12 @@ void AIRO_PX4_FSM::set_ref_with_rc(){
     rc_ref.pose.position.y = mpc_ref.ref_pose[0].position.y + rc_input.channel[1]*HOVER_MAX_VELOCITY*delta_t;
     rc_ref.pose.position.z = mpc_ref.ref_pose[0].position.z + rc_input.channel[3]*HOVER_MAX_VELOCITY*delta_t;
     rc_psi = mpc_psi + rc_input.channel[2]*HOVER_MAX_RATE*delta_t;
-    if (rc_psi > M_PI){
-        rc_psi = rc_psi - M_PI;
-    }
-    else if (rc_psi < -M_PI){
-        rc_psi = rc_psi + M_PI;
-    }
+    // if (rc_psi > M_PI){
+    //     rc_psi = rc_psi - M_PI;
+    // }
+    // else if (rc_psi < -M_PI){
+    //     rc_psi = rc_psi + M_PI;
+    // }
     rc_ref.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, rc_psi);
 
     rc_ref.pose.position = check_safety_volumn(rc_ref.pose.position);
