@@ -8,8 +8,6 @@ This project focuses on PX4 support with customized outer-loop position controll
 
 ## Installation
 
-## Getting started
-
 Create a catkin workspace and clone this repository to catkin src folder (ex. ~/catkin_ws/src)
 ```
 mkdir -p ~/catkin_ws/src
