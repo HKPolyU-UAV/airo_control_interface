@@ -444,21 +444,14 @@ void AIRO_PX4_FSM::set_ref_with_rc(){
 
     mpc_psi = extract_yaw_from_quaternion(mpc_ref.ref_pose[0].orientation);
     rc_ref.header.stamp = current_time;
-    rc_ref.pose.position.x = mpc_ref.ref_pose[0].position.x + rc_input.channel[0]*HOVER_MAX_VELOCITY*delta_t;
-    rc_ref.pose.position.y = mpc_ref.ref_pose[0].position.y + rc_input.channel[1]*HOVER_MAX_VELOCITY*delta_t;
-    rc_ref.pose.position.z = mpc_ref.ref_pose[0].position.z + rc_input.channel[3]*HOVER_MAX_VELOCITY*delta_t;
-    rc_psi = mpc_psi + rc_input.channel[2]*HOVER_MAX_RATE*delta_t;
-    // if (rc_psi > M_PI){
-    //     rc_psi = rc_psi - M_PI;
-    // }
-    // else if (rc_psi < -M_PI){
-    //     rc_psi = rc_psi + M_PI;
-    // }
-    rc_ref.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, rc_psi);
+    rc_ref.pose.position.x = mpc_ref.ref_pose[0].position.x + rc_input.channel[rc_param.PITCH_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_PITCH ? -1 : 1);
+    rc_ref.pose.position.y = mpc_ref.ref_pose[0].position.y - rc_input.channel[rc_param.ROLL_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_ROLL ? -1 : 1);
+    rc_ref.pose.position.z = mpc_ref.ref_pose[0].position.z + rc_input.channel[rc_param.THROTTLE_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_THROTTLE ? -1 : 1);
+    rc_psi = mpc_psi - rc_input.channel[rc_param.YAW_CHANNEL-1]*HOVER_MAX_RATE*delta_t*(rc_param.REVERSE_YAW ? -1 : 1);
 
+    rc_ref.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, rc_psi);
     rc_ref.pose.position = check_safety_volumn(rc_ref.pose.position);
     set_ref(rc_ref);
-
     last_hover_time = current_time;
 }
 
@@ -586,7 +579,7 @@ geometry_msgs::Point AIRO_PX4_FSM::check_safety_volumn(const geometry_msgs::Poin
             safe_point.y = SAFETY_VOLUMN[3];
             ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] Y command too small!");
         }
-        else safe_point.y = ref_point.x; // y_min < y_ref < y_max
+        else safe_point.y = ref_point.y; // y_min < y_ref < y_max
 
         if (ref_point.z > SAFETY_VOLUMN[5]){ // z_ref > z_max
             safe_point.z = SAFETY_VOLUMN[5];
