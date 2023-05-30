@@ -35,7 +35,7 @@ sudo apt upgrade libignition-math4 #(libignition-math2 for melodic)
 
 In QGC setup, only set emergency kill switch and flight mode switch channel. To use the framework in simulation, set parameter COM_RCIN_MODE to "RC and Joystick with fallback", connect RC transmitter via usb serial, calibrate the joysticks in "Joysticks" tab and you should be able to read channel inputs in QGC "Radio" tab.
 
-If the pwm output of the switch channel is greater than the threshold (1750 by default), the channel is called enabled. Apart from the RC channel to set flight modes, three more channels will be used by the framework. First channel is referred to as FSM channel with default value set to channel 5. The FSM channel is called switched if it is changed from disable state to enable state.  Second channel is referred to as command channel with default value set to channel 6. Third channel is referred to as reboot channel with default value set to channel 8 and is recommended to set to the channel that can automatically flip back.
+If the pwm output of the switch channel is greater than the threshold (1750 by default), the channel is called enabled. Apart from the kill switch and flight mode channels, three more channels will be used by the framework. First channel is referred to as FSM channel with default value set to channel 5. The FSM channel is called switched if it is changed from disable state to enable state.  Second channel is referred to as command channel with default value set to channel 6. Third channel is referred to as reboot channel with default value set to channel 8 and is recommended to set to the channel that can automatically flip back.
 
 ## FSM Introduction
 1. RC_MANUAL 
