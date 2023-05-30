@@ -39,7 +39,7 @@ If the pwm output of the switch channel is greater than the threshold (1750 by d
 
 ## FSM Introduction
 
-<img src="docs/AIRo_PX4_FSM.png" width="250">
+<img src="docs/AIRo_PX4_FSM.png">
 
 1. RC_MANUAL 
 
