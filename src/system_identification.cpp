@@ -316,7 +316,7 @@ int main(int argc, char **argv){
                 std::cout<<"tau_phi = "<<tau_phi<<std::endl;
                 std::cout<<"tau_theta = "<<tau_theta<<std::endl;
                 std::cout<<"tau_psi = "<<tau_psi<<std::endl;
-                std::cout<<"Enter \"y\" to save the parameters in .yaml file."<<std::endl;
+                std::cout<<"Enter \"y\" to save the parameters to .yaml file."<<std::endl;
                 std::string input;
                 std::cin>>input;
                 if (input == "y"){

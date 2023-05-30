@@ -191,10 +191,10 @@ void AIRO_PX4_FSM::fsm(){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                ROS_INFO("\033[32m[AIRo PX4] AUTO_HOVER ==>> RC_MANUAL\033[32m");
+                    ROS_INFO("\033[32m[AIRo PX4] AUTO_HOVER ==>> RC_MANUAL\033[32m");
                 }
                 else{
-                ROS_ERROR("[AIRo PX4] No odom! Switching to RC_MANUAL mode.");
+                    ROS_ERROR("[AIRo PX4] No odom! Switching to RC_MANUAL mode.");
                 }
             }
 
@@ -246,10 +246,10 @@ void AIRO_PX4_FSM::fsm(){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                ROS_INFO("\033[32m[AIRo PX4] AUTO_LAND ==>> RC_MANUAL\033[32m");
+                    ROS_INFO("\033[32m[AIRo PX4] AUTO_LAND ==>> RC_MANUAL\033[32m");
                 }
                 else{
-                ROS_ERROR("[AIRo PX4] No odom! Switching to RC_MANUAL mode.");
+                    ROS_ERROR("[AIRo PX4] No odom! Switching to RC_MANUAL mode.");
                 }
             }
 
@@ -278,10 +278,10 @@ void AIRO_PX4_FSM::fsm(){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                ROS_INFO("\033[32m[AIRo PX4] POS_COMMAND ==>> RC_MANUAL\033[32m");
+                    ROS_INFO("\033[32m[AIRo PX4] POS_COMMAND ==>> RC_MANUAL\033[32m");
                 }
                 else{
-                ROS_ERROR("[AIRo PX4] No odom! Switching to RC_MANUAL mode.");
+                    ROS_ERROR("[AIRo PX4] No odom! Switching to RC_MANUAL mode.");
                 }
             }
 
@@ -337,8 +337,8 @@ bool AIRO_PX4_FSM::toggle_offboard(bool flag){
         ros::Time offboard_start;
         while(ros::ok() && (ros::Time::now() - offboard_start).toSec() > 2.0){
             if (setmode_srv.call(offboard_setmode) && offboard_setmode.response.mode_sent){
-                    ROS_INFO("[AIRo PX4] Offboard mode enabled!");
-                    return true;
+                ROS_INFO("[AIRo PX4] Offboard mode enabled!");
+                return true;
             }
             setpoint_pub.publish(attitude_target);
             ros::spinOnce();

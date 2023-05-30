@@ -15,7 +15,6 @@ QUADROTOR_MPC::QUADROTOR_MPC()
 }
 
 mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, const airo_px4::Reference& ref, const SolverParam& param){
-    
     for (int i = 0; i < QUADROTOR_N+1; ++i){
         acados_in.yref[i][0] = ref.ref_pose[i].position.x;
         acados_in.yref[i][1] = ref.ref_pose[i].position.y;
