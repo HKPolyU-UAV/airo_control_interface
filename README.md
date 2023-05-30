@@ -1,4 +1,4 @@
-# AIRo PX4 Application Framework
+# AIRo PX4 Framework
 This project focuses on PX4 support with customized outer-loop position controller.  
 
 ## Prerequisites
@@ -38,6 +38,9 @@ In QGC setup, only set emergency kill switch and flight mode switch channel. To 
 If the pwm output of the switch channel is greater than the threshold (1750 by default), the channel is called enabled. Apart from the kill switch and flight mode channels, three more channels will be used by the framework. First channel is referred to as FSM channel with default value set to channel 5. The FSM channel is called switched if it is changed from disable state to enable state.  Second channel is referred to as command channel with default value set to channel 6. Third channel is referred to as reboot channel with default value set to channel 8 and is recommended to set to the channel that can automatically flip back.
 
 ## FSM Introduction
+
+<img src="docs/AIRo_PX4_FSM.png" width="250">
+
 1. RC_MANUAL 
 
 In this state, the FSM is disabled and the quadrotor operates at manual modes (i.e. position,altitude, and stabilize) using the embedded PID controllers in PX4 firmware. The FSM is initialized with this state and will go back to it every time the vehicle is disarmed. This is the only state that PX4 offboard is disabled and the user have total control over RC transmitter using the embedded controller in FCU. 
