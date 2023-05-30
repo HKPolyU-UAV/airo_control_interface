@@ -15,6 +15,8 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
     fsm_info_pub = nh.advertise<airo_px4::FSMInfo>("/airo_px4/fsm_info",10);
 
+    // Master change lala
+
     // ROS Services
     setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
     arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
