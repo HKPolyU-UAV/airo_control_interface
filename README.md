@@ -44,12 +44,12 @@ In this state, the FSM is disabled and the quadrotor operates at manual modes (i
 
 2. AUTO_TAKEOFF 
 
-In this state, the vehicle will perform auto takeoff operation. The vehicle will slowly accelerate motors for several seconds and then takeoff to takeoff_height at takeoff_speed. This state can be triggered from RC_MANUAL state in two conditions. First condition is if command channel is disabled, the vehicle is landed, and the FSM channel is switched. Second is if command channel is enabled, FSM is enabled, and takeoff trigger is received. Once the target height is reached, the FSM will jump to AUTO_HOVER state. 
+In this state, the vehicle will perform auto takeoff operation. The vehicle will slowly accelerate motors for several seconds and then takeoff to takeoff_height at takeoff_land_speed. This state can be triggered from RC_MANUAL state in two conditions. First condition is if command channel is disabled, the vehicle is landed, and the FSM channel is switched. Second is if command channel is enabled, FSM is enabled, and takeoff trigger is received. Once the target height is reached, the FSM will jump to AUTO_HOVER state. 
 
 3. AUTO_HOVER 
 
 In this state, the vehicle will follow the commend of RC transmitter joysticks, which is similar to the position flight mode. This state can be triggered after AUTO_TAKEOFF or if the FSM channel switched during manual flight using RC_MANUAL. User can set a safety volume to confine the vehicle position. If the vehicle is landed with joystick commands, the FSM will disarm the vehicle and jump back to RC_MANUAL state. 
-If command channel is enabled, the FSM will send TOPIC to indicate that the vehicle is waiting for external commands. 
+If command channel is enabled, the FSM will send "is_waiting_for_command = true" to topic "/airo_px4/fsm_info" to indicate that the vehicle is waiting for external commands. 
 
 4. AUTO_LAND 
 
@@ -57,19 +57,22 @@ In this state, the vehicle will automatically land and disarm at current x&y pos
 
 5. POS_COMMAND 
 
-In this state, the vehicle will follow external position command subscribed from “/airo_px4/“.
+In this state, the vehicle will follow external position command subscribed from “/airo_px4/setpoint“.
 
 ## Usage
 
 1. Preparation 
+
 Before using the FSM, make sure the vehicle can be used with position flight mode. Then, run the system identification program to determine the hover_thrust, tau_phi, and tau_theta. After this, the FSM should be ready to rock. When vehicle is landed, you can use reboot channel to reboot the FCU. 
 In general, it is recommended to choose to enable or disable command channel before running the FSM based on the application scenarios.  Although switching command channel during mission is supported, it is not required during common applications and could cause confusions. Therefore, we recommend the following two pipelines to work with this FSM. 
 
 2. Non-command Mode
+
 To use in non-command mode, first disable the command channel and then switch the FSM channel. The FSM will ask the user to center all joysticks to avoid sudden position change when jump to AUTO_HOVER state. Then, the vehicle should arm and accelerate motors for a few seconds and automatically takeoff to desired height. Once takeoff height is reached, the vehicle will follow the joystick commands. If vehicle has been landed, the FSM will disarm it and reinitiate for the next mission. 
 
 3. Command Mode 
-To use in command mode, first enable the command channel and then enable the FSM channel. Then the user can send takeoff trigger to topic “/airo_px4/“. After auto takeoff, the FSM will publish indicator to topic “/airo_px4/“. Note that the command mode is capable to be used without RC transmitter. 
+
+To use in command mode, first enable the command channel and then enable the FSM channel. Then the user can send takeoff trigger to topic “/airo_px4/takeoff_land_trigger“. After auto takeoff, the FSM will publish indicator to topic “/airo_px4/fsm_info“. Note that the command mode is capable to be used without RC transmitter. 
 
 ## Running Simulation
 
