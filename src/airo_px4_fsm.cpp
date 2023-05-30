@@ -1,8 +1,6 @@
 #include "airo_px4/airo_px4_fsm.h"
 
 AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
-    // Athena change lala
-
     // Initialize
     state_fsm = RC_MANUAL;
 
@@ -16,8 +14,6 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     takeoff_land_sub = nh.subscribe<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10,&AIRO_PX4_FSM::takeoff_land_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
     fsm_info_pub = nh.advertise<airo_px4::FSMInfo>("/airo_px4/fsm_info",10);
-
-    // Master change lala
 
     // ROS Services
     setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
