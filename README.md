@@ -39,6 +39,7 @@ If the pwm output of the switch channel is greater than the threshold (1750 by d
 
 ## FSM Introduction
 1. RC_MANUAL 
+
 In this state, the FSM is disabled and the quadrotor operates at manual modes (i.e. position,altitude, and stabilize) using the embedded PID controllers in PX4 firmware. The FSM is initialized with this state and will go back to it every time the vehicle is disarmed. This is the only state that PX4 offboard is disabled and the user have total control over RC transmitter using the embedded controller in FCU. 
 
 2. AUTO_TAKEOFF 
