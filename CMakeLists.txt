@@ -75,3 +75,13 @@ target_link_libraries(system_identification
   ${catkin_LIBRARIES}
   yaml-cpp
 )
+
+add_executable(lala
+  src/lala.cpp
+  src/quadrotor_mpc.cpp
+)
+target_link_libraries(lala
+  ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
+  ${acados_lib}/libacados.so
+  ${catkin_LIBRARIES}
+)

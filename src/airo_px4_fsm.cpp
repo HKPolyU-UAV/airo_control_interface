@@ -31,10 +31,10 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_px4_node/check_safety_volumn",CHECK_SAFETY_VOLUMN);
     nh.getParam("airo_px4_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
     nh.getParam("airo_px4_node/without_rc",WITHOUT_RC);
-    nh.getParam("airo_px4_node/hover_thrust",HOVER_THRUST);
-    nh.getParam("airo_px4_node/tau_phi",TAU_PHI);
-    nh.getParam("airo_px4_node/tau_theta",TAU_THETA);
-    nh.getParam("airo_px4_node/tau_psi",TAU_PSI);
+    nh.getParam("airo_px4_node/hover_thrust",solver_param.hover_thrust);
+    nh.getParam("airo_px4_node/tau_phi",solver_param.tau_phi);
+    nh.getParam("airo_px4_node/tau_theta",solver_param.tau_theta);
+    nh.getParam("airo_px4_node/tau_psi",solver_param.tau_psi);
 
     nh.getParam("airo_px4_node/throttle_channel",rc_param.THROTTLE_CHANNEL);
     nh.getParam("airo_px4_node/yaw_channel",rc_param.YAW_CHANNEL);
@@ -52,11 +52,6 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_px4_node/check_cetered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
 
     rc_input.set_rc_param(rc_param);
-    solver_param.hover_thrust = HOVER_THRUST;
-    solver_param.tau_phi = TAU_PHI;
-    solver_param.tau_theta = TAU_THETA;
-    solver_param.tau_psi = TAU_PSI;
-
     reference_init();
 }
 
@@ -388,7 +383,7 @@ bool AIRO_PX4_FSM::toggle_arm(bool flag){
 void AIRO_PX4_FSM::get_motor_speedup(){
     while(ros::ok() && (current_time - takeoff_land_time).toSec() < MOTOR_SPEEDUP_TIME){
         double delta_t = (current_time - takeoff_land_time).toSec();
-	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*HOVER_THRUST*0.6 + 0.005;
+	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*solver_param.hover_thrust*0.6 + 0.005;
 
         attitude_target.thrust = ref_thrust;
         attitude_target.orientation.w = takeoff_land_pose.pose.orientation.w;
@@ -433,14 +428,9 @@ void AIRO_PX4_FSM::set_takeoff_land_ref(const double speed){
 	set_ref(takeoff_land_ref);
 }
 
-// To add yaw control
 void AIRO_PX4_FSM::set_ref_with_rc(){
     current_time = ros::Time::now();
     double delta_t = (current_time - last_hover_time).toSec();
-    // Eigen::Vector3d ref_rc(3);
-    // ref_rc(0) = ref(0) + rc_input.channel[rc_param.PITCH_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_PITCH ? -1 : 1);
-    // ref_rc(1) = ref(1) - rc_input.channel[rc_param.ROLL_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_ROLL ? -1 : 1);
-    // ref_rc(2) = ref(2) + rc_input.channel[rc_param.THROTTLE_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_THROTTLE ? -1 : 1);
     geometry_msgs::PoseStamped rc_ref;
     double rc_psi, mpc_psi;
 

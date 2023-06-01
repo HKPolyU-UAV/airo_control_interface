@@ -21,6 +21,7 @@
 
 double hover_thrust, tau_phi, tau_theta, tau_psi;
 double takeoff_height = 1.0;
+double yaw_ref = M_PI/2;
 std::vector<double> thrust,tau_phi_diff,tau_phi_rate,tau_theta_diff,tau_theta_rate,tau_psi_diff,tau_psi_rate;
 bool hover_thrust_id = false;
 bool tau_phi_id = false;
@@ -114,9 +115,15 @@ void update_y_maneuver(){
 }
 
 void update_yaw_maneuver(){
-    double yaw_angle = M_PI/2 * sin(2*(ros::Time::now().toSec() - last_state_time.toSec()));
-    Eigen::Vector3d euler{0,0,yaw_angle};
-    yaw_maneuver_pose.pose.orientation = rpy2q(euler);
+    Eigen::Vector3d euler = q2rpy(local_pose.pose.orientation);
+    if (euler.z() > M_PI/2 - M_PI/8 && euler.z() < M_PI/2 + M_PI/8 && yaw_ref == M_PI/2){
+        yaw_ref = -M_PI/2;
+    }
+    else if (euler.z() > -M_PI/2 - M_PI/8 && euler.z() < -M_PI/2 + M_PI/8 && yaw_ref == -M_PI/2)    {
+        yaw_ref = M_PI/2;
+    }
+    Eigen::Vector3d euler_ref{0,0,yaw_ref};
+    yaw_maneuver_pose.pose.orientation = rpy2q(euler_ref);
     yaw_maneuver_pose.pose.position.x = takeoff_pose.pose.position.x;
     yaw_maneuver_pose.pose.position.y = takeoff_pose.pose.position.y;
     yaw_maneuver_pose.pose.position.z = takeoff_pose.pose.position.z;

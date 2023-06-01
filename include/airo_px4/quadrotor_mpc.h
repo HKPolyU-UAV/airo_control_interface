@@ -71,13 +71,13 @@ class QUADROTOR_MPC{
     // Acados variables
     SolverInput acados_in;
     SolverOutput acados_out;
-    double acados_param[QUADROTOR_NP];  // hover_thrust, tau_phi, tau_theta, psi
+    double acados_param[QUADROTOR_N+1][QUADROTOR_NP];  // hover_thrust, tau_phi, tau_theta, psi
     int acados_status;   
-    quadrotor_solver_capsule * mpc_capsule = quadrotor_acados_create_capsule();
+    quadrotor_solver_capsule *mpc_capsule = quadrotor_acados_create_capsule();
 
     // Other variables
-    tf::Quaternion tf_quaternion;
     int cout_counter = 0;
+    double delta_t = 0.025; // MPC sample time
     
     public:
 
@@ -85,9 +85,12 @@ class QUADROTOR_MPC{
         double hover_thrust;
         double tau_phi;
         double tau_theta;
+        double tau_psi;
     };
 
     QUADROTOR_MPC();
+    Euler q2rpy(const geometry_msgs::Quaternion&);
+    geometry_msgs::Quaternion rpy2q(const Euler&);
     mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const airo_px4::Reference&, const SolverParam&);
 };
 
