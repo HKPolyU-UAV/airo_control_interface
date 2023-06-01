@@ -1,4 +1,4 @@
-# AIRo ARDU Framework
+# AIRo PX4 Framework
 This project focuses on PX4 support with customized outer-loop position controller.  
 
 ## Prerequisites
