@@ -43,6 +43,7 @@ class AIRO_PX4_FSM{
 	double HOVER_THRUST;
 	double TAU_PHI;
 	double TAU_THETA;
+	double TAU_PSI;
 
 	// Variables
 	STATE_FSM state_fsm;

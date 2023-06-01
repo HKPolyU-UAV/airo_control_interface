@@ -34,6 +34,7 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_px4_node/hover_thrust",HOVER_THRUST);
     nh.getParam("airo_px4_node/tau_phi",TAU_PHI);
     nh.getParam("airo_px4_node/tau_theta",TAU_THETA);
+    nh.getParam("airo_px4_node/tau_psi",TAU_PSI);
 
     nh.getParam("airo_px4_node/throttle_channel",rc_param.THROTTLE_CHANNEL);
     nh.getParam("airo_px4_node/yaw_channel",rc_param.YAW_CHANNEL);
@@ -54,6 +55,7 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     solver_param.hover_thrust = HOVER_THRUST;
     solver_param.tau_phi = TAU_PHI;
     solver_param.tau_theta = TAU_THETA;
+    solver_param.tau_psi = TAU_PSI;
 
     reference_init();
 }
