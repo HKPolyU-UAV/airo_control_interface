@@ -32,7 +32,8 @@ ros::Time last_state_time;
 mavros_msgs::State current_state;
 geometry_msgs::PoseStamped local_pose,takeoff_pose,x_maneuver_pose,y_maneuver_pose,yaw_maneuver_pose;
 std::string package_path = ros::package::getPath("airo_px4");
-std::string yaml_path = package_path + "/config/fsm_param.yaml";
+// std::string yaml_path = package_path + "/config/gazebo_param.yaml";
+std::string yaml_path = package_path + "/config/vicon_param.yaml";
 tf::Quaternion tf_quaternion;
 
 enum State{

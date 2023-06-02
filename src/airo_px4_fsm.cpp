@@ -4,22 +4,6 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     // Initialize
     state_fsm = RC_MANUAL;
 
-    // ROS Sub & Pub
-    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,&AIRO_PX4_FSM::pose_cb,this);
-    twist_sub = nh.subscribe<geometry_msgs::TwistStamped>("/mavros/local_position/velocity_local",100,&AIRO_PX4_FSM::twist_cb,this);
-    state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,&AIRO_PX4_FSM::state_cb,this);
-    extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",10,&AIRO_PX4_FSM::extended_state_cb,this);
-    rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",10,&AIRO_PX4_FSM::rc_input_cb,this);
-    command_sub = nh.subscribe<airo_px4::Reference>("/airo_px4/setpoint",50,&AIRO_PX4_FSM::external_command_cb,this);
-    takeoff_land_sub = nh.subscribe<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10,&AIRO_PX4_FSM::takeoff_land_cb,this);
-    setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
-    fsm_info_pub = nh.advertise<airo_px4::FSMInfo>("/airo_px4/fsm_info",10);
-
-    // ROS Services
-    setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
-    arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
-    reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
-
     // ROS Parameters
     nh.getParam("airo_px4_node/pose_topic",POSE_TOPIC);
     nh.getParam("airo_px4_node/twist_topic",TWIST_TOPIC);
@@ -53,6 +37,23 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_px4_node/joystick_deadzone",rc_param.JOYSTICK_DEADZONE);
     nh.getParam("airo_px4_node/check_centered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
 
+    // ROS Sub & Pub
+    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,100,&AIRO_PX4_FSM::pose_cb,this);
+    twist_sub = nh.subscribe<geometry_msgs::TwistStamped>(TWIST_TOPIC,100,&AIRO_PX4_FSM::twist_cb,this);
+    state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,&AIRO_PX4_FSM::state_cb,this);
+    extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",10,&AIRO_PX4_FSM::extended_state_cb,this);
+    rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",10,&AIRO_PX4_FSM::rc_input_cb,this);
+    command_sub = nh.subscribe<airo_px4::Reference>("/airo_px4/setpoint",50,&AIRO_PX4_FSM::external_command_cb,this);
+    takeoff_land_sub = nh.subscribe<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10,&AIRO_PX4_FSM::takeoff_land_cb,this);
+    setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
+    fsm_info_pub = nh.advertise<airo_px4::FSMInfo>("/airo_px4/fsm_info",10);
+
+    // ROS Services
+    setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
+    arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
+    reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
+
+    // Init
     rc_input.set_rc_param(rc_param);
     reference_init();
 }

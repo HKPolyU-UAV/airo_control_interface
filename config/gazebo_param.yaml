@@ -1,3 +1,5 @@
+pose_topic: "/mavros/local_position/pose"
+twist_topic: "/mavros/local_position/velocity_local"
 message_timeout: 0.5
 motor_speedup_time: 5.0
 takeoff_height: 1.0
