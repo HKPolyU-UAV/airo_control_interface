@@ -21,8 +21,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-set(acados_include "/home/rocky/acados/include")
-set(acados_lib "/home/rocky/acados/lib")
+set(acados_include "/home/athena/acados/include")
+set(acados_lib "/home/athena/acados/lib")
 set(quadrotor_model ${PROJECT_SOURCE_DIR}/scripts/c_generated_code)
 
 add_message_files(
