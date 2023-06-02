@@ -61,14 +61,19 @@ mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStampe
         acados_param[i][0] = param.hover_thrust;
         acados_param[i][1] = param.tau_phi;
         acados_param[i][2] = param.tau_theta;
-        acados_param[i][3] = local_euler.psi;
-        // if (i == 0){
-        //     acados_param[i][3] = local_euler.psi;
-        // }
-        // else{
-        //     Euler dummy_euler = q2rpy(ref.ref_pose[i-1].orientation); // For yaw prediction
-        //     acados_param[i][3] = acados_param[i-1][3] + delta_t * (dummy_euler.psi - acados_param[i-1][3]) / param.tau_psi;
-        // }
+        if (i == 0){
+            acados_param[i][3] = local_euler.psi;
+        }
+        else{
+            Euler dummy_euler = q2rpy(ref.ref_pose[i-1].orientation); // For yaw prediction
+            if (dummy_euler.psi - acados_param[i-1][3] > M_PI){
+                dummy_euler.psi = dummy_euler.psi - 2*M_PI;
+            }
+            else if (dummy_euler.psi - acados_param[i-1][3] < -M_PI){
+                dummy_euler.psi = dummy_euler.psi + 2*M_PI;
+            }
+            acados_param[i][3] = acados_param[i-1][3] + delta_t * (dummy_euler.psi - acados_param[i-1][3]) / param.tau_psi;
+        }
         quadrotor_acados_update_params(mpc_capsule,i,acados_param[i],QUADROTOR_NP);
     }
 

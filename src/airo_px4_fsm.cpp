@@ -49,7 +49,7 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_px4_node/reverse_roll",rc_param.REVERSE_ROLL);
     nh.getParam("airo_px4_node/switch_threshold",rc_param.SWITCH_THRESHOLD);
     nh.getParam("airo_px4_node/joystick_deadzone",rc_param.JOYSTICK_DEADZONE);
-    nh.getParam("airo_px4_node/check_cetered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
+    nh.getParam("airo_px4_node/check_centered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
 
     rc_input.set_rc_param(rc_param);
     reference_init();
@@ -555,21 +555,21 @@ geometry_msgs::Point AIRO_PX4_FSM::check_safety_volumn(const geometry_msgs::Poin
 
         if(ref_point.x < SAFETY_VOLUMN[0]){ // x_ref < x_min
             safe_point.x = SAFETY_VOLUMN[0];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] X command too large!");
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] X command too small!");
         }
         else if (ref_point.x > SAFETY_VOLUMN[1]){ // x_ref > x_max
             safe_point.x = SAFETY_VOLUMN[1];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] X command too small!");
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] X command too large!");
         }
         else safe_point.x = ref_point.x; // x_min < x_ref < x_max
 
         if(ref_point.y < SAFETY_VOLUMN[2]){ // y_ref < y_min
             safe_point.y = SAFETY_VOLUMN[2];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] Y command too large!");
-        }
-        else if (ref_point.x > SAFETY_VOLUMN[3]){ // y_ref > y_max
-            safe_point.y = SAFETY_VOLUMN[3];
             ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] Y command too small!");
+        }
+        else if (ref_point.y > SAFETY_VOLUMN[3]){ // y_ref > y_max
+            safe_point.y = SAFETY_VOLUMN[3];
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo PX4] Y command too large!");
         }
         else safe_point.y = ref_point.y; // y_min < y_ref < y_max
 

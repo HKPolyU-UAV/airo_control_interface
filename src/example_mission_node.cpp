@@ -49,23 +49,23 @@ int main(int argc, char **argv)
     target_pose_2.ref_pose.resize(42);
 
     for (int i = 0; i < 41; i++){
-        target_pose_1.ref_pose[i].position.x = 1.5;
-        target_pose_1.ref_pose[i].position.y = 1.5;
+        target_pose_1.ref_pose[i].position.x = 0;
+        target_pose_1.ref_pose[i].position.y = -2.5;
         target_pose_1.ref_pose[i].position.z = 1.5;
-        target_pose_1.ref_pose[i].orientation.w = 0.9238795;
+        target_pose_1.ref_pose[i].orientation.w = 1;
         target_pose_1.ref_pose[i].orientation.x = 0.0;
         target_pose_1.ref_pose[i].orientation.y = 0.0;
-        target_pose_1.ref_pose[i].orientation.z = 0.3826834;
+        target_pose_1.ref_pose[i].orientation.z = 0;
     }
 
     for (int i = 0; i < 41; i++){
-        target_pose_2.ref_pose[i].position.x = -1.5;
-        target_pose_2.ref_pose[i].position.y = -1.5;
+        target_pose_2.ref_pose[i].position.x = 0;
+        target_pose_2.ref_pose[i].position.y = 2.5;
         target_pose_2.ref_pose[i].position.z = 1.5;
-        target_pose_2.ref_pose[i].orientation.w = 0.9238795;
+        target_pose_2.ref_pose[i].orientation.w = 1;
         target_pose_2.ref_pose[i].orientation.x = 0.0;
         target_pose_2.ref_pose[i].orientation.y = 0;
-        target_pose_2.ref_pose[i].orientation.z = -0.3826834;
+        target_pose_2.ref_pose[i].orientation.z = 0;
     }
 
     while(ros::ok()){
