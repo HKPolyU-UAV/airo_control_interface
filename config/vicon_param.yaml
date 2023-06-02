@@ -1,14 +1,14 @@
-pose_topic: "/mavros/vision_pose/pose"
-twist_topic: "/mavros/vision_pose/speed_vector"
+pose_topic: /mavros/vision_pose/pose
+twist_topic: "/mavros/local_position/velocity_local"
 message_timeout: 0.5
 motor_speedup_time: 5.0
 takeoff_height: 1.0
 takeoff_land_speed: 0.3
 reject_takeoff_twist_threshold: 0.15
-hover_max_velocity: 1.0
-hover_max_rate: 1.0
+hover_max_velocity: 3.0
+hover_max_rate: 3.0
 check_safety_volumn: true
-safety_volumn: [-2.0, 2.0, -2.0, 2.0, -10, 2.5]
+safety_volumn: [-2.0, 2.0, -1.25, 2.25, -10, 2.5]
 without_rc: false
 throttle_channel: 3
 yaw_channel: 4
@@ -24,7 +24,7 @@ reverse_roll: false
 switch_threshold: 0.75
 joystick_deadzone: 0.10
 check_centered_threshold: 0.25
-hover_thrust: 0.165
-tau_phi: 0.1667
-tau_theta: 0.1667
-tau_psi: 0.4249434082976979
+hover_thrust: 0.2245472073554993
+tau_phi: 0.1402632829109959
+tau_theta: 0.1267974453585732
+tau_psi: 0.5051508754584577
