@@ -30,6 +30,8 @@ class AIRO_PX4_FSM{
 	};
 
 	// Parameters
+	std::string POSE_TOPIC;
+	std::string TWIST_TOPIC;
 	double MESSAGE_TIMEOUT;
 	double MOTOR_SPEEDUP_TIME;
 	double TAKEOFF_HEIGHT;

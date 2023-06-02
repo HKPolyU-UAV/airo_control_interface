@@ -3,8 +3,8 @@ motor_speedup_time: 5.0
 takeoff_height: 1.0
 takeoff_land_speed: 0.3
 reject_takeoff_twist_threshold: 0.15
-hover_max_velocity: 0.5
-hover_max_rate: 0.5
+hover_max_velocity: 1.0
+hover_max_rate: 1.0
 check_safety_volumn: true
 safety_volumn: [-2.0, 2.0, -2.0, 2.0, -10, 2.5]
 without_rc: false

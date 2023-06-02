@@ -116,11 +116,11 @@ void update_y_maneuver(){
 
 void update_yaw_maneuver(){
     Eigen::Vector3d euler = q2rpy(local_pose.pose.orientation);
-    if (euler.z() > M_PI/2 - M_PI/8 && euler.z() < M_PI/2 + M_PI/8 && yaw_ref == M_PI/2){
-        yaw_ref = -M_PI/2;
+    if (euler.z() > M_PI/4 - M_PI/8 && euler.z() < M_PI/4 + M_PI/8 && yaw_ref == M_PI/4){
+        yaw_ref = -M_PI/4;
     }
-    else if (euler.z() > -M_PI/2 - M_PI/8 && euler.z() < -M_PI/2 + M_PI/8 && yaw_ref == -M_PI/2)    {
-        yaw_ref = M_PI/2;
+    else if (euler.z() > -M_PI/4 - M_PI/8 && euler.z() < -M_PI/4 + M_PI/8 && yaw_ref == -M_PI/4)    {
+        yaw_ref = M_PI/4;
     }
     Eigen::Vector3d euler_ref{0,0,yaw_ref};
     yaw_maneuver_pose.pose.orientation = rpy2q(euler_ref);

@@ -21,6 +21,8 @@ AIRO_PX4_FSM::AIRO_PX4_FSM(ros::NodeHandle& nh){
     reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
 
     // ROS Parameters
+    nh.getParam("airo_px4_node/pose_topic",POSE_TOPIC);
+    nh.getParam("airo_px4_node/twist_topic",TWIST_TOPIC);
     nh.getParam("airo_px4_node/message_timeout",MESSAGE_TIMEOUT);
     nh.getParam("airo_px4_node/motor_speedup_time",MOTOR_SPEEDUP_TIME);
     nh.getParam("airo_px4_node/takeoff_height",TAKEOFF_HEIGHT);
