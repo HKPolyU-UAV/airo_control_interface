@@ -1,4 +1,4 @@
-pose_topic: /mavros/vision_pose/pose
+pose_topic: "/mavros/vision_pose/pose"
 twist_topic: "/mavros/local_position/velocity_local"
 message_timeout: 0.5
 motor_speedup_time: 5.0
