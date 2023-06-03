@@ -21,7 +21,7 @@
 
 double hover_thrust, tau_phi, tau_theta, tau_psi;
 double takeoff_height = 1.0;
-double yaw_ref = M_PI/2;
+double yaw_ref = M_PI/4;
 std::vector<double> thrust,tau_phi_diff,tau_phi_rate,tau_theta_diff,tau_theta_rate,tau_psi_diff,tau_psi_rate;
 bool hover_thrust_id = false;
 bool tau_phi_id = false;
@@ -32,8 +32,7 @@ ros::Time last_state_time;
 mavros_msgs::State current_state;
 geometry_msgs::PoseStamped local_pose,takeoff_pose,x_maneuver_pose,y_maneuver_pose,yaw_maneuver_pose;
 std::string package_path = ros::package::getPath("airo_px4");
-// std::string yaml_path = package_path + "/config/gazebo_param.yaml";
-std::string yaml_path = package_path + "/config/vicon_param.yaml";
+std::string POSE_TOPIC, YAML_NAME;
 tf::Quaternion tf_quaternion;
 
 enum State{
@@ -117,10 +116,10 @@ void update_y_maneuver(){
 
 void update_yaw_maneuver(){
     Eigen::Vector3d euler = q2rpy(local_pose.pose.orientation);
-    if (euler.z() > M_PI/4 - M_PI/8 && euler.z() < M_PI/4 + M_PI/8 && yaw_ref == M_PI/4){
+    if (euler.z() > M_PI/4 - M_PI/16 && euler.z() < M_PI/4 + M_PI/16 && yaw_ref == M_PI/4){
         yaw_ref = -M_PI/4;
     }
-    else if (euler.z() > -M_PI/4 - M_PI/8 && euler.z() < -M_PI/4 + M_PI/8 && yaw_ref == -M_PI/4)    {
+    else if (euler.z() > -M_PI/4 - M_PI/16 && euler.z() < -M_PI/4 + M_PI/16 && yaw_ref == -M_PI/4){
         yaw_ref = M_PI/4;
     }
     Eigen::Vector3d euler_ref{0,0,yaw_ref};
@@ -148,13 +147,17 @@ double linear_regression(std::vector<double> x, std::vector<double> y){
 
 int main(int argc, char **argv){
 
-    ros::init(argc, argv, "system_identification");
+    ros::init(argc, argv, "system_identification_node");
     ros::NodeHandle nh;
     ros::Rate rate(40);
     State state = TAKEOFF;
 
+    nh.getParam("system_identification_node/pose_topic",POSE_TOPIC);
+    nh.getParam("system_identification_node/yaml_name",YAML_NAME);
+
+    std::string yaml_path = package_path + YAML_NAME;
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,state_cb);
-    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
+    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,100,pose_cb);
     ros::Subscriber target_actuator_control_sub = nh.subscribe<mavros_msgs::ActuatorControl>("/mavros/target_actuator_control",100,target_actuator_control_cb);
     ros::Publisher command_pub = nh.advertise<geometry_msgs::PoseStamped>("/mavros/setpoint_position/local",10);
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
@@ -242,7 +245,7 @@ int main(int argc, char **argv){
             }
 
             case X_MANEUVER:{
-                if (ros::Time::now().toSec() - last_state_time.toSec() > 20.0){
+                if (ros::Time::now().toSec() - last_state_time.toSec() > 15.0){
                     tau_theta_id = false;
                     state = Y_MANEUVER;
                     tau_phi_id = true;
@@ -264,7 +267,7 @@ int main(int argc, char **argv){
             }
 
             case Y_MANEUVER:{
-                if (ros::Time::now().toSec() - last_state_time.toSec() > 20.0){
+                if (ros::Time::now().toSec() - last_state_time.toSec() > 15.0){
                     tau_phi_id = false;
                     state = YAW_MANEUVER;
                     tau_psi_id = true;
@@ -287,7 +290,7 @@ int main(int argc, char **argv){
             }
 
             case YAW_MANEUVER:{
-                if (ros::Time::now().toSec() - last_state_time.toSec() > 20.0){
+                if (ros::Time::now().toSec() - last_state_time.toSec() > 15.0){
                     tau_psi_id = false;
                     state = LAND;
                     while(ros::ok()){
@@ -324,10 +327,10 @@ int main(int argc, char **argv){
                 std::cout<<"tau_phi = "<<tau_phi<<std::endl;
                 std::cout<<"tau_theta = "<<tau_theta<<std::endl;
                 std::cout<<"tau_psi = "<<tau_psi<<std::endl;
-                std::cout<<"Enter \"y\" to save the parameters to .yaml file."<<std::endl;
+                std::cout<<"Save the parameters to .yaml file? (y/n)"<<std::endl;
                 std::string input;
                 std::cin>>input;
-                if (input == "y"){
+                if (input == "y" || input == "\n"){
                     YAML::Node yaml_config =  YAML::LoadFile(yaml_path);
                     std::ofstream yaml_file(yaml_path);
                     yaml_config["hover_thrust"] = hover_thrust;

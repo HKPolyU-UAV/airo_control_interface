@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node pkg="airo_px4" type="system_identification" name="system_identification_node" output="screen">
+        <rosparam command="load" file="$(find airo_px4)/config/gazebo_param.yaml" />
+	</node>
+
+</launch>

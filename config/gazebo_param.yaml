@@ -1,5 +1,6 @@
-pose_topic: "/mavros/local_position/pose"
-twist_topic: "/mavros/local_position/velocity_local"
+pose_topic: /mavros/local_position/pose
+twist_topic: /mavros/local_position/velocity_local
+yaml_name: /config/gazebo_param.yaml
 message_timeout: 0.5
 motor_speedup_time: 5.0
 takeoff_height: 1.0
@@ -24,7 +25,7 @@ reverse_roll: false
 switch_threshold: 0.75
 joystick_deadzone: 0.10
 check_centered_threshold: 0.3
-hover_thrust: 0.5662714517116547
-tau_phi: 0.1810735548776539
-tau_theta: 0.1785824252149267
-tau_psi: 0.40835850376636
+hover_thrust: 0.5655576368369678
+tau_phi: 0.1842316385884665
+tau_theta: 0.1803597844216206
+tau_psi: 0.1
