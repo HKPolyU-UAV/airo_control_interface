@@ -75,3 +75,8 @@ target_link_libraries(system_identification
   ${catkin_LIBRARIES}
   yaml-cpp
 )
+
+add_executable(circle_mission_node src/circle_mission_node.cpp)
+target_link_libraries(circle_mission_node
+  ${catkin_LIBRARIES}
+)
