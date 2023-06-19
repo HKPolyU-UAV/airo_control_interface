@@ -1,4 +1,4 @@
-#include "airo_px4/rc_input.h"
+#include "airo_control/rc_input.h"
 
 RC_INPUT::RC_INPUT(){
     stamp = ros::Time(0);

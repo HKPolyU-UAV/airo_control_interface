@@ -3,15 +3,15 @@
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
-#include <airo_px4/FSMInfo.h>
-#include <airo_px4/TakeoffLandTrigger.h>
-#include <airo_px4/Reference.h>
+#include <airo_control/FSMInfo.h>
+#include <airo_control/TakeoffLandTrigger.h>
+#include <airo_control/Reference.h>
 
 geometry_msgs::PoseStamped local_pose;
-airo_px4::Reference target_pose_1;
-airo_px4::Reference target_pose_2;
-airo_px4::FSMInfo fsm_info;
-airo_px4::TakeoffLandTrigger takeoff_land_trigger;
+airo_control::Reference target_pose_1;
+airo_control::Reference target_pose_2;
+airo_control::FSMInfo fsm_info;
+airo_control::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
  
 enum State{
@@ -25,7 +25,7 @@ void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
     local_pose.pose = msg->pose;
 }
 
-void fsm_info_cb(const airo_px4::FSMInfo::ConstPtr& msg){
+void fsm_info_cb(const airo_control::FSMInfo::ConstPtr& msg){
     fsm_info.header = msg->header;
     fsm_info.is_landed = msg->is_landed;
     fsm_info.is_waiting_for_command = msg->is_waiting_for_command;
@@ -39,9 +39,9 @@ int main(int argc, char **argv)
     State state = TAKEOFF;
 
     ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
-    ros::Subscriber fsm_info_sub = nh.subscribe<airo_px4::FSMInfo>("/airo_px4/fsm_info",10,fsm_info_cb);
-    ros::Publisher command_pub = nh.advertise<airo_px4::Reference>("/airo_px4/setpoint",10);
-    ros::Publisher takeoff_land_pub = nh.advertise<airo_px4::TakeoffLandTrigger>("/airo_px4/takeoff_land_trigger",10);
+    ros::Subscriber fsm_info_sub = nh.subscribe<airo_control::FSMInfo>("/airo_control/fsm_info",10,fsm_info_cb);
+    ros::Publisher command_pub = nh.advertise<airo_control::Reference>("/airo_control/setpoint",10);
+    ros::Publisher takeoff_land_pub = nh.advertise<airo_control::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",10);
 
     target_pose_1.ref_pose.resize(41);
     target_pose_1.ref_twist.resize(41);

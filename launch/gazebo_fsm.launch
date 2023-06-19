@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-
-	<node pkg="airo_px4" type="airo_px4_node" name="airo_px4_node" output="screen">
-        <rosparam command="load" file="$(find airo_px4)/config/gazebo_param.yaml" />
-	</node>
-
-</launch>

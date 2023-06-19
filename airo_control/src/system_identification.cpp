@@ -31,7 +31,7 @@ bool local_pose_received = false;
 ros::Time last_state_time;
 mavros_msgs::State current_state;
 geometry_msgs::PoseStamped local_pose,takeoff_pose,x_maneuver_pose,y_maneuver_pose,yaw_maneuver_pose;
-std::string package_path = ros::package::getPath("airo_px4");
+std::string package_path = ros::package::getPath("airo_control");
 std::string POSE_TOPIC, YAML_NAME;
 tf::Quaternion tf_quaternion;
 

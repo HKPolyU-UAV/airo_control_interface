@@ -1,5 +1,5 @@
-#ifndef Airo_PX4_FSM_H
-#define Airo_PX4_FSM_H
+#ifndef Airo_CONTROL_FSM_H
+#define Airo_CONTROL_FSM_H
 
 #include <ros/ros.h>
 #include <eigen3/Eigen/Dense>
@@ -11,14 +11,14 @@
 #include <mavros_msgs/CommandLong.h>
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/SetMode.h>
-#include <airo_px4/FSMInfo.h>
-#include <airo_px4/TakeoffLandTrigger.h>
+#include <airo_control/FSMInfo.h>
+#include <airo_control/TakeoffLandTrigger.h>
 
-#include "airo_px4/rc_input.h"
-#include "airo_px4/quadrotor_mpc.h"
+#include "airo_control/rc_input.h"
+#include "airo_control/quadrotor_mpc.h"
 
 
-class AIRO_PX4_FSM{
+class AIRO_CONTROL_FSM{
     private:
 
     enum STATE_FSM{
@@ -74,10 +74,10 @@ class AIRO_PX4_FSM{
 	ros::ServiceClient reboot_srv;
 
 	// Messages
-	airo_px4::TakeoffLandTrigger takeoff_land_trigger; // 1 for takeoff 0 for landing
-	airo_px4::FSMInfo fsm_info;
-	airo_px4::Reference mpc_ref;
-	airo_px4::Reference external_command;
+	airo_control::TakeoffLandTrigger takeoff_land_trigger; // 1 for takeoff 0 for landing
+	airo_control::FSMInfo fsm_info;
+	airo_control::Reference mpc_ref;
+	airo_control::Reference external_command;
 	geometry_msgs::PoseStamped local_pose;
 	geometry_msgs::PoseStamped takeoff_land_pose;
 	geometry_msgs::PoseStamped ref_pose;
@@ -92,7 +92,7 @@ class AIRO_PX4_FSM{
 
 	public:
 
-	AIRO_PX4_FSM(ros::NodeHandle&);
+	AIRO_CONTROL_FSM(ros::NodeHandle&);
 	void process();
 	void fsm();
 	void publish_control_commands(mavros_msgs::AttitudeTarget,ros::Time);
@@ -115,8 +115,8 @@ class AIRO_PX4_FSM{
 	void state_cb(const mavros_msgs::State::ConstPtr&);
 	void extended_state_cb(const mavros_msgs::ExtendedState::ConstPtr&);
 	void rc_input_cb(const mavros_msgs::RCIn::ConstPtr&);
-	void external_command_cb(const airo_px4::Reference::ConstPtr&);
-	void takeoff_land_cb(const airo_px4::TakeoffLandTrigger::ConstPtr&);
+	void external_command_cb(const airo_control::Reference::ConstPtr&);
+	void takeoff_land_cb(const airo_control::TakeoffLandTrigger::ConstPtr&);
 	bool rc_received(const ros::Time&);
 	bool odom_received(const ros::Time&);
 	bool external_command_received(const ros::Time&);

@@ -1,4 +1,4 @@
-#include "airo_px4/quadrotor_mpc.h"
+#include "airo_control/quadrotor_mpc.h"
 
 QUADROTOR_MPC::QUADROTOR_MPC(){
     // Initialize MPC
@@ -25,7 +25,7 @@ geometry_msgs::Quaternion QUADROTOR_MPC::rpy2q(const Euler& euler){
     return quaternion;
 }
 
-mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, const airo_px4::Reference& ref, const SolverParam& param){
+mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, const airo_control::Reference& ref, const SolverParam& param){
     // Set reference
     ref_euler = q2rpy(ref.ref_pose[0].orientation);
     for (int i = 0; i < QUADROTOR_N+1; i++){

@@ -6,7 +6,7 @@
 #include <vector>
 #include <eigen3/Eigen/Dense>
 #include <mavros_msgs/AttitudeTarget.h>
-#include <airo_px4/Reference.h>
+#include <airo_control/Reference.h>
 
 #include <iostream>
 #include <fstream>
@@ -91,7 +91,7 @@ class QUADROTOR_MPC{
     QUADROTOR_MPC();
     Euler q2rpy(const geometry_msgs::Quaternion&);
     geometry_msgs::Quaternion rpy2q(const Euler&);
-    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const airo_px4::Reference&, const SolverParam&);
+    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const airo_control::Reference&, const SolverParam&);
 };
 
 #endif
