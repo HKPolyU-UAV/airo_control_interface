@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   mavros_msgs
   message_generation
+  message_runtime
   tf
 )
 
@@ -36,7 +37,7 @@ generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES airo_control
+#  LIBRARIES airo_control
  CATKIN_DEPENDS roscpp message_runtime
 #  DEPENDS system_lib
 )

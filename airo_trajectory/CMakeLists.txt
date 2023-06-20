@@ -36,13 +36,13 @@ find_package(Eigen3 REQUIRED)
 
 catkin_package(
 #  INCLUDE_DIRS include
- LIBRARIES airo_trajectory
+#  LIBRARIES airo_trajectory
  CATKIN_DEPENDS roscpp message_runtime airo_control
 #  DEPENDS system_lib
 )
 
 include_directories(
-  include
+#   include
   ${catkin_INCLUDE_DIRS}
 )
 
