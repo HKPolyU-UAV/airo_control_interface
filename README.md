@@ -2,19 +2,48 @@
 This project focuses on PX4 support with customized outer-loop position controller.  
 
 ## Prerequisites
+* Python 3.7
 * ROS ([ROS noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) recommended)
 * [QGroundControl](http://qgroundcontrol.com/)
 * [MAVROS](http://wiki.ros.org/mavros)
+* [Acados](https://docs.acados.org/installation/index.html)
 
 ## Installation
 
-Create a catkin workspace and clone this repository to catkin src folder (ex. ~/catkin_ws/src)
+Install python 3.7
 ```
-mkdir -p ~/catkin_ws/src
-cd ~/catkin_ws/
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.7
+```
+
+Install python dependencies
+```
+python3 -m pip install pip
+sudo pip3 install numpy matplotlib scipy future-fstrings casadi>=3.5.1 setuptools
+sudo apt-get install python3.7-tk
+```
+
+Install Acados at your home directory. If you want to install Acados at other directory, change the acados_include and acados_lib directory written in CMakeLists.txt of airo_control package.
+```
+cd ~
+git clone https://github.com/acados/acados.git
+cd acados
+git checkout 568e46c
+git submodule update --recursive --init
+mkdir -p build
+cd build
+cmake -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=<path_to_acados_installation_folder> ..
+sudo make install -j4
+```
+
+Create a catkin workspace and clone this repository to src folder (ex. ~/airo_control_interface_ws/src)
+```
+mkdir -p ~/airo_control_interface_ws/src
+cd ~/airo_control_interface_ws/
 catkin_make
 cd src
-git clone https://github.com/HKPolyU-UAV/airo_px4.git
+git clone [https://github.com/HKPolyU-UAV/airo_px4.git](https://github.com/HKPolyU-UAV/airo_control_interface.git)
 cd ~/catkin_ws
 catkin_make
 ```
