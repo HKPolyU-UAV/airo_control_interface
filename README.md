@@ -56,7 +56,8 @@ git clone [https://github.com/HKPolyU-UAV/airo_px4.git](https://github.com/HKPol
 Run acados scripts to generate MPC solver and build the package.
 ```
 cd airo_control_interface/airo_control/scripts
-cd ~/catkin_ws
+python3 generate_c_code.py
+cd ~/airo_control_interface_ws
 catkin_make
 ```
 
