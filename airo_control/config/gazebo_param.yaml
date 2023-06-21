@@ -6,8 +6,8 @@ motor_speedup_time: 5.0
 takeoff_height: 1.0
 takeoff_land_speed: 0.3
 reject_takeoff_twist_threshold: 0.15
-hover_max_velocity: 5.0
-hover_max_rate: 3.0
+hover_max_velocity: 2.5
+hover_max_rate: 2.5
 check_safety_volumn: true
 safety_volumn: [-10.0, 10.0, -10.0, 10.0, -10, 4.0]
 without_rc: true
@@ -25,7 +25,7 @@ reverse_roll: false
 switch_threshold: 0.75
 joystick_deadzone: 0.10
 check_centered_threshold: 0.3
-hover_thrust: 0.5655576368369678
-tau_phi: 0.1842316385884665
-tau_theta: 0.1803597844216206
-tau_psi: 0.1
+hover_thrust: 0.5661135083436966
+tau_phi: 0.1970738954513166
+tau_theta: 0.1952294046513412
+tau_psi: 0.7887078738298164

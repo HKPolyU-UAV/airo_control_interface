@@ -46,7 +46,12 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(circle_mission_node src/circle_mission_node.cpp)
-target_link_libraries(circle_mission_node
+add_executable(example_mission_node src/example_mission_node.cpp)
+target_link_libraries(example_mission_node
+  ${catkin_LIBRARIES}
+)
+
+add_executable(trajectory_mission_node src/trajectory_mission_node.cpp)
+target_link_libraries(trajectory_mission_node
   ${catkin_LIBRARIES}
 )

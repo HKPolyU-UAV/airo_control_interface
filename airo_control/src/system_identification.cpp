@@ -174,7 +174,10 @@ int main(int argc, char **argv){
     while(ros::ok() && (!current_state.connected || ! local_pose_received)){
         ros::spinOnce();
         rate.sleep();
+        ROS_INFO_THROTTLE(1.0, "Waiting for connection.");
     }
+
+    ROS_INFO("Connected!");
 
     takeoff_pose.pose.position.x = local_pose.pose.position.x;
     takeoff_pose.pose.position.y = local_pose.pose.position.y;
@@ -327,6 +330,9 @@ int main(int argc, char **argv){
                 std::cout<<"tau_phi = "<<tau_phi<<std::endl;
                 std::cout<<"tau_theta = "<<tau_theta<<std::endl;
                 std::cout<<"tau_psi = "<<tau_psi<<std::endl;
+                if (hover_thrust < 0.1 || hover_thrust > 0.8){
+                    ROS_ERROR("Identified hover thrust out of normal range!");
+                }
                 std::cout<<"Save the parameters to .yaml file? (y/n)"<<std::endl;
                 std::string input;
                 std::cin>>input;

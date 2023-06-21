@@ -35,7 +35,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "offb_node");
     ros::NodeHandle nh;
-    ros::Rate rate(20.0);
+    ros::Rate rate(40.0);
     State state = TAKEOFF;
 
     ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
