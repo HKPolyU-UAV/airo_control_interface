@@ -68,6 +68,8 @@ If the pwm output of the switch channel is greater than the threshold (1750 by d
 
 ## FSM Introduction
 
+The control interface uses a finite state machine to control the UAV with the detials introduced below.
+
 <img src="media/AIRo_PX4_FSM.png">
 
 1. RC_MANUAL 
@@ -95,7 +97,7 @@ In this state, the vehicle will follow external position command subscribed from
 
 1. Preparation 
 
-Before using the FSM, make sure the vehicle can be used with position flight mode. Then, run the system identification program to determine the hover_thrust, tau_phi, and tau_theta. After this, the FSM should be ready to rock. When vehicle is landed, you can use reboot channel to reboot the FCU. 
+Before using the interface, make sure the vehicle can be used with position flight mode. Then, run the system identification program to determine the hover_thrust, tau_phi, and tau_theta. After this, the FSM should be ready to rock. When vehicle is landed, you can use reboot channel to reboot the FCU. 
 In general, it is recommended to choose to enable or disable command channel before running the FSM based on the application scenarios.  Although switching command channel during mission is supported, it is not required during common applications and could cause confusions. Therefore, we recommend the following two pipelines to work with this FSM. 
 
 2. Non-command Mode
@@ -117,19 +119,19 @@ make px4_sitl_default gazebo
 Run MAVROS
 ```
 cd ~/catkin_ws/
-roslaunch airo_px4 px4_gazebo.launch
+roslaunch airo_control mavros_px4.launch
 ```
 
 Open QGC and make sure the UAV is connected.
 
-Start AIRo PX4 FSM
+Start control interface
 ```
-roslaunch airo_px4 airo_px4_fsm.launch
+roslaunch airo_control gazebo_fsm.launch
 ```
 
 Now you have control over the quadrotor with RC transmitter connect via USB serial.
 
 To use the control interface in command mode, run example mission node
 ```
-rosrun airo_px4 example_mission_node
+rosrun airo_trajectory example_mission_node
 ```
