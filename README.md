@@ -131,20 +131,22 @@ make px4_sitl_default gazebo
 
 Run MAVROS
 ```
-cd ~/catkin_ws/
+source ~/airo_control_interface_ws/devel/setup.bash
 roslaunch airo_control mavros_px4.launch
 ```
 
 Open QGC and make sure the UAV is connected.
 
-Start control interface
+Start control interface in new terminal
 ```
+source ~/airo_control_interface_ws/devel/setup.bash
 roslaunch airo_control gazebo_fsm.launch
 ```
 
 Now you have control over the quadrotor with RC transmitter connect via USB serial.
 
-To use the control interface in command mode, run example mission node
+To use the control interface in command mode, run example mission node in new terminal
 ```
+source ~/airo_control_interface_ws/devel/setup.bash
 rosrun airo_trajectory example_mission_node
 ```
