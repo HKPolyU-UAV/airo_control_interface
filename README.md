@@ -33,8 +33,15 @@ git checkout 568e46c
 git submodule update --recursive --init
 mkdir -p build
 cd build
-cmake -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=<path_to_acados_installation_folder> ..
+cmake -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=<acados_root> ..
 sudo make install -j4
+pip install -e <acados_root>/interfaces/acados_template
+```
+
+Add the path to the compiled shared libraries (Hint: you can add these lines to your ```.bashrc``` by ```sudo gedit ~/.bashrc```)
+```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"<acados_root>/lib"
+export ACADOS_SOURCE_DIR="<acados_root>"
 ```
 
 Create a catkin workspace and clone this repository to src folder (ex. ~/airo_control_interface_ws/src)
@@ -44,6 +51,11 @@ cd ~/airo_control_interface_ws/
 catkin_make
 cd src
 git clone [https://github.com/HKPolyU-UAV/airo_px4.git](https://github.com/HKPolyU-UAV/airo_control_interface.git)
+```
+
+Run acados scripts to generate MPC solver and build the package.
+```
+cd airo_control_interface/airo_control/scripts
 cd ~/catkin_ws
 catkin_make
 ```
