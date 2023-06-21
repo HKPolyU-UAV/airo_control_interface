@@ -1,5 +1,5 @@
-# AIRo PX4 Framework
-This project focuses on PX4 support with customized outer-loop position controller.  
+# AIRo Control Framework
+This project focuses on developing a control framework with customized outer-loop MPC position controller.
 
 ## Prerequisites
 * Python 3.7
