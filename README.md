@@ -33,8 +33,15 @@ git checkout 568e46c
 git submodule update --recursive --init
 mkdir -p build
 cd build
-cmake -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=<path_to_acados_installation_folder> ..
+cmake -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=<acados_root> ..
 sudo make install -j4
+pip install -e <acados_root>/interfaces/acados_template
+```
+
+Add the path to the compiled shared libraries (Hint: you can add these lines to your ```.bashrc``` by ```sudo gedit ~/.bashrc```)
+```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"<acados_root>/lib"
+export ACADOS_SOURCE_DIR="<acados_root>"
 ```
 
 Create a catkin workspace and clone this repository to src folder (ex. ~/airo_control_interface_ws/src)
@@ -44,7 +51,13 @@ cd ~/airo_control_interface_ws/
 catkin_make
 cd src
 git clone [https://github.com/HKPolyU-UAV/airo_px4.git](https://github.com/HKPolyU-UAV/airo_control_interface.git)
-cd ~/catkin_ws
+```
+
+Run acados scripts to generate MPC solver and build the package.
+```
+cd airo_control_interface/airo_control/scripts
+python3 generate_c_code.py
+cd ~/airo_control_interface_ws
 catkin_make
 ```
 
@@ -118,20 +131,22 @@ make px4_sitl_default gazebo
 
 Run MAVROS
 ```
-cd ~/catkin_ws/
+source ~/airo_control_interface_ws/devel/setup.bash
 roslaunch airo_control mavros_px4.launch
 ```
 
 Open QGC and make sure the UAV is connected.
 
-Start control interface
+Start control interface in new terminal
 ```
+source ~/airo_control_interface_ws/devel/setup.bash
 roslaunch airo_control gazebo_fsm.launch
 ```
 
 Now you have control over the quadrotor with RC transmitter connect via USB serial.
 
-To use the control interface in command mode, run example mission node
+To use the control interface in command mode, run example mission node in new terminal
 ```
+source ~/airo_control_interface_ws/devel/setup.bash
 rosrun airo_trajectory example_mission_node
 ```
