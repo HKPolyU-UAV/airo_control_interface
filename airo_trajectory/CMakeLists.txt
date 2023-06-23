@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(airo_trajectory)
-
+#lala
 ## Compile as C++17, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
