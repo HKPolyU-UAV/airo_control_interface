@@ -102,7 +102,7 @@ void AIRO_CONTROL_FSM::fsm(){
             else if ((rc_input.enter_fsm && !rc_input.is_command && is_landed)
                   || (takeoff_trigered(current_time) && rc_input.is_command && is_landed)){
                 if (!odom_received(current_time)){
-                    ROS_ERROR("[AIRo CONTROL] Reject AUTO_TAKEOFF. No odom!");
+                    ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo CONTROL] Reject AUTO_TAKEOFF. No odom!");
                     break;
                 }
                 if (twist_norm(local_twist) > REJECT_TAKEOFF_TWIST_THRESHOLD){
@@ -114,7 +114,7 @@ void AIRO_CONTROL_FSM::fsm(){
                         ROS_WARN("[AIRo CONTROL] Takeoff without RC. Take extra caution!");
                     }
                     else{
-                        ROS_ERROR("[AIRo CONTROL] RC not connected. Reject takeoff!");
+                        ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo CONTROL] RC not connected. Reject takeoff!");
                         break;
                     }
                 }

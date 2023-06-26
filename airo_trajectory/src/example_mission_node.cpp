@@ -6,6 +6,7 @@
 #include <airo_control/FSMInfo.h>
 #include <airo_control/TakeoffLandTrigger.h>
 #include <airo_control/Reference.h>
+#include <airo_trajectory_utils.hpp>
 
 geometry_msgs::PoseStamped local_pose;
 airo_control::Reference target_pose_1;
@@ -46,44 +47,29 @@ int main(int argc, char **argv)
     target_pose_1.ref_pose.resize(41);
     target_pose_1.ref_twist.resize(41);
     target_pose_2.ref_pose.resize(41);
-    target_pose_2.ref_pose.resize(42);
+    target_pose_2.ref_pose.resize(41);
 
+    double yaw_angle_1 = M_PI/4;
+    double yaw_angle_2 = -M_PI/4;
+    
     for (int i = 0; i < 41; i++){
         target_pose_1.ref_pose[i].position.x = 0;
         target_pose_1.ref_pose[i].position.y = -2.5;
         target_pose_1.ref_pose[i].position.z = 1.5;
-        target_pose_1.ref_pose[i].orientation.w = 1;
-        target_pose_1.ref_pose[i].orientation.x = 0.0;
-        target_pose_1.ref_pose[i].orientation.y = 0.0;
-        target_pose_1.ref_pose[i].orientation.z = 0;
+        target_pose_1.ref_pose[i].orientation = AIRO_TRAJECTORY_UTILS::yaw_to_quaternion(yaw_angle_1);
     }
 
     for (int i = 0; i < 41; i++){
         target_pose_2.ref_pose[i].position.x = 0;
         target_pose_2.ref_pose[i].position.y = 2.5;
         target_pose_2.ref_pose[i].position.z = 1.5;
-        target_pose_2.ref_pose[i].orientation.w = 1;
-        target_pose_2.ref_pose[i].orientation.x = 0.0;
-        target_pose_2.ref_pose[i].orientation.y = 0;
-        target_pose_2.ref_pose[i].orientation.z = 0;
+        target_pose_2.ref_pose[i].orientation = AIRO_TRAJECTORY_UTILS::yaw_to_quaternion(yaw_angle_2);
     }
 
     while(ros::ok()){
         switch(state){
             case TAKEOFF:{
-                if(fsm_info.is_landed == true){
-                    while(ros::ok()){
-                        takeoff_land_trigger.takeoff_land_trigger = true; // Takeoff
-                        takeoff_land_trigger.header.stamp = ros::Time::now();
-                        takeoff_land_pub.publish(takeoff_land_trigger);
-                        ros::spinOnce();
-                        ros::Duration(0.5).sleep();
-                        if(fsm_info.is_waiting_for_command){
-                            state = COMMAND;
-                            break;
-                        }
-                    }
-                }
+                AIRO_TRAJECTORY_UTILS::takeoff();
                 break;
             }
 

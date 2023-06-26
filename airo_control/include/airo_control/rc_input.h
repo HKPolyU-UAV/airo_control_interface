@@ -1,3 +1,6 @@
+#ifndef RC_INPUT_H
+#define RC_INPUT_H
+
 #include <ros/ros.h>
 #include "mavros_msgs/RCIn.h"
 
@@ -50,3 +53,5 @@ class RC_INPUT{
     void set_rc_param(RC_INPUT::RC_PARAM&);
     void process(const mavros_msgs::RCIn::ConstPtr&);
 };
+
+#endif

@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <tf/tf.h>
+#include <fstream>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <mavros_msgs/CommandBool.h>
@@ -40,11 +41,6 @@ void fsm_info_cb(const airo_control::FSMInfo::ConstPtr& msg){
     fsm_info.is_waiting_for_command = msg->is_waiting_for_command;
 }
 
-bool target_reached(const geometry_msgs::Point& msg){
-    return sqrt(pow(msg.x - local_pose.pose.position.x,2)+pow(msg.y - local_pose.pose.position.y,2)
-    +pow(msg.z - local_pose.pose.position.z,2)) < 1.0;
-}
-
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "trajectory_mission_node");
@@ -60,8 +56,6 @@ int main(int argc, char **argv)
 
     target_pose.ref_pose.resize(41);
     target_pose.ref_twist.resize(41);
-
-    update_circle_traj(0.0);
 
     while(ros::ok()){
         switch(state){

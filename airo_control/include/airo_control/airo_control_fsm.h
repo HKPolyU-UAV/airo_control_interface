@@ -1,5 +1,5 @@
-#ifndef Airo_CONTROL_FSM_H
-#define Airo_CONTROL_FSM_H
+#ifndef AIRO_CONTROL_FSM_H
+#define AIRO_CONTROL_FSM_H
 
 #include <ros/ros.h>
 #include <eigen3/Eigen/Dense>
