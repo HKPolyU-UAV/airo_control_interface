@@ -94,7 +94,7 @@ void AIRO_CONTROL_FSM::fsm(){
                 if (toggle_offboard(true)){
                     auto_hover_init();
                     state_fsm = AUTO_HOVER;
-                    ROS_INFO("\033[32m[AIRo CONTROL] RC_MANUAL ==>> AUTO_HOVER\033[32m");
+                    ROS_INFO("\033[32m[AIRo Control] RC_MANUAL ==>> AUTO_HOVER\033[32m");
                 }
             }
 
@@ -102,24 +102,24 @@ void AIRO_CONTROL_FSM::fsm(){
             else if ((rc_input.enter_fsm && !rc_input.is_command && is_landed)
                   || (takeoff_trigered(current_time) && rc_input.is_command && is_landed)){
                 if (!odom_received(current_time)){
-                    ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo CONTROL] Reject AUTO_TAKEOFF. No odom!");
+                    ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] Reject AUTO_TAKEOFF. No odom!");
                     break;
                 }
                 if (twist_norm(local_twist) > REJECT_TAKEOFF_TWIST_THRESHOLD){
-                    ROS_ERROR("[AIRo CONTROL] Reject AUTO_TAKEOFF. Norm Twist=%fm/s, dynamic takeoff is not allowed!", twist_norm(local_twist));
+                    ROS_ERROR("[AIRo Control] Reject AUTO_TAKEOFF. Norm Twist=%fm/s, dynamic takeoff is not allowed!", twist_norm(local_twist));
                     break;
                 }
                 if (!rc_received(current_time)){
                     if (WITHOUT_RC){
-                        ROS_WARN("[AIRo CONTROL] Takeoff without RC. Take extra caution!");
+                        ROS_WARN("[AIRo Control] Takeoff without RC. Take extra caution!");
                     }
                     else{
-                        ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo CONTROL] RC not connected. Reject takeoff!");
+                        ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] RC not connected. Reject takeoff!");
                         break;
                     }
                 }
                 if ((!rc_input.is_fsm || !rc_input.check_centered()) && rc_received(current_time)){
-                    ROS_ERROR("[AIRo CONTROL] Reject AUTO_TAKEOFF. Center the joysticks and enable offboard switch!");
+                    ROS_ERROR("[AIRo Control] Reject AUTO_TAKEOFF. Center the joysticks and enable offboard switch!");
                     while (ros::ok()){
                         ros::Duration(0.1).sleep();
                         ros::spinOnce();
@@ -135,7 +135,7 @@ void AIRO_CONTROL_FSM::fsm(){
                         takeoff_land_init();
                         get_motor_speedup();
                         state_fsm = AUTO_TAKEOFF;
-                        ROS_INFO("\033[32m[AIRo CONTROL] RC_MANUAL ==>> AUTO_TAKEOFF\033[32m");
+                        ROS_INFO("\033[32m[AIRo Control] RC_MANUAL ==>> AUTO_TAKEOFF\033[32m");
                         break;
                     }
                 }
@@ -144,14 +144,14 @@ void AIRO_CONTROL_FSM::fsm(){
             // Try to reboot
             else if (rc_input.enter_reboot){
                 if (current_state.armed){
-                    ROS_ERROR("[AIRo CONTROL] Reject reboot! Disarm the vehicle first!");
+                    ROS_ERROR("[AIRo Control] Reject reboot! Disarm the vehicle first!");
                     break;
                 }
                 reboot();
             }
 
             else{
-                ROS_INFO_STREAM_THROTTLE(5.0,"[AIRo CONTROL] Waiting for commands in RC_MANUAL mode!");
+                ROS_INFO_STREAM_THROTTLE(5.0,"[AIRo Control] Waiting for commands in RC_MANUAL mode!");
             }
 
             break;
@@ -163,10 +163,10 @@ void AIRO_CONTROL_FSM::fsm(){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                ROS_INFO("\033[32m[AIRo CONTROL] AUTO_TAKEOFF ==>> RC_CONTROL\033[32m");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_CONTROL\033[32m");
                 }
                 else{
-                ROS_ERROR("[AIRo CONTROL] No odom! Switching to RC_CONTROL mode.");
+                ROS_ERROR("[AIRo Control] No odom! Switching to RC_CONTROL mode.");
                 }
             }
             else{
@@ -174,7 +174,7 @@ void AIRO_CONTROL_FSM::fsm(){
                 if (local_pose.pose.position.z > (takeoff_land_pose.pose.position.z + TAKEOFF_HEIGHT)){
                     auto_hover_init();
                     state_fsm = AUTO_HOVER;
-                    ROS_INFO("\033[32m[AIRo CONTROL] AUTO_TAKEOFF ==>> AUTO_HOVER\033[32m");
+                    ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> AUTO_HOVER\033[32m");
                 }
                 // Send takeoff reference
                 else{
@@ -191,17 +191,17 @@ void AIRO_CONTROL_FSM::fsm(){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                    ROS_INFO("\033[32m[AIRo CONTROL] AUTO_HOVER ==>> RC_MANUAL\033[32m");
+                    ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> RC_MANUAL\033[32m");
                 }
                 else{
-                    ROS_ERROR("[AIRo CONTROL] No odom! Switching to RC_MANUAL mode.");
+                    ROS_ERROR("[AIRo Control] No odom! Switching to RC_MANUAL mode.");
                 }
             }
 
             // To AUTO_LAND
             else if (land_trigered(current_time) && rc_input.is_command){
                 if (external_command_received(current_time)){
-                    ROS_WARN("[AIRo CONTROL] Reject AUTO_LAND mode. Stop sending external commands and try again!");
+                    ROS_WARN("[AIRo Control] Reject AUTO_LAND mode. Stop sending external commands and try again!");
                     set_ref_with_rc();
                     if (rc_input.is_command){
                         fsm_info.is_waiting_for_command = true;
@@ -210,23 +210,23 @@ void AIRO_CONTROL_FSM::fsm(){
                 }
                 takeoff_land_init();
                 state_fsm = AUTO_LAND;
-                ROS_INFO("\033[32m[AIRo CONTROL] AUTO_HOVER ==>> AUTO_LAND\033[32m");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> AUTO_LAND\033[32m");
             }
 
             // To POS_COMMAND
             else if (external_command_received(current_time) && rc_input.is_command){
                 if (external_command.ref_pose.size() != QUADROTOR_N + 1 || external_command.ref_twist.size() != QUADROTOR_N + 1){
-                    ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo CONTROL] Reject POS_COMMAND. External command size is wrong!");
+                    ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Reject POS_COMMAND. External command size is wrong!");
                     break;
                 }
                 state_fsm = POS_COMMAND;
-                ROS_INFO("\033[32m[AIRo CONTROL] AUTO_HOVER ==>> POS_COMMAND\033[32m");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> POS_COMMAND\033[32m");
             }
 
             // Disarm
             else if (is_landed){
                 motor_idle_and_disarm();
-                ROS_INFO("\033[32m[AIRo CONTROL] AUTO_HOVER ==>> RC_MANUAL\033[32m");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> RC_MANUAL\033[32m");
             }
 
             // AUTO_HOVER
@@ -246,10 +246,10 @@ void AIRO_CONTROL_FSM::fsm(){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                    ROS_INFO("\033[32m[AIRo CONTROL] AUTO_LAND ==>> RC_MANUAL\033[32m");
+                    ROS_INFO("\033[32m[AIRo Control] AUTO_LAND ==>> RC_MANUAL\033[32m");
                 }
                 else{
-                    ROS_ERROR("[AIRo CONTROL] No odom! Switching to RC_MANUAL mode.");
+                    ROS_ERROR("[AIRo Control] No odom! Switching to RC_MANUAL mode.");
                 }
             }
 
@@ -257,7 +257,7 @@ void AIRO_CONTROL_FSM::fsm(){
             else if (!rc_input.is_command){
                 auto_hover_init();
                 state_fsm = AUTO_HOVER;
-                ROS_INFO("\033[32m[AIRo CONTROL] AUTO_LAND ==>> AUTO_HOVER\033[32m");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_LAND ==>> AUTO_HOVER\033[32m");
             }
 
             // Send land reference
@@ -266,7 +266,7 @@ void AIRO_CONTROL_FSM::fsm(){
             }
             else{
                 motor_idle_and_disarm();
-                ROS_INFO("\033[32m[AIRo CONTROL] AUTO_LAND ==>> RC_MANUAL\033[32m");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_LAND ==>> RC_MANUAL\033[32m");
             }
 
             break;            
@@ -278,10 +278,10 @@ void AIRO_CONTROL_FSM::fsm(){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                    ROS_INFO("\033[32m[AIRo CONTROL] POS_COMMAND ==>> RC_MANUAL\033[32m");
+                    ROS_INFO("\033[32m[AIRo Control] POS_COMMAND ==>> RC_MANUAL\033[32m");
                 }
                 else{
-                    ROS_ERROR("[AIRo CONTROL] No odom! Switching to RC_MANUAL mode.");
+                    ROS_ERROR("[AIRo Control] No odom! Switching to RC_MANUAL mode.");
                 }
             }
 
@@ -289,7 +289,7 @@ void AIRO_CONTROL_FSM::fsm(){
             else if (!rc_input.is_command || !external_command_received(current_time)){
                 auto_hover_init();
                 state_fsm = AUTO_HOVER;
-                ROS_INFO("\033[32m[AIRo CONTROL] POS_COMMAND ==>> AUTO_HOVER\033[32m");                
+                ROS_INFO("\033[32m[AIRo Control] POS_COMMAND ==>> AUTO_HOVER\033[32m");                
             }
 
             // Follow command
@@ -337,24 +337,24 @@ bool AIRO_CONTROL_FSM::toggle_offboard(bool flag){
         ros::Time offboard_start;
         while(ros::ok() && (ros::Time::now() - offboard_start).toSec() > 2.0){
             if (setmode_srv.call(offboard_setmode) && offboard_setmode.response.mode_sent){
-                ROS_INFO("[AIRo CONTROL] Offboard mode enabled!");
+                ROS_INFO("[AIRo Control] Offboard mode enabled!");
                 return true;
             }
             setpoint_pub.publish(attitude_target);
             ros::spinOnce();
             ros::Duration(0.01).sleep();
         }
-        ROS_ERROR("[AIRo CONTROL] Can not enable offboard mode!");
+        ROS_ERROR("[AIRo Control] Can not enable offboard mode!");
         return false;
 	}
 	else{
 		offboard_setmode.request.custom_mode = previous_state.mode;
 		if (!(setmode_srv.call(offboard_setmode) && offboard_setmode.response.mode_sent)){
-			ROS_ERROR("[AIRo CONTROL] Exit OFFBOARD rejected by PX4!");
+			ROS_ERROR("[AIRo Control] Exit OFFBOARD rejected by PX4!");
 			return false;
 		}
         else{
-            ROS_WARN("[AIRo CONTROL] Exiting OFFBOARD mode!");
+            ROS_WARN("[AIRo Control] Exiting OFFBOARD mode!");
         }
 	}
 	return true;
@@ -366,18 +366,18 @@ bool AIRO_CONTROL_FSM::toggle_arm(bool flag){
 
 	if (!(arm_srv.call(arm_cmd) && arm_cmd.response.success)){
 		if (flag)
-			ROS_ERROR("[AIRo CONTROL] ARM rejected by PX4!");
+			ROS_ERROR("[AIRo Control] ARM rejected by PX4!");
 		else
-			ROS_ERROR("[AIRo CONTROL] DISARM rejected by PX4!");
+			ROS_ERROR("[AIRo Control] DISARM rejected by PX4!");
 
 		return false;
 	}
 
     if (flag){
-        ROS_WARN("[AIRo CONTROL] Vehicle arming!");
+        ROS_WARN("[AIRo Control] Vehicle arming!");
     }
     else{
-        ROS_WARN("[AIRo CONTROL] Vehicle disarmed!");
+        ROS_WARN("[AIRo Control] Vehicle disarmed!");
     }
     
 	return true; 
@@ -558,27 +558,27 @@ geometry_msgs::Point AIRO_CONTROL_FSM::check_safety_volumn(const geometry_msgs::
 
         if(ref_point.x < SAFETY_VOLUMN[0]){ // x_ref < x_min
             safe_point.x = SAFETY_VOLUMN[0];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo CONTROL] X command too small!");
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] X command too small!");
         }
         else if (ref_point.x > SAFETY_VOLUMN[1]){ // x_ref > x_max
             safe_point.x = SAFETY_VOLUMN[1];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo CONTROL] X command too large!");
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] X command too large!");
         }
         else safe_point.x = ref_point.x; // x_min < x_ref < x_max
 
         if(ref_point.y < SAFETY_VOLUMN[2]){ // y_ref < y_min
             safe_point.y = SAFETY_VOLUMN[2];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo CONTROL] Y command too small!");
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] Y command too small!");
         }
         else if (ref_point.y > SAFETY_VOLUMN[3]){ // y_ref > y_max
             safe_point.y = SAFETY_VOLUMN[3];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo CONTROL] Y command too large!");
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] Y command too large!");
         }
         else safe_point.y = ref_point.y; // y_min < y_ref < y_max
 
         if (ref_point.z > SAFETY_VOLUMN[5]){ // z_ref > z_max
             safe_point.z = SAFETY_VOLUMN[5];
-            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo CONTROL] Z command too large!");
+            ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] Z command too large!");
         }
         else safe_point.z = ref_point.z; // z_ref < z_max
 

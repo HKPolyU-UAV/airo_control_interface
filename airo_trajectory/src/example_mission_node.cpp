@@ -1,107 +1,94 @@
-#include <ros/ros.h>
-#include <geometry_msgs/PoseStamped.h>
-#include <mavros_msgs/CommandBool.h>
-#include <mavros_msgs/SetMode.h>
-#include <mavros_msgs/State.h>
-#include <airo_control/FSMInfo.h>
-#include <airo_control/TakeoffLandTrigger.h>
-#include <airo_control/Reference.h>
-#include <airo_trajectory_utils.hpp>
+#include <airo_trajectory/airo_trajectory_server.h>
 
-geometry_msgs::PoseStamped local_pose;
-airo_control::Reference target_pose_1;
-airo_control::Reference target_pose_2;
-airo_control::FSMInfo fsm_info;
-airo_control::TakeoffLandTrigger takeoff_land_trigger;
-bool target_1_reached = false;
+int i = 0;
  
 enum State{
     TAKEOFF,
-    COMMAND,
+    POSE_YAW,
+    POSE_NO_YAW,
+    POSE_TWIST,
+    TRAJ_FILE,
     LAND
 };
 
-void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
-    local_pose.header = msg->header;
-    local_pose.pose = msg->pose;
-}
-
-void fsm_info_cb(const airo_control::FSMInfo::ConstPtr& msg){
-    fsm_info.header = msg->header;
-    fsm_info.is_landed = msg->is_landed;
-    fsm_info.is_waiting_for_command = msg->is_waiting_for_command;
-}
-
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "offb_node");
+    ros::init(argc, argv, "example_mission_node");
     ros::NodeHandle nh;
     ros::Rate rate(40.0);
     State state = TAKEOFF;
 
-    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
-    ros::Subscriber fsm_info_sub = nh.subscribe<airo_control::FSMInfo>("/airo_control/fsm_info",10,fsm_info_cb);
-    ros::Publisher command_pub = nh.advertise<airo_control::Reference>("/airo_control/setpoint",10);
-    ros::Publisher takeoff_land_pub = nh.advertise<airo_control::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",10);
+    AIRO_TRAJECTORY_SERVER airo_trajectory_server(nh);
 
-    target_pose_1.ref_pose.resize(41);
-    target_pose_1.ref_twist.resize(41);
-    target_pose_2.ref_pose.resize(41);
-    target_pose_2.ref_pose.resize(41);
+    std::vector<geometry_msgs::Point> target_points;
+    geometry_msgs::Twist target_twist;
+    std::vector<double> target_yaw;
+                
+    target_points.resize(3);
+    target_yaw.resize(2);
 
-    double yaw_angle_1 = M_PI/4;
-    double yaw_angle_2 = -M_PI/4;
-    
-    for (int i = 0; i < 41; i++){
-        target_pose_1.ref_pose[i].position.x = 0;
-        target_pose_1.ref_pose[i].position.y = -2.5;
-        target_pose_1.ref_pose[i].position.z = 1.5;
-        target_pose_1.ref_pose[i].orientation = AIRO_TRAJECTORY_UTILS::yaw_to_quaternion(yaw_angle_1);
-    }
+    target_points[0].x = 0;
+    target_points[0].y = -2.5;
+    target_points[0].z = 2.5;
+    target_yaw[0] = M_PI/4;
 
-    for (int i = 0; i < 41; i++){
-        target_pose_2.ref_pose[i].position.x = 0;
-        target_pose_2.ref_pose[i].position.y = 2.5;
-        target_pose_2.ref_pose[i].position.z = 1.5;
-        target_pose_2.ref_pose[i].orientation = AIRO_TRAJECTORY_UTILS::yaw_to_quaternion(yaw_angle_2);
-    }
+    target_points[1].x = -1.5;
+    target_points[1].y = 2.5;
+    target_points[1].z = 1.0;
+    target_yaw[1] = -M_PI/4;
+
+    target_points[2].x = 0.0;
+    target_points[2].y = 0.0;
+    target_points[2].z = 1.0;
+
+    target_twist.linear.x = 0.5;
+    target_twist.linear.y = 0.5;
+    target_twist.linear.z = 0.5;
 
     while(ros::ok()){
         switch(state){
             case TAKEOFF:{
-                AIRO_TRAJECTORY_UTILS::takeoff();
+                if (airo_trajectory_server.takeoff()){
+                    state = POSE_YAW;
+                }
                 break;
             }
 
-            case COMMAND:{
-                if(fsm_info.is_waiting_for_command){
-                    if(!target_1_reached){
-                        target_pose_1.header.stamp = ros::Time::now();
-                        command_pub.publish(target_pose_1);
-                        if(abs(local_pose.pose.position.x - target_pose_1.ref_pose[0].position.x)
-                         + abs(local_pose.pose.position.y - target_pose_1.ref_pose[0].position.y)
-                         + abs(local_pose.pose.position.z - target_pose_1.ref_pose[0].position.z) < 0.5){
-                            target_1_reached = true;
-                        }
-                    }
-                    else{
-                        target_pose_2.header.stamp = ros::Time::now();
-                        command_pub.publish(target_pose_2);
-                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose[0].position.x)
-                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose[0].position.y)
-                         + abs(local_pose.pose.position.z - target_pose_2.ref_pose[0].position.z) < 0.5){
-                            state = LAND;
-                        }
+            case POSE_YAW:{
+                airo_trajectory_server.pose_cmd(target_points[i],target_yaw[i]);
+                if(airo_trajectory_server.target_reached(target_points[i])){
+                    i += 1;
+                    if(i == target_yaw.size()){
+                        state = POSE_NO_YAW;
                     }
                 }
                 break;
             }
 
+            case POSE_NO_YAW:{
+                airo_trajectory_server.pose_cmd(target_points[2]);
+                if(airo_trajectory_server.target_reached(target_points[2])){
+                    state = POSE_TWIST;
+                }
+                break;
+            }
+
+            case POSE_TWIST:{
+                airo_trajectory_server.pose_cmd(target_points[0],target_twist,target_yaw[0]);
+                if(airo_trajectory_server.target_reached(target_points[0])){
+                    state = LAND;
+                }
+                break;
+            }
+
+            case TRAJ_FILE:{
+                
+            }
+
             case LAND:{
-                if(fsm_info.is_waiting_for_command){
-                    takeoff_land_trigger.takeoff_land_trigger = false; // Land
-                    takeoff_land_trigger.header.stamp = ros::Time::now();
-                    takeoff_land_pub.publish(takeoff_land_trigger);
+                airo_trajectory_server.land();
+                if (airo_trajectory_server.land()){
+                    return 0;
                 }
                 break;
             }

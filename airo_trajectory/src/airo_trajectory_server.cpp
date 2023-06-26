@@ -1,17 +1,84 @@
-#include "airo_trajectory_utils.hpp"
+#include "airo_trajectory/airo_trajectory_server.h"
 
-
-bool AIRO_TRAJECTORY_UTILS::target_reached(const geometry_msgs::Point& msg, const geometry_msgs::PoseStamped::ConstPtr& current_pose){
-    return sqrt(pow(msg.x - current_pose->pose.position.x,2)+pow(msg.y - current_pose->pose.position.y,2)
-    +pow(msg.z - current_pose->pose.position.z,2)) < 1.0;
+AIRO_TRAJECTORY_SERVER::AIRO_TRAJECTORY_SERVER(ros::NodeHandle& nh){
+    local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,&AIRO_TRAJECTORY_SERVER::pose_cb,this);
+    fsm_info_sub = nh.subscribe<airo_control::FSMInfo>("/airo_control/fsm_info",10,&AIRO_TRAJECTORY_SERVER::fsm_info_cb,this);
+    command_pub = nh.advertise<airo_control::Reference>("/airo_control/setpoint",10);
+    takeoff_land_pub = nh.advertise<airo_control::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",10);
 }
 
-geometry_msgs::Quaternion AIRO_TRAJECTORY_UTILS::yaw_to_quaternion(double yaw){
+void AIRO_TRAJECTORY_SERVER::pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
+    local_pose.header = msg->header;
+    local_pose.pose = msg->pose;
+}
+
+void AIRO_TRAJECTORY_SERVER::fsm_info_cb(const airo_control::FSMInfo::ConstPtr& msg){
+    fsm_info.header = msg->header;
+    fsm_info.is_landed = msg->is_landed;
+    fsm_info.is_waiting_for_command = msg->is_waiting_for_command;
+}
+
+void AIRO_TRAJECTORY_SERVER::pose_cmd(const geometry_msgs::Point& point, const double& yaw_angle){
+    if(fsm_info.is_waiting_for_command){
+        airo_control::Reference reference;
+        reference.header.stamp = ros::Time::now();
+        reference.ref_pose.resize(41);
+        reference.ref_twist.resize(41);
+
+        for (int i = 0; i < reference.ref_pose.size(); i++){
+            reference.ref_pose[i].position.x = point.x;
+            reference.ref_pose[i].position.y = point.y;
+            reference.ref_pose[i].position.z = point.z;
+            reference.ref_pose[i].orientation = AIRO_TRAJECTORY_SERVER::yaw_to_quaternion(yaw_angle);
+            reference.ref_twist[i].linear.x = 0.0;
+            reference.ref_twist[i].linear.y = 0.0;
+            reference.ref_twist[i].linear.z = 0.0;
+        }
+        
+        command_pub.publish(reference);
+    }
+}
+
+void AIRO_TRAJECTORY_SERVER::pose_cmd(const geometry_msgs::Point& point, const geometry_msgs::Twist& twist, const double& yaw_angle){
+    if(fsm_info.is_waiting_for_command){
+        airo_control::Reference reference;
+        reference.header.stamp = ros::Time::now();
+        reference.ref_pose.resize(41);
+        reference.ref_twist.resize(41);
+
+        for (int i = 0; i < reference.ref_pose.size(); i++){
+            reference.ref_pose[i].position.x = point.x;
+            reference.ref_pose[i].position.y = point.y;
+            reference.ref_pose[i].position.z = point.z;
+            reference.ref_pose[i].orientation = AIRO_TRAJECTORY_SERVER::yaw_to_quaternion(yaw_angle);
+            reference.ref_twist[i].linear.x = twist.linear.x;
+            reference.ref_twist[i].linear.y = twist.linear.y;
+            reference.ref_twist[i].linear.z = twist.linear.z;
+        }
+        
+        command_pub.publish(reference);
+    }
+}
+
+bool AIRO_TRAJECTORY_SERVER::target_reached(const geometry_msgs::Point& msg){
+    return sqrt(pow(msg.x - local_pose.pose.position.x,2)+pow(msg.y - local_pose.pose.position.y,2)
+    +pow(msg.z - local_pose.pose.position.z,2)) < 0.5;
+}
+
+geometry_msgs::Quaternion AIRO_TRAJECTORY_SERVER::yaw_to_quaternion(double yaw){
     geometry_msgs::Quaternion quaternion = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, yaw);
     return quaternion;
 }
 
-int AIRO_TRAJECTORY_UTILS::readDataFromFile(const char* fileName, std::vector<std::vector<double>> &data){
+double AIRO_TRAJECTORY_SERVER::quaternion_to_yaw(const geometry_msgs::Quaternion& quaternion){
+    double phi,theta,psi;
+    tf::Quaternion tf_quaternion;
+    tf::quaternionMsgToTF(quaternion,tf_quaternion);
+    tf::Matrix3x3(tf_quaternion).getRPY(phi, theta, psi);
+    return psi;
+}
+
+int AIRO_TRAJECTORY_SERVER::read_traj_file(const char* fileName, std::vector<std::vector<double>> &data){
     std::ifstream file(fileName);
     std::string line;
     int number_of_lines = 0;
@@ -40,61 +107,32 @@ int AIRO_TRAJECTORY_UTILS::readDataFromFile(const char* fileName, std::vector<st
     return number_of_lines;
 }
 
-void AIRO_TRAJECTORY_UTILS::takeoff(){
+bool AIRO_TRAJECTORY_SERVER::takeoff(){
     if(fsm_info.is_landed == true){
-        while(ros::ok()){
-            ROS_INFO_THROTTLE(1.0, "[AIRo TRAJECTORY] Sending takeoff trigger.");
-            takeoff_land_trigger.takeoff_land_trigger = true; // Takeoff
-            takeoff_land_trigger.header.stamp = ros::Time::now();
-            takeoff_land_pub.publish(takeoff_land_trigger);
-            ros::spinOnce();
-            ros::Duration(0.5).sleep();
-            if(fsm_info.is_waiting_for_command){
-                state = COMMAND;
-                break;
-            }
-        }
+        airo_control::TakeoffLandTrigger takeoff_trigger;
+        ROS_INFO_THROTTLE(2.0, "[AIRo Trajectory] Sending takeoff trigger.");
+        takeoff_trigger.takeoff_land_trigger = true; // Takeoff
+        takeoff_trigger.header.stamp = ros::Time::now();
+        takeoff_land_pub.publish(takeoff_trigger);
+        return false;
+    }
+    else if(fsm_info.is_landed == false && fsm_info.is_waiting_for_command == true){
+        ROS_INFO("[AIRo Trajectory] Vehicle already takeoff!");
+        return true;
     }
 }
 
-// void ref_cb(int line_to_read)
-//         {
-//             if (QUADROTOR_N+line_to_read+1 <= number_of_steps)  // All ref points within the file
-//             {
-//                 for (unsigned int i = 0; i <= QUADROTOR_N; i++)  // Fill all horizon with file data
-//                 {
-//                     for (unsigned int j = 0; j <= QUADROTOR_NY; j++)
-//                     {
-//                         acados_in.yref[i][j] = trajectory[i+line_to_read][j];
-//                     }
-//                 }
-//             }
-//             else if(line_to_read < number_of_steps)    // Part of ref points within the file
-//             {
-//                 for (unsigned int i = 0; i < number_of_steps-line_to_read; i++)    // Fill part of horizon with file data
-//                 {
-//                     for (unsigned int j = 0; j <= QUADROTOR_NY; j++)
-//                     {
-//                         acados_in.yref[i][j] = trajectory[i+line_to_read][j];
-//                     }
-//                 }
-
-//                 for (unsigned int i = number_of_steps-line_to_read; i <= QUADROTOR_N; i++)  // Fill the rest horizon with the last point
-//                 {
-//                     for (unsigned int j = 0; j <= QUADROTOR_NY; j++)
-//                     {
-//                         acados_in.yref[i][j] = trajectory[number_of_steps-1][j];
-//                     }
-//                 }
-//             }
-//             else    // none of ref points within the file
-//             {
-//                 for (unsigned int i = 0; i <= QUADROTOR_N; i++)  // Fill all horizon with the last point
-//                 {
-//                     for (unsigned int j = 0; j <= QUADROTOR_NY; j++)
-//                     {
-//                         acados_in.yref[i][j] = trajectory[number_of_steps-1][j];
-//                     }
-//                 }
-//             }
-//         }
+bool AIRO_TRAJECTORY_SERVER::land(){
+    if(fsm_info.is_landed == false && fsm_info.is_waiting_for_command == true){
+        airo_control::TakeoffLandTrigger land_trigger;
+        ROS_INFO_THROTTLE(2.0, "[AIRo Trajectory] Sending land trigger.");
+        land_trigger.takeoff_land_trigger = false; // Land
+        land_trigger.header.stamp = ros::Time::now();
+        takeoff_land_pub.publish(land_trigger);
+        return false;
+    }
+    else if(fsm_info.is_landed == true){
+        ROS_INFO("[AIRo Trajectory] Vehicle has landed!");
+        return true;
+    }
+}

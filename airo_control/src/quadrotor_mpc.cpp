@@ -20,6 +20,7 @@ QUADROTOR_MPC::Euler QUADROTOR_MPC::q2rpy(const geometry_msgs::Quaternion& quate
     tf::Matrix3x3(tf_quaternion).getRPY(euler.phi, euler.theta, euler.psi);
     return euler;
 }
+
 geometry_msgs::Quaternion QUADROTOR_MPC::rpy2q(const Euler& euler){
     geometry_msgs::Quaternion quaternion = tf::createQuaternionMsgFromRollPitchYaw(euler.phi, euler.theta, euler.psi);
     return quaternion;

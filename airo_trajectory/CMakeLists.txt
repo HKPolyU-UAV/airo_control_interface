@@ -35,23 +35,25 @@ find_package(Eigen3 REQUIRED)
 # generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 
 catkin_package(
-#  INCLUDE_DIRS include
+ INCLUDE_DIRS include
 #  LIBRARIES airo_trajectory
  CATKIN_DEPENDS roscpp message_runtime airo_control
 #  DEPENDS system_lib
 )
 
 include_directories(
-#   include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(example_mission_node src/example_mission_node.cpp)
+add_executable(example_mission_node
+    src/example_mission_node.cpp
+    src/airo_trajectory_server.cpp)
 target_link_libraries(example_mission_node
   ${catkin_LIBRARIES}
 )
 
-add_executable(trajectory_mission_node src/trajectory_mission_node.cpp)
-target_link_libraries(trajectory_mission_node
-  ${catkin_LIBRARIES}
-)
+# add_executable(trajectory_mission_node src/trajectory_mission_node.cpp)
+# target_link_libraries(trajectory_mission_node
+#   ${catkin_LIBRARIES}
+# )
