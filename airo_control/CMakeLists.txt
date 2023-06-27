@@ -33,6 +33,7 @@ add_message_files(
   TakeoffLandTrigger.msg
   FSMInfo.msg
   Reference.msg
+  ReferencePreview.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs geometry_msgs)

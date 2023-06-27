@@ -32,7 +32,7 @@ ros::Time last_state_time;
 mavros_msgs::State current_state;
 geometry_msgs::PoseStamped local_pose,takeoff_pose,x_maneuver_pose,y_maneuver_pose,yaw_maneuver_pose;
 std::string package_path = ros::package::getPath("airo_control");
-std::string POSE_TOPIC, YAML_NAME;
+std::string POSE_TOPIC, YAML_FILE;
 tf::Quaternion tf_quaternion;
 
 enum State{
@@ -152,10 +152,10 @@ int main(int argc, char **argv){
     ros::Rate rate(40);
     State state = TAKEOFF;
 
-    nh.getParam("system_identification_node/pose_topic",POSE_TOPIC);
-    nh.getParam("system_identification_node/yaml_name",YAML_NAME);
+    nh.getParam("pose_topic",POSE_TOPIC);
+    nh.getParam("yaml_file",YAML_FILE);
+    std::string yaml_path = package_path + YAML_FILE;
 
-    std::string yaml_path = package_path + YAML_NAME;
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,state_cb);
     ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,100,pose_cb);
     ros::Subscriber target_actuator_control_sub = nh.subscribe<mavros_msgs::ActuatorControl>("/mavros/target_actuator_control",100,target_actuator_control_cb);

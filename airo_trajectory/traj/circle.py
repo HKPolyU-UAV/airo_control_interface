@@ -33,10 +33,7 @@ traj[:,8] = hover_thrust
 traj[:,9] = 0
 traj[:,10] = 0
 
-
-
 #print(np.size(traj))
-
 
 # write to txt
 np.savetxt('circle.txt',traj,fmt='%f')

@@ -12,8 +12,9 @@
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/SetMode.h>
 #include <airo_control/FSMInfo.h>
+#include <airo_control/Reference.h>
+#include <airo_control/ReferencePreview.h>
 #include <airo_control/TakeoffLandTrigger.h>
-
 #include "airo_control/rc_input.h"
 #include "airo_control/quadrotor_mpc.h"
 
@@ -64,6 +65,7 @@ class AIRO_CONTROL_FSM{
 	ros::Subscriber extended_state_sub;
 	ros::Subscriber rc_input_sub;
 	ros::Subscriber command_sub;
+	ros::Subscriber command_preview_sub;
 	ros::Subscriber takeoff_land_sub;
 	ros::Publisher setpoint_pub;
 	ros::Publisher fsm_info_pub;
@@ -76,8 +78,10 @@ class AIRO_CONTROL_FSM{
 	// Messages
 	airo_control::TakeoffLandTrigger takeoff_land_trigger; // 1 for takeoff 0 for landing
 	airo_control::FSMInfo fsm_info;
-	airo_control::Reference mpc_ref;
+	airo_control::Reference controller_ref;
 	airo_control::Reference external_command;
+	airo_control::ReferencePreview controller_ref_preview;
+	airo_control::ReferencePreview external_command_preview;
 	geometry_msgs::PoseStamped local_pose;
 	geometry_msgs::PoseStamped takeoff_land_pose;
 	geometry_msgs::PoseStamped ref_pose;
@@ -89,6 +93,7 @@ class AIRO_CONTROL_FSM{
 
 	//Controller
 	QUADROTOR_MPC controller;
+	bool use_preview;
 
 	public:
 
@@ -103,7 +108,7 @@ class AIRO_CONTROL_FSM{
 	void set_takeoff_land_ref(const double);
 	void set_ref_with_rc();
 	void set_ref_with_external_command();
-	void reference_init();
+	void set_ref_with_external_command_preview();
 	double extract_yaw_from_quaternion(const geometry_msgs::Quaternion&);
 	void land_detector();
 	void motor_idle_and_disarm();
@@ -116,6 +121,7 @@ class AIRO_CONTROL_FSM{
 	void extended_state_cb(const mavros_msgs::ExtendedState::ConstPtr&);
 	void rc_input_cb(const mavros_msgs::RCIn::ConstPtr&);
 	void external_command_cb(const airo_control::Reference::ConstPtr&);
+	void external_command_preview_cb(const airo_control::ReferencePreview::ConstPtr&);
 	void takeoff_land_cb(const airo_control::TakeoffLandTrigger::ConstPtr&);
 	bool rc_received(const ros::Time&);
 	bool odom_received(const ros::Time&);

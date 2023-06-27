@@ -1,6 +1,8 @@
+# ROS Topics
 pose_topic: /mavros/vision_pose/pose
 twist_topic: /mavros/local_position/velocity_local
-yaml_name: /config/vicon_param.yaml
+
+# FSM Parameters
 message_timeout: 0.5
 motor_speedup_time: 5.0
 takeoff_height: 1.0
@@ -10,6 +12,8 @@ hover_max_velocity: 1.5
 hover_max_rate: 1.5
 check_safety_volumn: true
 safety_volumn: [-2.0, 2.0, -1.25, 2.25, -10, 2.5]
+
+# RC Transmitter Parameters
 without_rc: false
 throttle_channel: 3
 yaw_channel: 4
@@ -25,7 +29,3 @@ reverse_roll: false
 switch_threshold: 0.75
 joystick_deadzone: 0.10
 check_centered_threshold: 0.25
-hover_thrust: 0.5668155491352082
-tau_phi: 0.1963356174498848
-tau_theta: 0.1954722796638341
-tau_psi: 1.218634856134189

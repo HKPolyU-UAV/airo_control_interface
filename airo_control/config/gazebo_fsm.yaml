@@ -1,6 +1,8 @@
+# ROS Topics
 pose_topic: /mavros/local_position/pose
 twist_topic: /mavros/local_position/velocity_local
-yaml_name: /config/gazebo_param.yaml
+
+# FSM Parameters
 message_timeout: 0.5
 motor_speedup_time: 5.0
 takeoff_height: 1.0
@@ -10,6 +12,8 @@ hover_max_velocity: 2.5
 hover_max_rate: 2.5
 check_safety_volumn: true
 safety_volumn: [-10.0, 10.0, -10.0, 10.0, -10, 4.0]
+
+# RC Transmitter Parameters
 without_rc: true
 throttle_channel: 4
 yaw_channel: 3
@@ -25,7 +29,3 @@ reverse_roll: false
 switch_threshold: 0.75
 joystick_deadzone: 0.10
 check_centered_threshold: 0.3
-hover_thrust: 0.5661135083436966
-tau_phi: 0.1970738954513166
-tau_theta: 0.1952294046513412
-tau_psi: 0.7887078738298164

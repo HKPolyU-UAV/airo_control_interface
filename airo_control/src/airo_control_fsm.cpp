@@ -1,7 +1,7 @@
 #include "airo_control/airo_control_fsm.h"
 
 AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
-    // Initialize
+    // Initialize FSM
     state_fsm = RC_MANUAL;
 
     // ROS Parameters
@@ -17,10 +17,12 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/check_safety_volumn",CHECK_SAFETY_VOLUMN);
     nh.getParam("airo_control_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
     nh.getParam("airo_control_node/without_rc",WITHOUT_RC);
+
     nh.getParam("airo_control_node/hover_thrust",solver_param.hover_thrust);
     nh.getParam("airo_control_node/tau_phi",solver_param.tau_phi);
     nh.getParam("airo_control_node/tau_theta",solver_param.tau_theta);
     nh.getParam("airo_control_node/tau_psi",solver_param.tau_psi);
+    nh.getParam("airo_control_node/use_preview",solver_param.use_preview);
 
     nh.getParam("airo_control_node/throttle_channel",rc_param.THROTTLE_CHANNEL);
     nh.getParam("airo_control_node/yaw_channel",rc_param.YAW_CHANNEL);
@@ -44,6 +46,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",10,&AIRO_CONTROL_FSM::extended_state_cb,this);
     rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",10,&AIRO_CONTROL_FSM::rc_input_cb,this);
     command_sub = nh.subscribe<airo_control::Reference>("/airo_control/setpoint",50,&AIRO_CONTROL_FSM::external_command_cb,this);
+    command_preview_sub = nh.subscribe<airo_control::ReferencePreview>("/airo_control/setpoint_preview",50,&AIRO_CONTROL_FSM::external_command_preview_cb,this);
     takeoff_land_sub = nh.subscribe<airo_control::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",10,&AIRO_CONTROL_FSM::takeoff_land_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
     fsm_info_pub = nh.advertise<airo_control::FSMInfo>("/airo_control/fsm_info",10);
@@ -55,7 +58,13 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
 
     // Init
     rc_input.set_rc_param(rc_param);
-    reference_init();
+    controller_ref.header.stamp = ros::Time::now();
+    if(use_preview){
+        controller_ref_preview.header.stamp = ros::Time::now();
+        controller_ref_preview.ref_pose.resize(QUADROTOR_N+1);
+        controller_ref_preview.ref_twist.resize(QUADROTOR_N+1);
+        controller_ref_preview.ref_accel.resize(QUADROTOR_N+1);
+    }
 }
 
 void AIRO_CONTROL_FSM::process(){
@@ -69,7 +78,7 @@ void AIRO_CONTROL_FSM::process(){
 
     // Step 3: Solve position controller if needed
     if(solve_controller){
-        attitude_target = controller.solve(local_pose,local_twist,mpc_ref,solver_param);
+        attitude_target = controller.solve(local_pose,local_twist,controller_ref,solver_param);
     }
 
     // Step 4: Publish control commands and fsm state
@@ -215,7 +224,7 @@ void AIRO_CONTROL_FSM::fsm(){
 
             // To POS_COMMAND
             else if (external_command_received(current_time) && rc_input.is_command){
-                if (external_command.ref_pose.size() != QUADROTOR_N + 1 || external_command.ref_twist.size() != QUADROTOR_N + 1){
+                if ((external_command_preview.ref_pose.size() != QUADROTOR_N + 1 || external_command_preview.ref_twist.size() != QUADROTOR_N + 1) && use_preview){
                     ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Reject POS_COMMAND. External command size is wrong!");
                     break;
                 }
@@ -294,7 +303,12 @@ void AIRO_CONTROL_FSM::fsm(){
 
             // Follow command
             else{
-                set_ref_with_external_command();
+                if(!use_preview){
+                    set_ref_with_external_command();
+                }
+                else if (use_preview){
+                    set_ref_with_external_command_preview();
+                }
             }
 
             break;
@@ -402,17 +416,18 @@ void AIRO_CONTROL_FSM::get_motor_speedup(){
 }
 
 void AIRO_CONTROL_FSM::set_ref(const geometry_msgs::PoseStamped& pose){
-    mpc_ref.header.stamp = pose.header.stamp;
+    controller_ref.header.stamp = pose.header.stamp;
     geometry_msgs::Pose dummy_pose;
     dummy_pose.position = pose.pose.position;
     dummy_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, extract_yaw_from_quaternion(pose.pose.orientation));
     
-    for(int i = 0; i < QUADROTOR_N+1; i++){
-        mpc_ref.ref_pose[i] = dummy_pose;
-        mpc_ref.ref_twist[i].linear.x = 0;
-        mpc_ref.ref_twist[i].linear.y = 0;
-        mpc_ref.ref_twist[i].linear.z = 0;
-    }
+    controller_ref.ref_pose = dummy_pose;
+    controller_ref.ref_twist.linear.x = 0;
+    controller_ref.ref_twist.linear.y = 0;
+    controller_ref.ref_twist.linear.z = 0;
+    controller_ref.ref_accel.linear.x = 0;
+    controller_ref.ref_accel.linear.y = 0;
+    controller_ref.ref_accel.linear.z = 0;
 
     solve_controller = true;
 }
@@ -435,14 +450,14 @@ void AIRO_CONTROL_FSM::set_ref_with_rc(){
     current_time = ros::Time::now();
     double delta_t = (current_time - last_hover_time).toSec();
     geometry_msgs::PoseStamped rc_ref;
-    double rc_psi, mpc_psi;
+    double rc_psi, controller_psi;
 
-    mpc_psi = extract_yaw_from_quaternion(mpc_ref.ref_pose[0].orientation);
+    controller_psi = extract_yaw_from_quaternion(controller_ref.ref_pose.orientation);
     rc_ref.header.stamp = current_time;
-    rc_ref.pose.position.x = mpc_ref.ref_pose[0].position.x + rc_input.channel[rc_param.PITCH_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_PITCH ? -1 : 1);
-    rc_ref.pose.position.y = mpc_ref.ref_pose[0].position.y - rc_input.channel[rc_param.ROLL_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_ROLL ? -1 : 1);
-    rc_ref.pose.position.z = mpc_ref.ref_pose[0].position.z + rc_input.channel[rc_param.THROTTLE_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_THROTTLE ? -1 : 1);
-    rc_psi = mpc_psi - rc_input.channel[rc_param.YAW_CHANNEL-1]*HOVER_MAX_RATE*delta_t*(rc_param.REVERSE_YAW ? -1 : 1);
+    rc_ref.pose.position.x = controller_ref.ref_pose.position.x + rc_input.channel[rc_param.PITCH_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_PITCH ? -1 : 1);
+    rc_ref.pose.position.y = controller_ref.ref_pose.position.y - rc_input.channel[rc_param.ROLL_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_ROLL ? -1 : 1);
+    rc_ref.pose.position.z = controller_ref.ref_pose.position.z + rc_input.channel[rc_param.THROTTLE_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_THROTTLE ? -1 : 1);
+    rc_psi = controller_psi - rc_input.channel[rc_param.YAW_CHANNEL-1]*HOVER_MAX_RATE*delta_t*(rc_param.REVERSE_YAW ? -1 : 1);
 
     rc_ref.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, rc_psi);
     rc_ref.pose.position = check_safety_volumn(rc_ref.pose.position);
@@ -451,22 +466,27 @@ void AIRO_CONTROL_FSM::set_ref_with_rc(){
 }
 
 void AIRO_CONTROL_FSM::set_ref_with_external_command(){
-    mpc_ref.header = external_command.header;
-    mpc_ref.ref_twist = external_command.ref_twist;
-
-    for(int i = 0; i < QUADROTOR_N+1; i++){
-        mpc_ref.ref_pose[i].position = check_safety_volumn(external_command.ref_pose[i].position);
-        mpc_ref.ref_pose[i].orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, extract_yaw_from_quaternion(external_command.ref_pose[i].orientation));
-    }
+    controller_ref.header = external_command.header;
+    controller_ref.ref_pose.position = check_safety_volumn(external_command.ref_pose.position);
+    controller_ref.ref_pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, extract_yaw_from_quaternion(external_command.ref_pose.orientation));
+    controller_ref.ref_twist = external_command.ref_twist;
+    controller_ref.ref_accel = external_command.ref_accel;
 
     solve_controller = true;
     fsm_info.is_waiting_for_command = true;
 }
 
-void AIRO_CONTROL_FSM::reference_init(){
-    mpc_ref.header.stamp = ros::Time::now();
-    mpc_ref.ref_pose.resize(QUADROTOR_N+1);
-    mpc_ref.ref_twist.resize(QUADROTOR_N+1);
+void AIRO_CONTROL_FSM::set_ref_with_external_command_preview(){
+    controller_ref_preview.header = external_command_preview.header;
+    for(int i = 0; i < QUADROTOR_N+1; i++){
+        controller_ref_preview.ref_pose[i].position = check_safety_volumn(external_command_preview.ref_pose[i].position);
+        controller_ref_preview.ref_pose[i].orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, extract_yaw_from_quaternion(external_command_preview.ref_pose[i].orientation));
+    }
+    controller_ref_preview.ref_twist = external_command_preview.ref_twist;
+    controller_ref_preview.ref_accel = external_command_preview.ref_accel;
+
+    solve_controller = true;
+    fsm_info.is_waiting_for_command = true;
 }
 
 double AIRO_CONTROL_FSM::extract_yaw_from_quaternion(const geometry_msgs::Quaternion& quaternion){
@@ -502,7 +522,7 @@ void AIRO_CONTROL_FSM::land_detector(){
 		is_last_C12_satisfy = false;
 	}
 	else{
-		bool C12_satisfy = (mpc_ref.ref_pose[0].position.z - local_pose.pose.position.z) < POSITION_DEVIATION && twist_norm(local_twist) < VELOCITY_THRESHOLD;
+		bool C12_satisfy = (controller_ref.ref_pose.position.z - local_pose.pose.position.z) < POSITION_DEVIATION && twist_norm(local_twist) < VELOCITY_THRESHOLD;
 		if (C12_satisfy && !is_last_C12_satisfy){
 			time_C12_reached = ros::Time::now();
 		}
@@ -613,15 +633,27 @@ void AIRO_CONTROL_FSM::rc_input_cb(const mavros_msgs::RCIn::ConstPtr& msg){
 }
 
 void AIRO_CONTROL_FSM::external_command_cb(const airo_control::Reference::ConstPtr& msg){
-    external_command.header.stamp = msg->header.stamp;
-    external_command.ref_pose = msg->ref_pose;
-    external_command.ref_twist = msg->ref_twist;
+    if(!use_preview){
+        external_command.header.stamp = msg->header.stamp;
+        external_command.ref_pose = msg->ref_pose;
+        external_command.ref_twist = msg->ref_twist;
+        external_command.ref_accel = msg->ref_accel;
+    }
+}
+
+void AIRO_CONTROL_FSM::external_command_preview_cb(const airo_control::ReferencePreview::ConstPtr& msg){
+    if(use_preview){
+        external_command_preview.header = msg->header;
+        external_command_preview.ref_pose = msg->ref_pose;
+        external_command_preview.ref_twist = msg->ref_twist;
+        external_command_preview.ref_accel = msg->ref_accel;
+    }
 }
 
 void AIRO_CONTROL_FSM::takeoff_land_cb(const airo_control::TakeoffLandTrigger::ConstPtr& msg){
     takeoff_land_trigger.header.stamp = msg->header.stamp;
     takeoff_land_trigger.takeoff_land_trigger = msg->takeoff_land_trigger;
-};
+}
 
 bool AIRO_CONTROL_FSM::rc_received(const ros::Time& time){
     return (time - rc_input.stamp).toSec() < MESSAGE_TIMEOUT;
@@ -632,7 +664,12 @@ bool AIRO_CONTROL_FSM::odom_received(const ros::Time& time){
 }
 
 bool AIRO_CONTROL_FSM::external_command_received(const ros::Time& time){
-    return (time - external_command.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    if(!use_preview){
+        return (time - external_command.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    }
+    else{
+        return (time - external_command_preview.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    }
 }
 
 bool AIRO_CONTROL_FSM::takeoff_land_received(const ros::Time& time){

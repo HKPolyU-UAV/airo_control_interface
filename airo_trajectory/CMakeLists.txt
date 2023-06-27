@@ -52,8 +52,3 @@ add_executable(example_mission_node
 target_link_libraries(example_mission_node
   ${catkin_LIBRARIES}
 )
-
-# add_executable(trajectory_mission_node src/trajectory_mission_node.cpp)
-# target_link_libraries(trajectory_mission_node
-#   ${catkin_LIBRARIES}
-# )

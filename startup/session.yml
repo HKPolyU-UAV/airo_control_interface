@@ -13,4 +13,4 @@ windows:
       layout: tiled
       panes:
         - ./shell_scripts.sh; roslaunch airo_control gazebo_fsm.launch
-        - ./shell_scripts.sh; rosrun airo_trajectory example_mission_node
+        - ./shell_scripts.sh; roslaunch airo_trajectory example_mission_node.launch
