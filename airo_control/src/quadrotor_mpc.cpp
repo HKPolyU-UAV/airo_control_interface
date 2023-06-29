@@ -26,7 +26,23 @@ geometry_msgs::Quaternion QUADROTOR_MPC::rpy2q(const Euler& euler){
     return quaternion;
 }
 
-mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, const airo_control::Reference& ref, const SolverParam& param){
+mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, const geometry_msgs::AccelStamped& accel, const airo_control::Reference& ref, const SolverParam& param){
+    // Resize ref to fit prediction horizon
+    airo_control::ReferencePreview ref_preview;
+    ref_preview.header = ref.header;
+    ref_preview.ref_pose.resize(QUADROTOR_N+1);
+    ref_preview.ref_twist.resize(QUADROTOR_N+1);
+    ref_preview.ref_accel.resize(QUADROTOR_N+1);
+    for (int i = 0; i < QUADROTOR_N+1; i++){
+        ref_preview.ref_pose[i] = ref.ref_pose;
+        ref_preview.ref_twist[i] = ref.ref_twist;
+        ref_preview.ref_accel[i] = ref.ref_accel;
+    }
+    
+    return QUADROTOR_MPC::solve(pose,twist,accel,ref_preview,param);
+}
+
+mavros_msgs::AttitudeTarget QUADROTOR_MPC::solve(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist, const geometry_msgs::AccelStamped& accel, const airo_control::ReferencePreview& ref, const SolverParam& param){
     // Set reference
     ref_euler = q2rpy(ref.ref_pose[0].orientation);
     for (int i = 0; i < QUADROTOR_N+1; i++){

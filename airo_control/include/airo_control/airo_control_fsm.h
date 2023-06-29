@@ -5,6 +5,8 @@
 #include <eigen3/Eigen/Dense>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/AccelStamped.h>
+#include <sensor_msgs/Imu.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/ExtendedState.h>
 #include <mavros_msgs/CommandBool.h>
@@ -48,10 +50,10 @@ class AIRO_CONTROL_FSM{
 	STATE_FSM state_fsm;
 	RC_INPUT rc_input;
 	RC_INPUT::RC_PARAM rc_param;
-	QUADROTOR_MPC::SolverParam solver_param;
 	bool solve_controller;
 	bool is_landed;
 	bool is_armed;
+	bool use_preview = false;
 
 	// Times
 	ros::Time current_time;
@@ -61,6 +63,7 @@ class AIRO_CONTROL_FSM{
 	// ROS Sub & Pub
 	ros::Subscriber pose_sub;
 	ros::Subscriber twist_sub;
+	ros::Subscriber imu_sub;
 	ros::Subscriber state_sub;
 	ros::Subscriber extended_state_sub;
 	ros::Subscriber rc_input_sub;
@@ -86,6 +89,7 @@ class AIRO_CONTROL_FSM{
 	geometry_msgs::PoseStamped takeoff_land_pose;
 	geometry_msgs::PoseStamped ref_pose;
 	geometry_msgs::TwistStamped local_twist;
+	geometry_msgs::AccelStamped local_accel;
 	mavros_msgs::AttitudeTarget attitude_target;
 	mavros_msgs::State current_state;
 	mavros_msgs::State previous_state;
@@ -93,7 +97,8 @@ class AIRO_CONTROL_FSM{
 
 	//Controller
 	QUADROTOR_MPC controller;
-	bool use_preview;
+	QUADROTOR_MPC::SolverParam solver_param;
+	bool enable_preview = false;
 
 	public:
 
@@ -117,6 +122,7 @@ class AIRO_CONTROL_FSM{
 	geometry_msgs::Point check_safety_volumn(const geometry_msgs::Point&);
 	void pose_cb(const geometry_msgs::PoseStamped::ConstPtr&);
 	void twist_cb(const geometry_msgs::TwistStamped::ConstPtr&);
+	void imu_cb(const sensor_msgs::Imu::ConstPtr&);
 	void state_cb(const mavros_msgs::State::ConstPtr&);
 	void extended_state_cb(const mavros_msgs::ExtendedState::ConstPtr&);
 	void rc_input_cb(const mavros_msgs::RCIn::ConstPtr&);
@@ -126,6 +132,7 @@ class AIRO_CONTROL_FSM{
 	bool rc_received(const ros::Time&);
 	bool odom_received(const ros::Time&);
 	bool external_command_received(const ros::Time&);
+	bool external_command_preview_received(const ros::Time&);
 	bool takeoff_land_received(const ros::Time&);
 	bool takeoff_trigered(const ros::Time&);
 	bool land_trigered(const ros::Time&);

@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <launch>
 
-	<node pkg="airo_trajectory" type="example_mission_node" name="example_mission_node" output="screen">
-        <rosparam command="load" file="$(find airo_trajectory)/config/airo_trajectory_param.yaml" />
-	</node>
+	<param name="/airo_trajectory/traj_file_name" value="circle.txt" />
+	<param name="/airo_trajectory/pose_topic" value="/mavros/local_position/pose" />
+
+	<node pkg="airo_trajectory" type="example_mission_node" name="example_mission_node" output="screen"></node>
 
 </launch>

@@ -42,6 +42,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     // ROS Sub & Pub
     pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,100,&AIRO_CONTROL_FSM::pose_cb,this);
     twist_sub = nh.subscribe<geometry_msgs::TwistStamped>(TWIST_TOPIC,100,&AIRO_CONTROL_FSM::twist_cb,this);
+    imu_sub = nh.subscribe<sensor_msgs::Imu>("/mavros/imu/data",100,&AIRO_CONTROL_FSM::imu_cb,this);
     state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,&AIRO_CONTROL_FSM::state_cb,this);
     extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",10,&AIRO_CONTROL_FSM::extended_state_cb,this);
     rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",10,&AIRO_CONTROL_FSM::rc_input_cb,this);
@@ -59,7 +60,9 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     // Init
     rc_input.set_rc_param(rc_param);
     controller_ref.header.stamp = ros::Time::now();
-    if(use_preview){
+
+    // For MPC Preview
+    if(enable_preview){
         controller_ref_preview.header.stamp = ros::Time::now();
         controller_ref_preview.ref_pose.resize(QUADROTOR_N+1);
         controller_ref_preview.ref_twist.resize(QUADROTOR_N+1);
@@ -78,7 +81,13 @@ void AIRO_CONTROL_FSM::process(){
 
     // Step 3: Solve position controller if needed
     if(solve_controller){
-        attitude_target = controller.solve(local_pose,local_twist,controller_ref,solver_param);
+        if (!use_preview){
+            attitude_target = controller.solve(local_pose,local_twist,local_accel,controller_ref,solver_param);
+        }
+        else{
+            attitude_target = controller.solve(local_pose,local_twist,local_accel,controller_ref_preview,solver_param);
+        }
+
     }
 
     // Step 4: Publish control commands and fsm state
@@ -111,7 +120,7 @@ void AIRO_CONTROL_FSM::fsm(){
             else if ((rc_input.enter_fsm && !rc_input.is_command && is_landed)
                   || (takeoff_trigered(current_time) && rc_input.is_command && is_landed)){
                 if (!odom_received(current_time)){
-                    ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] Reject AUTO_TAKEOFF. No odom!");
+                    ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] Reject AUTO_TAKEOFF. No odom or imu!");
                     break;
                 }
                 if (twist_norm(local_twist) > REJECT_TAKEOFF_TWIST_THRESHOLD){
@@ -175,7 +184,7 @@ void AIRO_CONTROL_FSM::fsm(){
                 ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_CONTROL\033[32m");
                 }
                 else{
-                ROS_ERROR("[AIRo Control] No odom! Switching to RC_CONTROL mode.");
+                ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_CONTROL mode.");
                 }
             }
             else{
@@ -203,31 +212,34 @@ void AIRO_CONTROL_FSM::fsm(){
                     ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> RC_MANUAL\033[32m");
                 }
                 else{
-                    ROS_ERROR("[AIRo Control] No odom! Switching to RC_MANUAL mode.");
+                    ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
                 }
+                break;
             }
 
             // To AUTO_LAND
             else if (land_trigered(current_time) && rc_input.is_command){
                 if (external_command_received(current_time)){
-                    ROS_WARN("[AIRo Control] Reject AUTO_LAND mode. Stop sending external commands and try again!");
-                    set_ref_with_rc();
-                    if (rc_input.is_command){
-                        fsm_info.is_waiting_for_command = true;
-                    }
-                    break;
+                    ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] Reject AUTO_LAND mode. Stop sending external commands and try again!");
                 }
-                takeoff_land_init();
-                state_fsm = AUTO_LAND;
-                ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> AUTO_LAND\033[32m");
+                else{
+                    takeoff_land_init();
+                    state_fsm = AUTO_LAND;
+                    ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> AUTO_LAND\033[32m");
+                }
+
             }
 
             // To POS_COMMAND
-            else if (external_command_received(current_time) && rc_input.is_command){
-                if ((external_command_preview.ref_pose.size() != QUADROTOR_N + 1 || external_command_preview.ref_twist.size() != QUADROTOR_N + 1) && use_preview){
-                    ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Reject POS_COMMAND. External command size is wrong!");
-                    break;
-                }
+            else if (external_command_received(current_time) && external_command_preview_received(current_time)){
+                ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Reject POS_COMMAND. You are sending both setpoint and setpoint_preview commands!");
+            }
+            else if (external_command_preview_received(current_time) && rc_input.is_command && enable_preview){
+                state_fsm = POS_COMMAND;
+                use_preview = true;
+                ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> POS_COMMAND\033[32m");
+            }
+            else if (external_command_received(current_time) && rc_input.is_command ){
                 state_fsm = POS_COMMAND;
                 ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> POS_COMMAND\033[32m");
             }
@@ -236,14 +248,13 @@ void AIRO_CONTROL_FSM::fsm(){
             else if (is_landed){
                 motor_idle_and_disarm();
                 ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> RC_MANUAL\033[32m");
+                break;
             }
 
             // AUTO_HOVER
-            else{
-                set_ref_with_rc();
-                if (rc_input.is_command){
-                    fsm_info.is_waiting_for_command = true;
-                }
+            set_ref_with_rc();
+            if (rc_input.is_command){
+                fsm_info.is_waiting_for_command = true;
             }
 
             break;
@@ -258,7 +269,7 @@ void AIRO_CONTROL_FSM::fsm(){
                     ROS_INFO("\033[32m[AIRo Control] AUTO_LAND ==>> RC_MANUAL\033[32m");
                 }
                 else{
-                    ROS_ERROR("[AIRo Control] No odom! Switching to RC_MANUAL mode.");
+                    ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
                 }
             }
 
@@ -290,15 +301,19 @@ void AIRO_CONTROL_FSM::fsm(){
                     ROS_INFO("\033[32m[AIRo Control] POS_COMMAND ==>> RC_MANUAL\033[32m");
                 }
                 else{
-                    ROS_ERROR("[AIRo Control] No odom! Switching to RC_MANUAL mode.");
+                    ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
                 }
+                use_preview = false;
             }
 
             // To AUTO_HOVER
-            else if (!rc_input.is_command || !external_command_received(current_time)){
+            else if (!rc_input.is_command || 
+            (!external_command_received(current_time) && !external_command_preview_received(current_time)) ||
+            (!external_command_received(current_time) && !use_preview)){
                 auto_hover_init();
                 state_fsm = AUTO_HOVER;
-                ROS_INFO("\033[32m[AIRo Control] POS_COMMAND ==>> AUTO_HOVER\033[32m");                
+                ROS_INFO("\033[32m[AIRo Control] POS_COMMAND ==>> AUTO_HOVER\033[32m");
+                use_preview = false;           
             }
 
             // Follow command
@@ -306,7 +321,7 @@ void AIRO_CONTROL_FSM::fsm(){
                 if(!use_preview){
                     set_ref_with_external_command();
                 }
-                else if (use_preview){
+                else{
                     set_ref_with_external_command_preview();
                 }
             }
@@ -620,6 +635,12 @@ void AIRO_CONTROL_FSM::twist_cb(const geometry_msgs::TwistStamped::ConstPtr& msg
     local_twist.twist = msg->twist;
 }
 
+void AIRO_CONTROL_FSM::imu_cb(const sensor_msgs::Imu::ConstPtr& msg){
+    local_accel.header = msg->header;
+    local_accel.accel.linear = msg->linear_acceleration;
+    local_accel.accel.angular = msg->angular_velocity;
+}
+
 void AIRO_CONTROL_FSM::state_cb(const mavros_msgs::State::ConstPtr& msg){
     current_state = *msg;
 }
@@ -629,25 +650,23 @@ void AIRO_CONTROL_FSM::extended_state_cb(const mavros_msgs::ExtendedState::Const
 }
 
 void AIRO_CONTROL_FSM::rc_input_cb(const mavros_msgs::RCIn::ConstPtr& msg){
-    rc_input.process(msg);
+    if(!WITHOUT_RC){
+        rc_input.process(msg);
+    }
 }
 
 void AIRO_CONTROL_FSM::external_command_cb(const airo_control::Reference::ConstPtr& msg){
-    if(!use_preview){
-        external_command.header.stamp = msg->header.stamp;
-        external_command.ref_pose = msg->ref_pose;
-        external_command.ref_twist = msg->ref_twist;
-        external_command.ref_accel = msg->ref_accel;
-    }
+    external_command.header.stamp = msg->header.stamp;
+    external_command.ref_pose = msg->ref_pose;
+    external_command.ref_twist = msg->ref_twist;
+    external_command.ref_accel = msg->ref_accel;
 }
 
 void AIRO_CONTROL_FSM::external_command_preview_cb(const airo_control::ReferencePreview::ConstPtr& msg){
-    if(use_preview){
-        external_command_preview.header = msg->header;
-        external_command_preview.ref_pose = msg->ref_pose;
-        external_command_preview.ref_twist = msg->ref_twist;
-        external_command_preview.ref_accel = msg->ref_accel;
-    }
+    external_command_preview.header = msg->header;
+    external_command_preview.ref_pose = msg->ref_pose;
+    external_command_preview.ref_twist = msg->ref_twist;
+    external_command_preview.ref_accel = msg->ref_accel;
 }
 
 void AIRO_CONTROL_FSM::takeoff_land_cb(const airo_control::TakeoffLandTrigger::ConstPtr& msg){
@@ -660,16 +679,17 @@ bool AIRO_CONTROL_FSM::rc_received(const ros::Time& time){
 }
 
 bool AIRO_CONTROL_FSM::odom_received(const ros::Time& time){
-    return (time - local_pose.header.stamp).toSec() < MESSAGE_TIMEOUT && (time - local_twist.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    return (time - local_pose.header.stamp).toSec() < MESSAGE_TIMEOUT && 
+    (time - local_twist.header.stamp).toSec() < MESSAGE_TIMEOUT &&
+    (time - local_accel.header.stamp).toSec() < MESSAGE_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::external_command_received(const ros::Time& time){
-    if(!use_preview){
-        return (time - external_command.header.stamp).toSec() < MESSAGE_TIMEOUT;
-    }
-    else{
-        return (time - external_command_preview.header.stamp).toSec() < MESSAGE_TIMEOUT;
-    }
+    return (time - external_command.header.stamp).toSec() < MESSAGE_TIMEOUT;
+}
+
+bool AIRO_CONTROL_FSM::external_command_preview_received(const ros::Time& time){
+    return (time - external_command_preview.header.stamp).toSec() < MESSAGE_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::takeoff_land_received(const ros::Time& time){
