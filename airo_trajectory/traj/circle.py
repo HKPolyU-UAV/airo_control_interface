@@ -7,7 +7,7 @@ import math
 
 # Parameters
 sample_time = 0.025             # seconds
-duration = 60                   # seconds
+duration = 60                  # seconds
 hover_thrust = 0.56
 r = 1.5
 v = 2

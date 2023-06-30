@@ -89,7 +89,6 @@ class QUADROTOR_MPC{
         double tau_phi;
         double tau_theta;
         double tau_psi;
-        bool use_preview;
     };
 
     QUADROTOR_MPC();

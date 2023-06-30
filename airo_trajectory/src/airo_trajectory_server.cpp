@@ -120,12 +120,14 @@ geometry_msgs::Point AIRO_TRAJECTORY_SERVER::get_end_point(const std::vector<std
 
 void AIRO_TRAJECTORY_SERVER::file_cmd(const std::vector<std::vector<double>>& traj, int& start_row){
     const int total_rows = traj.size();
+    int path_ended = false;
     std::vector<std::vector<double>> reference;
 
     if (start_row >= total_rows - 1) {
         // Construct 41 rows using the last row of traj
         std::vector<double> last_row = traj.back();
         reference.assign(preview_size, last_row);
+        path_ended = true;
     }
     else{
         // Calculate the end row index
@@ -151,36 +153,44 @@ void AIRO_TRAJECTORY_SERVER::file_cmd(const std::vector<std::vector<double>>& tr
     preview.ref_accel.resize(preview_size);
     int column = reference[0].size();
 
-    if (column == 3){
-        assign_position(reference,preview);
-    }
-    else if (column == 4){
-        assign_position(reference,preview);
-        assign_yaw(reference,preview);
-    }
-    else if (column == 6){
-        assign_position(reference,preview);
-        assign_twist(reference,preview);
-    }
-    else if (column == 7){
-        assign_position(reference,preview);
-        assign_twist(reference,preview);
-        assign_yaw(reference,preview);
-    }
-    else if (column == 9){
-        assign_position(reference,preview);
-        assign_twist(reference,preview);
-        assign_accel(reference,preview);
-    }
-    else if (column == 10){
-        assign_position(reference,preview);
-        assign_twist(reference,preview);
-        assign_accel(reference,preview);
-        assign_yaw(reference,preview);
+    if (!path_ended){
+        if (column == 3){
+            assign_position(reference,preview);
+        }
+        else if (column == 4){
+            assign_position(reference,preview);
+            assign_yaw(reference,preview);
+        }
+        else if (column == 6){
+            assign_position(reference,preview);
+            assign_twist(reference,preview);
+        }
+        else if (column == 7){
+            assign_position(reference,preview);
+            assign_twist(reference,preview);
+            assign_yaw(reference,preview);
+        }
+        else if (column == 9){
+            assign_position(reference,preview);
+            assign_twist(reference,preview);
+            assign_accel(reference,preview);
+        }
+        else if (column == 10){
+            assign_position(reference,preview);
+            assign_twist(reference,preview);
+            assign_accel(reference,preview);
+            assign_yaw(reference,preview);
+        }
+        else{
+            ROS_ERROR("[AIRo Trajectory] Trajectory file dimension wrong!");
+            return;
+        }
     }
     else{
-        ROS_ERROR("[AIRo Trajectory] Trajectory file dimension wrong!");
-        return;
+        assign_position(reference,preview);
+        if (column == 4 || column == 6 || column == 7 || column == 9 || column == 10){
+            assign_yaw(reference,preview);
+        }
     }
 
     command_preview_pub.publish(preview);
@@ -236,6 +246,9 @@ bool AIRO_TRAJECTORY_SERVER::takeoff(){
         ROS_INFO("[AIRo Trajectory] Vehicle already takeoff!");
         return true;
     }
+    else{
+        return false;
+    }
 }
 
 bool AIRO_TRAJECTORY_SERVER::land(){
@@ -250,5 +263,8 @@ bool AIRO_TRAJECTORY_SERVER::land(){
     else if(fsm_info.is_landed == true){
         ROS_INFO("[AIRo Trajectory] Vehicle has landed!");
         return true;
+    }
+    else{
+        return false;
     }
 }

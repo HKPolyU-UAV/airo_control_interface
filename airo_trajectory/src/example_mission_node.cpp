@@ -87,9 +87,9 @@ int main(int argc, char **argv)
 
             case TRAJ_FILE:{
                 airo_trajectory_server.file_cmd(trajectory_data, row_to_read);
-                // if(airo_trajectory_server.target_reached(airo_trajectory_server.get_end_point(trajectory_data))){
-                //     state = LAND;
-                // }
+                if(airo_trajectory_server.target_reached(airo_trajectory_server.get_end_point(trajectory_data))){
+                    state = LAND;
+                }
                 break;
             }
 

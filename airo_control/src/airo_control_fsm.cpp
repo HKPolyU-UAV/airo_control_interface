@@ -22,7 +22,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/tau_phi",solver_param.tau_phi);
     nh.getParam("airo_control_node/tau_theta",solver_param.tau_theta);
     nh.getParam("airo_control_node/tau_psi",solver_param.tau_psi);
-    nh.getParam("airo_control_node/use_preview",solver_param.use_preview);
+    nh.getParam("airo_control_node/enable_preview",enable_preview);
 
     nh.getParam("airo_control_node/throttle_channel",rc_param.THROTTLE_CHANNEL);
     nh.getParam("airo_control_node/yaw_channel",rc_param.YAW_CHANNEL);
@@ -102,6 +102,7 @@ void AIRO_CONTROL_FSM::process(){
     // Step 6: Reset all triggers
 	rc_input.enter_fsm = false;
 	rc_input.enter_reboot = false;
+    use_preview = false;
 }
 
 void AIRO_CONTROL_FSM::fsm(){
@@ -231,15 +232,8 @@ void AIRO_CONTROL_FSM::fsm(){
             }
 
             // To POS_COMMAND
-            else if (external_command_received(current_time) && external_command_preview_received(current_time)){
-                ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Reject POS_COMMAND. You are sending both setpoint and setpoint_preview commands!");
-            }
-            else if (external_command_preview_received(current_time) && rc_input.is_command && enable_preview){
-                state_fsm = POS_COMMAND;
-                use_preview = true;
-                ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> POS_COMMAND\033[32m");
-            }
-            else if (external_command_received(current_time) && rc_input.is_command ){
+            else if ((external_command_preview_received(current_time) && rc_input.is_command && enable_preview) ||
+                    (external_command_received(current_time) && rc_input.is_command)){
                 state_fsm = POS_COMMAND;
                 ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> POS_COMMAND\033[32m");
             }
@@ -303,26 +297,25 @@ void AIRO_CONTROL_FSM::fsm(){
                 else{
                     ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
                 }
-                use_preview = false;
             }
 
             // To AUTO_HOVER
             else if (!rc_input.is_command || 
             (!external_command_received(current_time) && !external_command_preview_received(current_time)) ||
-            (!external_command_received(current_time) && !use_preview)){
+            (external_command_preview_received(current_time) && !enable_preview)){
                 auto_hover_init();
                 state_fsm = AUTO_HOVER;
-                ROS_INFO("\033[32m[AIRo Control] POS_COMMAND ==>> AUTO_HOVER\033[32m");
-                use_preview = false;           
+                ROS_INFO("\033[32m[AIRo Control] POS_COMMAND ==>> AUTO_HOVER\033[32m");  
             }
 
             // Follow command
             else{
-                if(!use_preview){
-                    set_ref_with_external_command();
+                if(external_command_preview_received(current_time)){
+                    set_ref_with_external_command_preview();
+                    use_preview = true;
                 }
                 else{
-                    set_ref_with_external_command_preview();
+                    set_ref_with_external_command();
                 }
             }
 
