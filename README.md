@@ -9,6 +9,8 @@ This project focuses on developing a control interface with customized outer-loo
 
 ## Installation
 
+It is recommanded to run the code in our docker following instructions ([here](https://github.com/HKPolyU-UAV/docker_practice). By doing so, you can skip this section.
+
 Install Acados at your home directory. If you want to install Acados at other directory, change the acados_include and acados_lib directory written in CMakeLists.txt of airo_control package, and also change /home/acados to your customized directory in the following codes.
 ```
 cd /home
@@ -136,7 +138,12 @@ To use the control interface in command mode, run example mission node in new te
 rosrun airo_trajectory example_mission_node
 ```
 
+Or, you can simply run start.sh in the startup folder.
+
+
 ## Generate MPC Solver
+
+The python scripts used to generate MPC solver is included in ```/airo_control_interface/airo_control/acados_scripts/quadrotor_model.py```. If you want to make modifications and generate MPC solver by your own, follow these instructions.
 
 Install python 3.7
 ```
@@ -152,7 +159,8 @@ sudo pip3 install numpy matplotlib scipy future-fstrings casadi>=3.5.1 setuptool
 sudo apt-get install python3.7-tk
 ```
 
+Generate solver
 ```
-cd airo_control_interface/airo_control/scripts
+cd /home/airo_control_interface/airo_control/acados_scripts
 python3 generate_c_code.py
 ```
