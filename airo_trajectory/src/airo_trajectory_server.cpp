@@ -2,8 +2,10 @@
 
 AIRO_TRAJECTORY_SERVER::AIRO_TRAJECTORY_SERVER(ros::NodeHandle& nh){
     nh.getParam("/airo_trajectory/pose_topic", POSE_TOPIC);
+    nh.getParam("/airo_trajectory/twist_topic", TWIST_TOPIC);
+
     local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,100,&AIRO_TRAJECTORY_SERVER::pose_cb,this);
-    local_twist_sub = nh.subscribe<geometry_msgs::TwistStamped>("/mavros/local_position/velocity_local",100,&AIRO_TRAJECTORY_SERVER::twist_cb,this);
+    local_twist_sub = nh.subscribe<geometry_msgs::TwistStamped>(TWIST_TOPIC,100,&AIRO_TRAJECTORY_SERVER::twist_cb,this);
     fsm_info_sub = nh.subscribe<airo_control::FSMInfo>("/airo_control/fsm_info",10,&AIRO_TRAJECTORY_SERVER::fsm_info_cb,this);
     command_pub = nh.advertise<airo_control::Reference>("/airo_control/setpoint",10);
     command_preview_pub = nh.advertise<airo_control::ReferencePreview>("/airo_control/setpoint_preview",10);

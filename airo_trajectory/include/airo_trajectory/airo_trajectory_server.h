@@ -23,7 +23,7 @@ class AIRO_TRAJECTORY_SERVER{
     airo_control::FSMInfo fsm_info;
     geometry_msgs::PoseStamped local_pose;
     double current_twist;
-    std::string POSE_TOPIC;
+    std::string POSE_TOPIC, TWIST_TOPIC;
     const int preview_size = 41;
 
     public:
