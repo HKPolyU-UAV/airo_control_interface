@@ -11,7 +11,7 @@ reject_takeoff_twist_threshold: 0.15
 hover_max_velocity: 2.5
 hover_max_rate: 2.5
 check_safety_volumn: true
-safety_volumn: [-10.0, 10.0, -10.0, 10.0, -10, 4.0]
+safety_volumn: [-20.0, 20.0, -20.0, 20.0, -10, 10.0]
 
 # RC Transmitter Parameters
 without_rc: true

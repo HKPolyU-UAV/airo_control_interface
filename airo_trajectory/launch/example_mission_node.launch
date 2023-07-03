@@ -1,7 +1,11 @@
 <?xml version="1.0"?>
 <launch>
 
-	<param name="/airo_trajectory/traj_file_name" value="circle.txt" />
+	<!-- <param name="/airo_trajectory/traj_file_name" value="circle.txt" /> -->
+	<!-- <param name="/airo_trajectory/traj_file_name" value="lemniscate.txt" /> -->
+	<!-- <param name="/airo_trajectory/traj_file_name" value="points.txt" /> -->
+	<param name="/airo_trajectory/traj_file_name" value="polynomial.txt" />
+
 	<param name="/airo_trajectory/pose_topic" value="/mavros/local_position/pose" />
 
 	<node pkg="airo_trajectory" type="example_mission_node" name="example_mission_node" output="screen"></node>

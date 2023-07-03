@@ -41,7 +41,7 @@ class AIRO_TRAJECTORY_SERVER{
     void file_traj_init(const std::string&, std::vector<std::vector<double>>&);
     geometry_msgs::Point get_start_point(const std::vector<std::vector<double>>&);
     geometry_msgs::Point get_end_point(const std::vector<std::vector<double>>&);
-    void file_cmd(const std::vector<std::vector<double>>& traj, int&);
+    bool file_cmd(const std::vector<std::vector<double>>& traj, int&);
     void assign_position(const std::vector<std::vector<double>>&, airo_control::ReferencePreview&);
     void assign_twist(const std::vector<std::vector<double>>&, airo_control::ReferencePreview&);
     void assign_accel(const std::vector<std::vector<double>>&, airo_control::ReferencePreview&);

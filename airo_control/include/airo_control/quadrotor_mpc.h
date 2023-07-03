@@ -90,7 +90,7 @@ class QUADROTOR_MPC{
         double tau_theta;
         double tau_psi;
     };
-
+    double lala;
     QUADROTOR_MPC();
     Euler q2rpy(const geometry_msgs::Quaternion&);
     geometry_msgs::Quaternion rpy2q(const Euler&);

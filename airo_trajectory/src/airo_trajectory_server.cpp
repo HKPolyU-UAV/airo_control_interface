@@ -118,7 +118,7 @@ geometry_msgs::Point AIRO_TRAJECTORY_SERVER::get_end_point(const std::vector<std
     return end_point;
 }
 
-void AIRO_TRAJECTORY_SERVER::file_cmd(const std::vector<std::vector<double>>& traj, int& start_row){
+bool AIRO_TRAJECTORY_SERVER::file_cmd(const std::vector<std::vector<double>>& traj, int& start_row){
     const int total_rows = traj.size();
     int path_ended = false;
     std::vector<std::vector<double>> reference;
@@ -183,7 +183,7 @@ void AIRO_TRAJECTORY_SERVER::file_cmd(const std::vector<std::vector<double>>& tr
         }
         else{
             ROS_ERROR("[AIRo Trajectory] Trajectory file dimension wrong!");
-            return;
+            return false;
         }
     }
     else{
@@ -194,6 +194,8 @@ void AIRO_TRAJECTORY_SERVER::file_cmd(const std::vector<std::vector<double>>& tr
     }
 
     command_preview_pub.publish(preview);
+
+    return path_ended;
 }
 
 void AIRO_TRAJECTORY_SERVER::assign_position(const std::vector<std::vector<double>>& reference, airo_control::ReferencePreview& preview){

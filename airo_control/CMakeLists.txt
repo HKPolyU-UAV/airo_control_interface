@@ -26,7 +26,7 @@ find_package(yaml-cpp REQUIRED)
 # set(acados_lib $ENV{HOME}/acados/lib)
 set(acados_include /home/acados/include)
 set(acados_lib /home/acados/lib)
-set(quadrotor_model ${PROJECT_SOURCE_DIR}/scripts/c_generated_code)
+set(quadrotor_model ${PROJECT_SOURCE_DIR}/acados_scripts/c_generated_code)
 
 add_message_files(
   FILES
