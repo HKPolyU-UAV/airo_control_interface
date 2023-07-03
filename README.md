@@ -2,7 +2,6 @@
 This project focuses on developing a control interface with customized outer-loop MPC position controller.
 
 ## Prerequisites
-* Python 3.7
 * ROS ([ROS noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) recommended)
 * [QGroundControl](http://qgroundcontrol.com/)
 * [MAVROS](http://wiki.ros.org/mavros)
@@ -10,60 +9,44 @@ This project focuses on developing a control interface with customized outer-loo
 
 ## Installation
 
-Install python 3.7
+Install Acados at your home directory. If you want to install Acados at other directory, change the acados_include and acados_lib directory written in CMakeLists.txt of airo_control package, and also change /home/acados to your customized directory in the following codes.
 ```
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt update
-sudo apt install python3.7
-```
-
-Install python dependencies
-```
-python3 -m pip install pip
-sudo pip3 install numpy matplotlib scipy future-fstrings casadi>=3.5.1 setuptools
-sudo apt-get install python3.7-tk
-```
-
-Install Acados at your home directory. If you want to install Acados at other directory, change the acados_include and acados_lib directory written in CMakeLists.txt of airo_control package.
-```
-cd ~
+cd /home
 git clone https://github.com/acados/acados.git
 cd acados
 git checkout 568e46c
 git submodule update --recursive --init
 mkdir -p build
 cd build
-cmake -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=<acados_root> ..
+cmake -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=/home/acados ..
 sudo make install -j4
-pip install -e <acados_root>/interfaces/acados_template
+pip install -e /home/acados/interfaces/acados_template
 ```
 
-Add the path to the compiled shared libraries (Hint: you can add these lines to your ```.bashrc``` by ```sudo gedit ~/.bashrc```)
+Add the path to ```.bashrc```
 ```
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"<acados_root>/lib"
-export ACADOS_SOURCE_DIR="<acados_root>"
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"/home/acados/lib"" >> ~/.bashrc
+echo "export ACADOS_SOURCE_DIR="/home/acados"" >> ~/.bashrc
 ```
 
-Create a catkin workspace and clone this repository to src folder (ex. ~/airo_control_interface_ws/src)
+Create a catkin workspace and clone this repository to src folder (ex. /home/airo_control_interface_ws/src)
 ```
-mkdir -p ~/airo_control_interface_ws/src
-cd ~/airo_control_interface_ws/
+mkdir -p /home/airo_control_interface_ws/src
+cd /home/airo_control_interface_ws/
 catkin_make
 cd src
-git clone [https://github.com/HKPolyU-UAV/airo_px4.git](https://github.com/HKPolyU-UAV/airo_control_interface.git)
+git clone https://github.com/HKPolyU-UAV/airo_control_interface.git
 ```
 
 Run acados scripts to generate MPC solver and build the package.
 ```
-cd airo_control_interface/airo_control/scripts
-python3 generate_c_code.py
-cd ~/airo_control_interface_ws
+cd /home/airo_control_interface_ws
 catkin_make
 ```
 
 Download and install the PX4 (1.11.0)
 ```
-cd ~
+cd /home
 git clone https://github.com/PX4/PX4-Autopilot.git
 cd PX4-Autopilot/
 git checkout 71db090
@@ -72,7 +55,6 @@ git submodule update --init --recursive
 bash ./Tools/setup/ubuntu.sh
 sudo apt upgrade libignition-math4 #(libignition-math2 for melodic)
 ```
-
 ## Hardware Setup
 
 To use this interface with RC transmitter, the joystick and switch channels should be configured first. In QGC setup, only set emergency kill switch and flight mode switch channel. To use the framework in simulation, set parameter COM_RCIN_MODE to "RC and Joystick with fallback", connect RC transmitter via usb serial, calibrate the joysticks in "Joysticks" tab and you should be able to read channel inputs in QGC "Radio" tab.
@@ -106,6 +88,8 @@ In this state, the vehicle will automatically land and disarm at current x&y pos
 
 In this state, the vehicle will follow external position command subscribed from “/airo_px4/setpoint“.
 
+Note that in all states, the position reference given to the controler is confined by the safety constraints set in ```.yaml``` file
+
 ## Usage
 
 1. Preparation 
@@ -119,19 +103,22 @@ To use in non-command mode, first disable the command channel and then switch th
 
 3. Command Mode 
 
-To use in command mode, first enable the command channel and then enable the FSM channel. Then the user can send takeoff trigger to topic “/airo_px4/takeoff_land_trigger“. After auto takeoff, the FSM will publish indicator to topic “/airo_px4/fsm_info“. Note that the command mode is capable to be used without RC transmitter. 
+To use in command mode, first enable the command channel and then enable the FSM channel. Note that the command mode is capable to be used without RC transmitter by setting parameter ```without_rc``` to true. Then the user can send takeoff trigger to topic “/airo_px4/takeoff_land_trigger“. After auto takeoff, the FSM will publish indicator ```is_waiting_for_command = true``` to topic “/airo_px4/fsm_info". By receiving the indicator, the quadrotor will follow commands published to ```/airo_control/setpoint``` (or ```/airo_control/setpoint_preview``` if MPC is used). Note that the user can publish either position, position&twist, or position&twist&acceleration commands. Besides, if no yaw angle is published, the controller will track yaw angle ```psi = 0```.
+
+The airo_trajectory package can also publish commands predefined in .txt file. Several trajectories are defined in ```airo_trajectory/traj```, and the python scripts used to generate .txt files are also included. Note that sample time should be set to be the same as controller, which in 0.025s by default, since a new row in the file will be published every ros spin. In the .txt file, make sure that the first three columns are position reference, and you can add 3 more columns of twist reference, or 6 more columns of twist&acceleration reference. You can choose whether to add yaw reference, if yes, always add the reference yaw angle in rad at the last column. Therefore, the .txt file can have either 3 column (position), 6 column (position,twist), 9 column (position,twist,acceleration), 4 column (position,yaw), 7 column (position,twist,yaw), and 10 column (position,twist,acceleration,yaw).
+
+Refer to example_mission_node.cpp for more details.
 
 ## Running Simulation
 
 Start PX4 SITL
 ```
-cd ~/PX4-Autopilot/
+cd /home/PX4-Autopilot/
 make px4_sitl_default gazebo
 ```
 
 Run MAVROS
 ```
-source ~/airo_control_interface_ws/devel/setup.bash
 roslaunch airo_control mavros_px4.launch
 ```
 
@@ -139,7 +126,6 @@ Open QGC and make sure the UAV is connected.
 
 Start control interface in new terminal
 ```
-source ~/airo_control_interface_ws/devel/setup.bash
 roslaunch airo_control gazebo_fsm.launch
 ```
 
@@ -147,6 +133,26 @@ Now you have control over the quadrotor with RC transmitter connect via USB seri
 
 To use the control interface in command mode, run example mission node in new terminal
 ```
-source ~/airo_control_interface_ws/devel/setup.bash
 rosrun airo_trajectory example_mission_node
+```
+
+## Generate MPC Solver
+
+Install python 3.7
+```
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.7
+```
+
+Install python dependencies
+```
+python3 -m pip install pip
+sudo pip3 install numpy matplotlib scipy future-fstrings casadi>=3.5.1 setuptools
+sudo apt-get install python3.7-tk
+```
+
+```
+cd airo_control_interface/airo_control/scripts
+python3 generate_c_code.py
 ```
