@@ -330,8 +330,17 @@ int main(int argc, char **argv){
                 std::cout<<"tau_phi = "<<tau_phi<<std::endl;
                 std::cout<<"tau_theta = "<<tau_theta<<std::endl;
                 std::cout<<"tau_psi = "<<tau_psi<<std::endl;
-                if (hover_thrust < 0.1 || hover_thrust > 0.8){
+                if (hover_thrust < 0.1 || hover_thrust > 0.7){
                     ROS_ERROR("Identified hover thrust out of normal range!");
+                }
+                else if (tau_phi < 0.1 || tau_phi > 0.25){
+                    ROS_ERROR("Identified tau_phi out of normal range!");
+                }
+                else if (tau_theta < 0.1 || tau_theta > 0.25){
+                    ROS_ERROR("Identified tau_theta out of normal range!");
+                }
+                else if (tau_psi < 0.4 || tau_psi > 0.9){
+                    ROS_ERROR("Identified tau_psi out of normal range!");
                 }
                 std::cout<<"Save the parameters to .yaml file? (y/n)"<<std::endl;
                 std::string input;
