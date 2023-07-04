@@ -164,3 +164,7 @@ Generate solver
 cd /home/airo_control_interface/airo_control/acados_scripts
 python3 generate_c_code.py
 ```
+
+## MPC System Identification
+
+To use the control framework with MPC, the quadrotor model parameters should first be identified, which includes hover thrust and inner control loop dynamics for pitch, roll, and yaw movements. In order to do this, first make sure that the quadrotor can be used in position flight mode, then launch ```system_id.launch``` in ```airo_control``` package. The quadrotor will automatically takeoff, perform maneuvers in all axes, and land. Once it's landed, the identified parameters will be displayed in terminal and you can save it in ```.yaml``` file by input ```y```.
