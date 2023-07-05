@@ -21,19 +21,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 
-# set(acados_include $ENV{HOME}/acados/include)
-# set(acados_lib $ENV{HOME}/acados/lib)
-# set(quadrotor_model ${PROJECT_SOURCE_DIR}/scripts/c_generated_code)
-
-# add_message_files(
-#   FILES
-#   TakeoffLandTrigger.msg
-#   FSMInfo.msg
-#   Reference.msg
-# )
-
-# generate_messages(DEPENDENCIES std_msgs geometry_msgs)
-
 catkin_package(
  INCLUDE_DIRS include
 #  LIBRARIES airo_trajectory
