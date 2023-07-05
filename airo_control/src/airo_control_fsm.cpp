@@ -13,7 +13,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/takeoff_land_speed",TAKEOFF_LAND_SPEED);
     nh.getParam("airo_control_node/reject_takeoff_twist_threshold",REJECT_TAKEOFF_TWIST_THRESHOLD);
     nh.getParam("airo_control_node/hover_max_velocity",HOVER_MAX_VELOCITY);
-    nh.getParam("airo_control_node/hover_max_rate",HOVER_MAX_RATE);
+    nh.getParam("airo_control_node/hover_max_yaw_rate",HOVER_MAX_YAW_RATE);
     nh.getParam("airo_control_node/check_safety_volumn",CHECK_SAFETY_VOLUMN);
     nh.getParam("airo_control_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
     nh.getParam("airo_control_node/without_rc",WITHOUT_RC);
@@ -465,7 +465,7 @@ void AIRO_CONTROL_FSM::set_ref_with_rc(){
     rc_ref.pose.position.x = controller_ref.ref_pose.position.x + rc_input.channel[rc_param.PITCH_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_PITCH ? -1 : 1);
     rc_ref.pose.position.y = controller_ref.ref_pose.position.y - rc_input.channel[rc_param.ROLL_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_ROLL ? -1 : 1);
     rc_ref.pose.position.z = controller_ref.ref_pose.position.z + rc_input.channel[rc_param.THROTTLE_CHANNEL-1]*HOVER_MAX_VELOCITY*delta_t*(rc_param.REVERSE_THROTTLE ? -1 : 1);
-    rc_psi = controller_psi - rc_input.channel[rc_param.YAW_CHANNEL-1]*HOVER_MAX_RATE*delta_t*(rc_param.REVERSE_YAW ? -1 : 1);
+    rc_psi = controller_psi - rc_input.channel[rc_param.YAW_CHANNEL-1]*HOVER_MAX_YAW_RATE*delta_t*(rc_param.REVERSE_YAW ? -1 : 1);
 
     rc_ref.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, rc_psi);
     rc_ref.pose.position = check_safety_volumn(rc_ref.pose.position);

@@ -41,7 +41,7 @@ class AIRO_CONTROL_FSM{
 	double TAKEOFF_LAND_SPEED;
 	double REJECT_TAKEOFF_TWIST_THRESHOLD;
 	double HOVER_MAX_VELOCITY;
-	double HOVER_MAX_RATE;
+	double HOVER_MAX_YAW_RATE;
 	bool CHECK_SAFETY_VOLUMN;
 	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y min_z max_z
 	bool WITHOUT_RC;
