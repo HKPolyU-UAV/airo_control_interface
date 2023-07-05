@@ -10,7 +10,6 @@
 #include <airo_control/Reference.h>
 #include <airo_control/ReferencePreview.h>
 
-
 #include <iostream>
 #include <fstream>
 
