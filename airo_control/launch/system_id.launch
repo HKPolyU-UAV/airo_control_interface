@@ -2,10 +2,10 @@
 <launch>
 
 	<param name="pose_topic" value="/mavros/vision_pose/pose" />
-	<param name="yaml_file" value="/config/vicon_quadrotor.yaml" />
+	<param name="yaml_file" value="/config/mpc_param.yaml" />
 
 	<node pkg="airo_control" type="system_identification" name="system_identification_node" output="screen">
-        <rosparam command="load" file="$(find airo_control)/config/vicon_quadrotor.yaml" />
+        <rosparam command="load" file="$(find airo_control)/config/mpc_param.yaml" />
 	</node>
 
 </launch>

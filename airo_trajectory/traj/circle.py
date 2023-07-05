@@ -8,8 +8,8 @@ import numpy as np
 sample_time = 1/40             # seconds
 duration = 30                  # seconds
 
-r = 5                        # m
-v = 3                          # m/s
+r = 2.5                        # m
+v = 2.5                          # m/s
 
 # Circle Center
 x0 = 0.5                

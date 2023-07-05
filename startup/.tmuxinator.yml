@@ -6,11 +6,10 @@ windows:
       layout: tiled
       panes:
         - roscore
-        - ./shell_scripts.sh; cd /home/PX4-Autopilot;
-          make px4_sitl_default gazebo
         - ./shell_scripts.sh; roslaunch airo_control mavros_px4.launch
+        - ./shell_scripts.sh; roslaunch airo_control vrpn.launch
   - control_interface:
       layout: tiled
       panes:
-        - ./shell_scripts.sh; roslaunch airo_control gazebo_fsm.launch
+        - ./shell_scripts.sh; roslaunch airo_control fsm.launch
         - ./shell_scripts.sh; roslaunch airo_trajectory example_mission_node.launch

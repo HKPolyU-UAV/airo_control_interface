@@ -1,0 +1,5 @@
+hover_thrust: 0.20
+tau_phi: 0.1667
+tau_theta: 0.1667
+tau_psi: 0.75
+enable_preview: true

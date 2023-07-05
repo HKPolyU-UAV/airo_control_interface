@@ -6,9 +6,6 @@
 	<!-- <param name="/airo_trajectory/traj_file_name" value="points.txt" /> -->
 	<param name="/airo_trajectory/traj_file_name" value="polynomial.txt" />
 
-	<param name="/airo_trajectory/pose_topic" value="/mavros/local_position/pose" />
-	<param name="/airo_trajectory/twist_topic" value="/mavros/local_position/velocity_local" />
-
 	<node pkg="airo_trajectory" type="example_mission_node" name="example_mission_node" output="screen"></node>
 
 </launch>
