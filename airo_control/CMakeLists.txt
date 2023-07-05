@@ -14,9 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   roslaunch
   geometry_msgs
   mavros_msgs
-  message_generation
-  message_runtime
   tf
+  airo_message
 )
 
 find_package(Eigen3 REQUIRED)
@@ -28,20 +27,10 @@ set(acados_include /home/acados/include)
 set(acados_lib /home/acados/lib)
 set(quadrotor_model ${PROJECT_SOURCE_DIR}/acados_scripts/c_generated_code)
 
-add_message_files(
-  FILES
-  TakeoffLandTrigger.msg
-  FSMInfo.msg
-  Reference.msg
-  ReferencePreview.msg
-)
-
-generate_messages(DEPENDENCIES std_msgs geometry_msgs)
-
 catkin_package(
  INCLUDE_DIRS include
 #  LIBRARIES airo_control
- CATKIN_DEPENDS roscpp message_runtime
+ CATKIN_DEPENDS roscpp airo_message
 #  DEPENDS system_lib
 )
 
@@ -73,4 +62,9 @@ add_executable(system_identification src/system_identification.cpp)
 target_link_libraries(system_identification
   ${catkin_LIBRARIES}
   yaml-cpp
+)
+
+add_executable(example_mission_node src/example_mission_node.cpp)
+target_link_libraries(example_mission_node
+  ${catkin_LIBRARIES}
 )
