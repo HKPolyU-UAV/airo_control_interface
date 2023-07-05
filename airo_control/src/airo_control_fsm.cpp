@@ -13,7 +13,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/takeoff_land_speed",TAKEOFF_LAND_SPEED);
     nh.getParam("airo_control_node/reject_takeoff_twist_threshold",REJECT_TAKEOFF_TWIST_THRESHOLD);
     nh.getParam("airo_control_node/hover_max_velocity",HOVER_MAX_VELOCITY);
-    nh.getParam("airo_control_node/hover_max_yaw)rate",HOVER_MAX_YAW_RATE);
+    nh.getParam("airo_control_node/hover_max_yaw_rate",HOVER_MAX_YAW_RATE);
     nh.getParam("airo_control_node/check_safety_volumn",CHECK_SAFETY_VOLUMN);
     nh.getParam("airo_control_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
     nh.getParam("airo_control_node/without_rc",WITHOUT_RC);
