@@ -46,11 +46,11 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,&AIRO_CONTROL_FSM::state_cb,this);
     extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",10,&AIRO_CONTROL_FSM::extended_state_cb,this);
     rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",10,&AIRO_CONTROL_FSM::rc_input_cb,this);
-    command_sub = nh.subscribe<airo_control::Reference>("/airo_control/setpoint",50,&AIRO_CONTROL_FSM::external_command_cb,this);
-    command_preview_sub = nh.subscribe<airo_control::ReferencePreview>("/airo_control/setpoint_preview",50,&AIRO_CONTROL_FSM::external_command_preview_cb,this);
-    takeoff_land_sub = nh.subscribe<airo_control::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",10,&AIRO_CONTROL_FSM::takeoff_land_cb,this);
+    command_sub = nh.subscribe<airo_message::Reference>("/airo_control/setpoint",50,&AIRO_CONTROL_FSM::external_command_cb,this);
+    command_preview_sub = nh.subscribe<airo_message::ReferencePreview>("/airo_control/setpoint_preview",50,&AIRO_CONTROL_FSM::external_command_preview_cb,this);
+    takeoff_land_sub = nh.subscribe<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",10,&AIRO_CONTROL_FSM::takeoff_land_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
-    fsm_info_pub = nh.advertise<airo_control::FSMInfo>("/airo_control/fsm_info",10);
+    fsm_info_pub = nh.advertise<airo_message::FSMInfo>("/airo_control/fsm_info",10);
 
     // ROS Services
     setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
@@ -648,21 +648,29 @@ void AIRO_CONTROL_FSM::rc_input_cb(const mavros_msgs::RCIn::ConstPtr& msg){
     }
 }
 
-void AIRO_CONTROL_FSM::external_command_cb(const airo_control::Reference::ConstPtr& msg){
+void AIRO_CONTROL_FSM::external_command_cb(const airo_message::Reference::ConstPtr& msg){
     external_command.header.stamp = msg->header.stamp;
     external_command.ref_pose = msg->ref_pose;
     external_command.ref_twist = msg->ref_twist;
     external_command.ref_accel = msg->ref_accel;
+    if (msg->ref_pose.orientation.w == 0.0 && msg->ref_pose.orientation.x == 0.0 && msg->ref_pose.orientation.y == 0.0 && msg->ref_pose.orientation.z == 0.0){
+        external_command.ref_pose.orientation.w = 1.0;
+    }
 }
 
-void AIRO_CONTROL_FSM::external_command_preview_cb(const airo_control::ReferencePreview::ConstPtr& msg){
+void AIRO_CONTROL_FSM::external_command_preview_cb(const airo_message::ReferencePreview::ConstPtr& msg){
     external_command_preview.header = msg->header;
     external_command_preview.ref_pose = msg->ref_pose;
     external_command_preview.ref_twist = msg->ref_twist;
     external_command_preview.ref_accel = msg->ref_accel;
+    for (int i = 0; i < msg->ref_pose.size(); i++){
+        if (msg->ref_pose[i].orientation.w == 0.0 && msg->ref_pose[i].orientation.x == 0.0 && msg->ref_pose[i].orientation.y == 0.0 && msg->ref_pose[i].orientation.z == 0.0){
+            external_command.ref_pose.orientation.w = 1.0;
+        } 
+    }
 }
 
-void AIRO_CONTROL_FSM::takeoff_land_cb(const airo_control::TakeoffLandTrigger::ConstPtr& msg){
+void AIRO_CONTROL_FSM::takeoff_land_cb(const airo_message::TakeoffLandTrigger::ConstPtr& msg){
     takeoff_land_trigger.header.stamp = msg->header.stamp;
     takeoff_land_trigger.takeoff_land_trigger = msg->takeoff_land_trigger;
 }
