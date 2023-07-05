@@ -6,10 +6,10 @@ windows:
       layout: tiled
       panes:
         - roscore
-        - ./shell_scripts.sh; roslaunch airo_control mavros_px4.launch
-        - ./shell_scripts.sh; roslaunch airo_control vrpn.launch
+        - ./wait_for_ros.sh; roslaunch airo_control mavros_px4.launch
+        - ./wait_for_ros.sh; roslaunch airo_control vrpn.launch
   - control_interface:
       layout: tiled
       panes:
-        - ./shell_scripts.sh; roslaunch airo_control fsm.launch
-        - ./shell_scripts.sh; roslaunch airo_trajectory example_mission_node.launch
+        - ./wait_for_ros.sh; roslaunch airo_control fsm.launch
+        - ./wait_for_ros.sh; roslaunch airo_trajectory example_mission_node.launch
