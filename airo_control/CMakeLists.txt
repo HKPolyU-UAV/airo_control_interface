@@ -21,8 +21,8 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(Eigen3 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
-set(acados_include $ENV{HOME}/acados/include)
-set(acados_lib $ENV{HOME}/acados/lib)
+set(acados_include /home/acados/include)
+set(acados_lib /home/acados/lib)
 set(quadrotor_model ${PROJECT_SOURCE_DIR}/acados_scripts/c_generated_code)
 
 catkin_package(
