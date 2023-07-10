@@ -13,6 +13,7 @@
 class BASE_CONTROLLER{
 protected:
     struct Param{
+        bool show_debug;
         double hover_thrust;
     };
     Param param;

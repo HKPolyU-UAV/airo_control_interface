@@ -24,7 +24,6 @@ class MPC : public BASE_CONTROLLER{
             double tau_phi;
             double tau_theta;
             double tau_psi;
-            bool show_debug;
             bool enable_preview;
         };
 
