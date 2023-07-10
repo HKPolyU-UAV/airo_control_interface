@@ -6,7 +6,7 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "airo_control_node");
     ros::NodeHandle nh;
-    ros::Rate loop_rate(100);
+    ros::Rate loop_rate(40);
 
     AIRO_CONTROL_FSM fsm(nh);
 
