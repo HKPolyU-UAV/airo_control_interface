@@ -1,44 +1,35 @@
 #include "airo_control/airo_control_fsm.h"
 
 AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
-    // Initialize FSM
-    state_fsm = RC_MANUAL;
-
     // ROS Parameters
-    nh.getParam("airo_control_node/pose_topic",POSE_TOPIC);
-    nh.getParam("airo_control_node/twist_topic",TWIST_TOPIC);
-    nh.getParam("airo_control_node/message_timeout",MESSAGE_TIMEOUT);
-    nh.getParam("airo_control_node/motor_speedup_time",MOTOR_SPEEDUP_TIME);
-    nh.getParam("airo_control_node/takeoff_height",TAKEOFF_HEIGHT);
-    nh.getParam("airo_control_node/takeoff_land_speed",TAKEOFF_LAND_SPEED);
-    nh.getParam("airo_control_node/reject_takeoff_twist_threshold",REJECT_TAKEOFF_TWIST_THRESHOLD);
-    nh.getParam("airo_control_node/hover_max_velocity",HOVER_MAX_VELOCITY);
-    nh.getParam("airo_control_node/hover_max_yaw_rate",HOVER_MAX_YAW_RATE);
-    nh.getParam("airo_control_node/check_safety_volumn",CHECK_SAFETY_VOLUMN);
-    nh.getParam("airo_control_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
-    nh.getParam("airo_control_node/without_rc",WITHOUT_RC);
+    nh.getParam("airo_control_node/fsm/controller_type",CONTROLLER_TYPE);
+    nh.getParam("airo_control_node/fsm/pose_topic",POSE_TOPIC);
+    nh.getParam("airo_control_node/fsm/twist_topic",TWIST_TOPIC);
+    nh.getParam("airo_control_node/fsm/message_timeout",MESSAGE_TIMEOUT);
+    nh.getParam("airo_control_node/fsm/motor_speedup_time",MOTOR_SPEEDUP_TIME);
+    nh.getParam("airo_control_node/fsm/takeoff_height",TAKEOFF_HEIGHT);
+    nh.getParam("airo_control_node/fsm/takeoff_land_speed",TAKEOFF_LAND_SPEED);
+    nh.getParam("airo_control_node/fsm/reject_takeoff_twist_threshold",REJECT_TAKEOFF_TWIST_THRESHOLD);
+    nh.getParam("airo_control_node/fsm/hover_max_velocity",HOVER_MAX_VELOCITY);
+    nh.getParam("airo_control_node/fsm/hover_max_yaw_rate",HOVER_MAX_YAW_RATE);
+    nh.getParam("airo_control_node/fsm/check_safety_volumn",CHECK_SAFETY_VOLUMN);
+    nh.getParam("airo_control_node/fsm/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y max_z
+    nh.getParam("airo_control_node/fsm/without_rc",WITHOUT_RC);
 
-    nh.getParam("airo_control_node/hover_thrust",mpc_param.hover_thrust);
-    nh.getParam("airo_control_node/tau_phi",mpc_param.tau_phi);
-    nh.getParam("airo_control_node/tau_theta",mpc_param.tau_theta);
-    nh.getParam("airo_control_node/tau_psi",mpc_param.tau_psi);
-    nh.getParam("airo_control_node/show_debug",mpc_param.show_debug);
-    nh.getParam("airo_control_node/enable_preview",enable_preview);
-
-    nh.getParam("airo_control_node/throttle_channel",rc_param.THROTTLE_CHANNEL);
-    nh.getParam("airo_control_node/yaw_channel",rc_param.YAW_CHANNEL);
-    nh.getParam("airo_control_node/pitch_channel",rc_param.PITCH_CHANNEL);
-    nh.getParam("airo_control_node/roll_channel",rc_param.ROLL_CHANNEL);
-    nh.getParam("airo_control_node/fsm_channel",rc_param.FSM_CHANNEL);
-    nh.getParam("airo_control_node/command_channel",rc_param.COMMAND_CHANNEL);
-    nh.getParam("airo_control_node/reboot_channel",rc_param.REBOOT_CHANNEL);
-    nh.getParam("airo_control_node/reverse_throttle",rc_param.REVERSE_THROTTLE);
-    nh.getParam("airo_control_node/reverse_yaw",rc_param.REVERSE_YAW);
-    nh.getParam("airo_control_node/reverse_pitch",rc_param.REVERSE_PITCH);
-    nh.getParam("airo_control_node/reverse_roll",rc_param.REVERSE_ROLL);
-    nh.getParam("airo_control_node/switch_threshold",rc_param.SWITCH_THRESHOLD);
-    nh.getParam("airo_control_node/joystick_deadzone",rc_param.JOYSTICK_DEADZONE);
-    nh.getParam("airo_control_node/check_centered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
+    nh.getParam("airo_control_node/fsm/throttle_channel",rc_param.THROTTLE_CHANNEL);
+    nh.getParam("airo_control_node/fsm/yaw_channel",rc_param.YAW_CHANNEL);
+    nh.getParam("airo_control_node/fsm/pitch_channel",rc_param.PITCH_CHANNEL);
+    nh.getParam("airo_control_node/fsm/roll_channel",rc_param.ROLL_CHANNEL);
+    nh.getParam("airo_control_node/fsm/fsm_channel",rc_param.FSM_CHANNEL);
+    nh.getParam("airo_control_node/fsm/command_channel",rc_param.COMMAND_CHANNEL);
+    nh.getParam("airo_control_node/fsm/reboot_channel",rc_param.REBOOT_CHANNEL);
+    nh.getParam("airo_control_node/fsm/reverse_throttle",rc_param.REVERSE_THROTTLE);
+    nh.getParam("airo_control_node/fsm/reverse_yaw",rc_param.REVERSE_YAW);
+    nh.getParam("airo_control_node/fsm/reverse_pitch",rc_param.REVERSE_PITCH);
+    nh.getParam("airo_control_node/fsm/reverse_roll",rc_param.REVERSE_ROLL);
+    nh.getParam("airo_control_node/fsm/switch_threshold",rc_param.SWITCH_THRESHOLD);
+    nh.getParam("airo_control_node/fsm/joystick_deadzone",rc_param.JOYSTICK_DEADZONE);
+    nh.getParam("airo_control_node/fsm/check_centered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
 
     // ROS Sub & Pub
     pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,10,&AIRO_CONTROL_FSM::pose_cb,this);
@@ -58,16 +49,30 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
     reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
 
-    // Init
+    // Initialize FSM
+    state_fsm = RC_MANUAL;
+    if (CONTROLLER_TYPE == "mpc"){
+        controller = std::make_unique<MPC>(nh);
+    }
+    else if (CONTROLLER_TYPE == "sliding_mode"){
+        ROS_ERROR("[AIRo Control] Sliding mode control not supported yet!");
+        // controller = std::make_unique<SLIDING_MODE_CONTROLLER>(nh);
+    }
+    else {
+        ROS_ERROR("[AIRo Control] Invalid controller type!");
+    }
     rc_input.set_rc_param(rc_param);
     controller_ref.header.stamp = ros::Time::now();
 
     // For MPC Preview
-    if(enable_preview){
-        controller_ref_preview.header.stamp = ros::Time::now();
-        controller_ref_preview.ref_pose.resize(QUADROTOR_N+1);
-        controller_ref_preview.ref_twist.resize(QUADROTOR_N+1);
-        controller_ref_preview.ref_accel.resize(QUADROTOR_N+1);
+    if(auto dummy_mpc = dynamic_cast<MPC*>(controller.get())){
+        enable_preview = dummy_mpc->param.enable_preview;
+        if (enable_preview){
+            controller_ref_preview.header.stamp = ros::Time::now();
+            controller_ref_preview.ref_pose.resize(QUADROTOR_N+1);
+            controller_ref_preview.ref_twist.resize(QUADROTOR_N+1);
+            controller_ref_preview.ref_accel.resize(QUADROTOR_N+1);
+        }
     }
 }
 
@@ -83,12 +88,12 @@ void AIRO_CONTROL_FSM::process(){
     // Step 3: Solve position controller if needed
     if(solve_controller){
         if (!use_preview){
-            attitude_target = controller.solve(local_pose,local_twist,local_accel,controller_ref,mpc_param);
+            attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref);
         }
         else{
-            attitude_target = controller.solve(local_pose,local_twist,local_accel,controller_ref_preview,mpc_param);
+            MPC* dummy_mpc = dynamic_cast<MPC*>(controller.get());
+            attitude_target = dummy_mpc->solve(local_pose,local_twist,local_accel,controller_ref_preview);
         }
-
     }
 
     // Step 4: Publish control commands and fsm state
@@ -414,7 +419,7 @@ bool AIRO_CONTROL_FSM::toggle_arm(bool flag){
 void AIRO_CONTROL_FSM::get_motor_speedup(){
     while(ros::ok() && (current_time - takeoff_land_time).toSec() < MOTOR_SPEEDUP_TIME){
         double delta_t = (current_time - takeoff_land_time).toSec();
-	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*mpc_param.hover_thrust*0.6 + 0.005;
+	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*controller->get_hover_thrust()*0.6 + 0.005;
 
         attitude_target.thrust = ref_thrust;
         attitude_target.orientation.w = takeoff_land_pose.pose.orientation.w;
@@ -610,8 +615,8 @@ geometry_msgs::Point AIRO_CONTROL_FSM::check_safety_volumn(const geometry_msgs::
         }
         else safe_point.y = ref_point.y; // y_min < y_ref < y_max
 
-        if (ref_point.z > SAFETY_VOLUMN[5]){ // z_ref > z_max
-            safe_point.z = SAFETY_VOLUMN[5];
+        if (ref_point.z > SAFETY_VOLUMN[4]){ // z_ref > z_max
+            safe_point.z = SAFETY_VOLUMN[4];
             ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] Z command too large!");
         }
         else safe_point.z = ref_point.z; // z_ref < z_max

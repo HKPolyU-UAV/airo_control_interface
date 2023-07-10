@@ -18,8 +18,7 @@
 #include <airo_message/ReferencePreview.h>
 #include <airo_message/TakeoffLandTrigger.h>
 #include "airo_control/rc_input.h"
-#include "airo_control/quadrotor_mpc.h"
-
+#include "airo_control/controller/mpc.h"
 
 class AIRO_CONTROL_FSM{
     private:
@@ -33,6 +32,7 @@ class AIRO_CONTROL_FSM{
 	};
 
 	// Parameters
+	std::string CONTROLLER_TYPE;
 	std::string POSE_TOPIC;
 	std::string TWIST_TOPIC;
 	double MESSAGE_TIMEOUT;
@@ -43,8 +43,9 @@ class AIRO_CONTROL_FSM{
 	double HOVER_MAX_VELOCITY;
 	double HOVER_MAX_YAW_RATE;
 	bool CHECK_SAFETY_VOLUMN;
-	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y min_z max_z
+	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y max_z
 	bool WITHOUT_RC;
+
 
 	// Variables
 	STATE_FSM state_fsm;
@@ -53,7 +54,8 @@ class AIRO_CONTROL_FSM{
 	bool solve_controller;
 	bool is_landed;
 	bool is_armed;
-	bool use_preview = false;
+	bool enable_preview = false; // Only for MPC
+	bool use_preview = false; // Only for MPC
 
 	// Times
 	ros::Time current_time;
@@ -95,10 +97,8 @@ class AIRO_CONTROL_FSM{
 	mavros_msgs::State previous_state;
 	mavros_msgs::ExtendedState current_extended_state;
 
-	//Controller
-	QUADROTOR_MPC controller;
-	QUADROTOR_MPC::MPCParam mpc_param;
-	bool enable_preview = false;
+	// Controller
+	std::unique_ptr<BASE_CONTROLLER> controller;
 
 	public:
 

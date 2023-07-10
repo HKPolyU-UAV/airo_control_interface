@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(airo_control)
 
 ## Compile as C++17, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -47,7 +47,8 @@ link_directories(${quadrotor_model})
 add_executable(airo_control_node
   src/airo_control_node.cpp
   src/airo_control_fsm.cpp
-  src/quadrotor_mpc.cpp
+  src/controller/base_controller.cpp
+  src/controller/mpc.cpp
   src/rc_input.cpp
 )
 target_link_libraries(airo_control_node
