@@ -2,5 +2,5 @@ hover_thrust: 0.5671182687919919
 tau_phi: 0.1913224770756171
 tau_theta: 0.1882165452489929
 tau_psi: 0.7345311062634732
-show_debug: true
+show_debug: false
 enable_preview: true
