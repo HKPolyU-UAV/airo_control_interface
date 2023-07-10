@@ -6,8 +6,9 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "airo_control_node");
     ros::NodeHandle nh;
-    ros::Rate loop_rate(40);
-
+    int FSM_FREQUENCY;
+    nh.getParam("airo_control_node/fsm_frequency",FSM_FREQUENCY);
+    ros::Rate loop_rate(FSM_FREQUENCY);
     AIRO_CONTROL_FSM fsm(nh);
 
     while(ros::ok()){

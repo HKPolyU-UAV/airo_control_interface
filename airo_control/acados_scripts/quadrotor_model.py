@@ -89,7 +89,7 @@ def main():
 
     # Set prediction size
     Tf = 1.0    # Prediction horizon (seconds)
-    N = 40      # Prediction steps
+    N = 20      # Prediction steps
     ocp.dims.N = N
 
     # set parameters

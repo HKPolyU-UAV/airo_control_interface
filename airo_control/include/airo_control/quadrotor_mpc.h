@@ -83,18 +83,19 @@ class QUADROTOR_MPC{
     
     public:
 
-    struct SolverParam{
+    struct MPCParam{
         double hover_thrust;
         double tau_phi;
         double tau_theta;
         double tau_psi;
+        bool show_debug;
     };
 
     QUADROTOR_MPC();
     Euler q2rpy(const geometry_msgs::Quaternion&);
     geometry_msgs::Quaternion rpy2q(const Euler&);
-    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&, const SolverParam&);
-    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferencePreview&, const SolverParam&);
+    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&, const MPCParam&);
+    mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferencePreview&, const MPCParam&);
 };
 
 #endif

@@ -18,10 +18,11 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/safety_volumn",SAFETY_VOLUMN); // min_x max_x min_y max_y min_z max_z
     nh.getParam("airo_control_node/without_rc",WITHOUT_RC);
 
-    nh.getParam("airo_control_node/hover_thrust",solver_param.hover_thrust);
-    nh.getParam("airo_control_node/tau_phi",solver_param.tau_phi);
-    nh.getParam("airo_control_node/tau_theta",solver_param.tau_theta);
-    nh.getParam("airo_control_node/tau_psi",solver_param.tau_psi);
+    nh.getParam("airo_control_node/hover_thrust",mpc_param.hover_thrust);
+    nh.getParam("airo_control_node/tau_phi",mpc_param.tau_phi);
+    nh.getParam("airo_control_node/tau_theta",mpc_param.tau_theta);
+    nh.getParam("airo_control_node/tau_psi",mpc_param.tau_psi);
+    nh.getParam("airo_control_node/show_debug",mpc_param.show_debug);
     nh.getParam("airo_control_node/enable_preview",enable_preview);
 
     nh.getParam("airo_control_node/throttle_channel",rc_param.THROTTLE_CHANNEL);
@@ -40,17 +41,17 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/check_centered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
 
     // ROS Sub & Pub
-    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,100,&AIRO_CONTROL_FSM::pose_cb,this);
-    twist_sub = nh.subscribe<geometry_msgs::TwistStamped>(TWIST_TOPIC,100,&AIRO_CONTROL_FSM::twist_cb,this);
-    imu_sub = nh.subscribe<sensor_msgs::Imu>("/mavros/imu/data",100,&AIRO_CONTROL_FSM::imu_cb,this);
-    state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,&AIRO_CONTROL_FSM::state_cb,this);
-    extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",10,&AIRO_CONTROL_FSM::extended_state_cb,this);
-    rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",10,&AIRO_CONTROL_FSM::rc_input_cb,this);
-    command_sub = nh.subscribe<airo_message::Reference>("/airo_control/setpoint",50,&AIRO_CONTROL_FSM::external_command_cb,this);
-    command_preview_sub = nh.subscribe<airo_message::ReferencePreview>("/airo_control/setpoint_preview",50,&AIRO_CONTROL_FSM::external_command_preview_cb,this);
-    takeoff_land_sub = nh.subscribe<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",10,&AIRO_CONTROL_FSM::takeoff_land_cb,this);
-    setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",20);
-    fsm_info_pub = nh.advertise<airo_message::FSMInfo>("/airo_control/fsm_info",10);
+    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,10,&AIRO_CONTROL_FSM::pose_cb,this);
+    twist_sub = nh.subscribe<geometry_msgs::TwistStamped>(TWIST_TOPIC,10,&AIRO_CONTROL_FSM::twist_cb,this);
+    imu_sub = nh.subscribe<sensor_msgs::Imu>("/mavros/imu/data",10,&AIRO_CONTROL_FSM::imu_cb,this);
+    state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",1,&AIRO_CONTROL_FSM::state_cb,this);
+    extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",1,&AIRO_CONTROL_FSM::extended_state_cb,this);
+    rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",1,&AIRO_CONTROL_FSM::rc_input_cb,this);
+    command_sub = nh.subscribe<airo_message::Reference>("/airo_control/setpoint",1,&AIRO_CONTROL_FSM::external_command_cb,this);
+    command_preview_sub = nh.subscribe<airo_message::ReferencePreview>("/airo_control/setpoint_preview",10,&AIRO_CONTROL_FSM::external_command_preview_cb,this);
+    takeoff_land_sub = nh.subscribe<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",1,&AIRO_CONTROL_FSM::takeoff_land_cb,this);
+    setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",1);
+    fsm_info_pub = nh.advertise<airo_message::FSMInfo>("/airo_control/fsm_info",1);
 
     // ROS Services
     setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
@@ -82,10 +83,10 @@ void AIRO_CONTROL_FSM::process(){
     // Step 3: Solve position controller if needed
     if(solve_controller){
         if (!use_preview){
-            attitude_target = controller.solve(local_pose,local_twist,local_accel,controller_ref,solver_param);
+            attitude_target = controller.solve(local_pose,local_twist,local_accel,controller_ref,mpc_param);
         }
         else{
-            attitude_target = controller.solve(local_pose,local_twist,local_accel,controller_ref_preview,solver_param);
+            attitude_target = controller.solve(local_pose,local_twist,local_accel,controller_ref_preview,mpc_param);
         }
 
     }
@@ -108,8 +109,13 @@ void AIRO_CONTROL_FSM::process(){
 void AIRO_CONTROL_FSM::fsm(){
     switch (state_fsm){
         case RC_MANUAL:{
+            if (!current_state.connected){
+                ROS_WARN_STREAM_THROTTLE(5.0,"[AIRo Control] Not yet connected to vehicle!");
+                break;
+            }
+
             // To AUTO_HOVER
-            if (rc_input.enter_fsm && !is_landed){
+            else if (rc_input.enter_fsm && !is_landed){
                 if (toggle_offboard(true)){
                     auto_hover_init();
                     state_fsm = AUTO_HOVER;
@@ -408,7 +414,7 @@ bool AIRO_CONTROL_FSM::toggle_arm(bool flag){
 void AIRO_CONTROL_FSM::get_motor_speedup(){
     while(ros::ok() && (current_time - takeoff_land_time).toSec() < MOTOR_SPEEDUP_TIME){
         double delta_t = (current_time - takeoff_land_time).toSec();
-	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*solver_param.hover_thrust*0.6 + 0.005;
+	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*mpc_param.hover_thrust*0.6 + 0.005;
 
         attitude_target.thrust = ref_thrust;
         attitude_target.orientation.w = takeoff_land_pose.pose.orientation.w;
@@ -519,7 +525,7 @@ void AIRO_CONTROL_FSM::land_detector(){
 
 	// Land_detector parameters
 	constexpr double POSITION_DEVIATION = -0.5; // Constraint 1: target position below real position for POSITION_DEVIATION meters.
-	constexpr double VELOCITY_THRESHOLD = 0.1; // Constraint 2: velocity below VELOCITY_THRESHOLD m/s.
+	constexpr double VELOCITY_THRESHOLD = 0.25; // Constraint 2: velocity below VELOCITY_THRESHOLD m/s.
 	constexpr double TIME_KEEP = 2.0; // Constraint 3: Constraint 1&2 satisfied for TIME_KEEP seconds.
 
 	static ros::Time time_C12_reached;
@@ -531,7 +537,7 @@ void AIRO_CONTROL_FSM::land_detector(){
 	}
 	else{
 		bool C12_satisfy = (controller_ref.ref_pose.position.z - local_pose.pose.position.z) < POSITION_DEVIATION && twist_norm(local_twist) < VELOCITY_THRESHOLD;
-		if (C12_satisfy && !is_last_C12_satisfy){
+        if (C12_satisfy && !is_last_C12_satisfy){
 			time_C12_reached = ros::Time::now();
 		}
 		else if (C12_satisfy && is_last_C12_satisfy){
@@ -659,14 +665,19 @@ void AIRO_CONTROL_FSM::external_command_cb(const airo_message::Reference::ConstP
 }
 
 void AIRO_CONTROL_FSM::external_command_preview_cb(const airo_message::ReferencePreview::ConstPtr& msg){
-    external_command_preview.header = msg->header;
-    external_command_preview.ref_pose = msg->ref_pose;
-    external_command_preview.ref_twist = msg->ref_twist;
-    external_command_preview.ref_accel = msg->ref_accel;
-    for (int i = 0; i < msg->ref_pose.size(); i++){
-        if (msg->ref_pose[i].orientation.w == 0.0 && msg->ref_pose[i].orientation.x == 0.0 && msg->ref_pose[i].orientation.y == 0.0 && msg->ref_pose[i].orientation.z == 0.0){
-            external_command.ref_pose.orientation.w = 1.0;
-        } 
+    if(msg->ref_pose.size() == QUADROTOR_N && msg->ref_twist.size() == QUADROTOR_N && msg->ref_accel.size() == QUADROTOR_N){
+        external_command_preview.header = msg->header;
+        external_command_preview.ref_pose = msg->ref_pose;
+        external_command_preview.ref_twist = msg->ref_twist;
+        external_command_preview.ref_accel = msg->ref_accel;
+        for (int i = 0; i < msg->ref_pose.size(); i++){
+            if (msg->ref_pose[i].orientation.w == 0.0 && msg->ref_pose[i].orientation.x == 0.0 && msg->ref_pose[i].orientation.y == 0.0 && msg->ref_pose[i].orientation.z == 0.0){
+                external_command.ref_pose.orientation.w = 1.0;
+            } 
+        }
+    }
+    else{
+        ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Reference preview size should be " << (QUADROTOR_N+1) <<"!");
     }
 }
 

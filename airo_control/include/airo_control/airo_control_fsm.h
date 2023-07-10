@@ -97,7 +97,7 @@ class AIRO_CONTROL_FSM{
 
 	//Controller
 	QUADROTOR_MPC controller;
-	QUADROTOR_MPC::SolverParam solver_param;
+	QUADROTOR_MPC::MPCParam mpc_param;
 	bool enable_preview = false;
 
 	public:
