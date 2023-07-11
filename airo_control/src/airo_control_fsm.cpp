@@ -670,7 +670,7 @@ void AIRO_CONTROL_FSM::external_command_cb(const airo_message::Reference::ConstP
 }
 
 void AIRO_CONTROL_FSM::external_command_preview_cb(const airo_message::ReferencePreview::ConstPtr& msg){
-    if(msg->ref_pose.size() == QUADROTOR_N && msg->ref_twist.size() == QUADROTOR_N && msg->ref_accel.size() == QUADROTOR_N){
+    if(msg->ref_pose.size() == QUADROTOR_N+1 && msg->ref_twist.size() == QUADROTOR_N+1 && msg->ref_accel.size() == QUADROTOR_N+1){
         external_command_preview.header = msg->header;
         external_command_preview.ref_pose = msg->ref_pose;
         external_command_preview.ref_twist = msg->ref_twist;
