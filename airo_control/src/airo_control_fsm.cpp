@@ -32,14 +32,14 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/fsm/check_centered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
 
     // ROS Sub & Pub
-    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,10,&AIRO_CONTROL_FSM::pose_cb,this);
-    twist_sub = nh.subscribe<geometry_msgs::TwistStamped>(TWIST_TOPIC,10,&AIRO_CONTROL_FSM::twist_cb,this);
-    imu_sub = nh.subscribe<sensor_msgs::Imu>("/mavros/imu/data",10,&AIRO_CONTROL_FSM::imu_cb,this);
+    pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,5,&AIRO_CONTROL_FSM::pose_cb,this);
+    twist_sub = nh.subscribe<geometry_msgs::TwistStamped>(TWIST_TOPIC,5,&AIRO_CONTROL_FSM::twist_cb,this);
+    imu_sub = nh.subscribe<sensor_msgs::Imu>("/mavros/imu/data",5,&AIRO_CONTROL_FSM::imu_cb,this);
     state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",1,&AIRO_CONTROL_FSM::state_cb,this);
     extended_state_sub = nh.subscribe<mavros_msgs::ExtendedState>("/mavros/extended_state",1,&AIRO_CONTROL_FSM::extended_state_cb,this);
     rc_input_sub = nh.subscribe<mavros_msgs::RCIn>("/mavros/rc/in",1,&AIRO_CONTROL_FSM::rc_input_cb,this);
     command_sub = nh.subscribe<airo_message::Reference>("/airo_control/setpoint",1,&AIRO_CONTROL_FSM::external_command_cb,this);
-    command_preview_sub = nh.subscribe<airo_message::ReferencePreview>("/airo_control/setpoint_preview",10,&AIRO_CONTROL_FSM::external_command_preview_cb,this);
+    command_preview_sub = nh.subscribe<airo_message::ReferencePreview>("/airo_control/setpoint_preview",5,&AIRO_CONTROL_FSM::external_command_preview_cb,this);
     takeoff_land_sub = nh.subscribe<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",1,&AIRO_CONTROL_FSM::takeoff_land_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",1);
     fsm_info_pub = nh.advertise<airo_message::FSMInfo>("/airo_control/fsm_info",1);
