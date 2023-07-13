@@ -158,7 +158,7 @@ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"<path_to_acados>/acados/lib"' >> 
 echo 'export ACADOS_SOURCE_DIR="<path_to_acados>/acados"' >> ~/.bashrc
 ```
 
-Generate solver, note that for the first run, you should install casadi by following the instructions.
+Generate solver, note that for the first run, you should setup Tera renderer automatically by following the instructions.
 ```
 cd ~/catkin_ws/src/airo_control_interface/airo_control/acados_scripts
 python3 generate_c_code.py
