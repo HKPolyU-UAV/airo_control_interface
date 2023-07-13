@@ -1,5 +1,5 @@
 # AIRo Control Interface
-This project focuses on developing a control interface with customized outer-loop MPC position controller.
+This project focuses on developing a control interface with customized outer-loop position controller.
 
 ## Prerequisites
 * ROS ([ROS noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) recommended)
