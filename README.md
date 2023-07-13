@@ -9,31 +9,31 @@ This project focuses on developing a control interface with customized outer-loo
 
 ## Installation
 
-It is recommanded to run the code in our docker following instructions ([here](https://github.com/HKPolyU-UAV/docker_practice). By doing so, you can skip this section.
+It is recommanded to run the code in our docker following instructions ([here](https://github.com/HKPolyU-UAV/docker_practiceJ)). By doing so, you can skip the installation section.
 
-Install Acados at your home directory. If you want to install Acados at other directory, change the acados_include and acados_lib directory written in CMakeLists.txt of airo_control package, and also change /home/acados to your customized directory in the following codes.
+First, install Acados at your home directory. If you want to install Acados at other directory, change the acados_include and acados_lib directory written in CMakeLists.txt of airo_control package, and also change ```~/acados``` in the following codes to your customized directory in the following codes.
 ```
 cd ~
 git clone https://github.com/acados/acados.git
 cd acados
 git checkout 568e46c
 git submodule update --recursive --init
-mkdir -p build
+mkdir build
 cd build
 cmake -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=~/acados ..
 sudo make install -j4
 ```
 
-Create a catkin workspace and clone this repository to src folder (ex. /home/airo_control_interface_ws/src)
+Create a catkin workspace and clone this repository to src folder (ex. ~/catkin_ws/src)
 ```
-mkdir -p ~/airo_control_interface_ws/src
-cd ~/airo_control_interface_ws/
+mkdir -p ~/catkin_ws/src
+cd ~/catkin_ws
 catkin_make
 cd src
 git clone https://github.com/HKPolyU-UAV/airo_control_interface.git
 ```
 
-Run acados scripts to generate MPC solver and build the package.
+Build the package.
 ```
 cd ~/airo_control_interface_ws
 catkin_make
@@ -50,6 +50,7 @@ git submodule update --init --recursive
 bash ./Tools/setup/ubuntu.sh
 sudo apt upgrade libignition-math4 #(libignition-math2 for melodic)
 ```
+
 ## Hardware Setup
 
 To use this interface with RC transmitter, the joystick and switch channels should be configured first. In QGC setup, only set emergency kill switch and flight mode switch channel. To use the framework in simulation, set parameter COM_RCIN_MODE to "RC and Joystick with fallback", connect RC transmitter via usb serial, calibrate the joysticks in "Joysticks" tab and you should be able to read channel inputs in QGC "Radio" tab.
@@ -102,6 +103,8 @@ To use in command mode, first enable the command channel and then enable the FSM
 
 ## Running Simulation
 
+After sourcing the ```setup.bash`` file, you can test the package in simulation.
+
 Start PX4 SITL
 ```
 cd ~/PX4-Autopilot/
@@ -132,7 +135,7 @@ Or, you can simply run start.sh in the startup folder.
 
 ## Generate MPC Solver
 
-The python scripts used to generate MPC solver is included in ```/airo_control_interface/airo_control/acados_scripts/quadrotor_model.py```. If you want to make modifications and generate MPC solver by your own, follow these instructions.
+The python scripts used to generate MPC solver is included in ```~/catkin_ws/src/airo_control_interface/airo_control/acados_scripts/quadrotor_model.py```. If you want to make modifications and generate MPC solver by your own, follow these instructions.
 
 Install python 3.7
 ```
@@ -149,15 +152,15 @@ sudo apt-get install python3.7-tk
 pip install -e ~/acados/interfaces/acados_template
 ```
 
-Add the path to ```.bashrc```
+Add the path to ```.bashrc```, change ```<path_to_acados>``` to your path, e.g. ```/home/your_username```.
 ```
-echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"~/acados/lib"' >> ~/.bashrc
-echo 'export ACADOS_SOURCE_DIR="~/acados"' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"<path_to_acados>/acados/lib"' >> ~/.bashrc
+echo 'export ACADOS_SOURCE_DIR="<path_to_acados>/acados"' >> ~/.bashrc
 ```
 
-Generate solver
+Generate solver, note that for the first run, you should install casadi by following the instructions.
 ```
-cd ~/airo_control_interface/airo_control/acados_scripts
+cd ~/catkin_ws/src/airo_control_interface/airo_control/acados_scripts
 python3 generate_c_code.py
 ```
 
