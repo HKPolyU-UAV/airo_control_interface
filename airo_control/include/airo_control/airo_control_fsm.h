@@ -129,6 +129,7 @@ class AIRO_CONTROL_FSM{
 	void external_command_cb(const airo_message::Reference::ConstPtr&);
 	void external_command_preview_cb(const airo_message::ReferencePreview::ConstPtr&);
 	void takeoff_land_cb(const airo_message::TakeoffLandTrigger::ConstPtr&);
+	bool state_received(const ros::Time&);
 	bool rc_received(const ros::Time&);
 	bool odom_received(const ros::Time&);
 	bool external_command_received(const ros::Time&);

@@ -74,6 +74,15 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
             controller_ref_preview.ref_accel.resize(QUADROTOR_N+1);
         }
     }
+
+    // Wait for vehicle connection
+    ros::Rate dummy_rate(10);
+    while(!current_state.connected){
+        ROS_WARN_STREAM_THROTTLE(5.0,"[AIRo Control] Not yet connected to vehicle!");
+        ros::spinOnce();
+        dummy_rate.sleep();
+    }
+    ROS_INFO("[AIRo Control] Connect to vehicle. FSM spinning!");
 }
 
 void AIRO_CONTROL_FSM::process(){
@@ -96,14 +105,14 @@ void AIRO_CONTROL_FSM::process(){
         }
     }
 
-    // Step 4: Publish control commands and fsm state
+    // Step 4: Detect if landed
+    land_detector();
+
+    // Step 5: Publish control commands and fsm state
     publish_control_commands(attitude_target,current_time);
     fsm_info.header.stamp = current_time;
     fsm_info.is_landed = is_landed;
     fsm_info_pub.publish(fsm_info);
-
-    // Step 5: Detect if landed
-    land_detector();
 
     // Step 6: Reset all triggers
 	rc_input.enter_fsm = false;
@@ -114,13 +123,8 @@ void AIRO_CONTROL_FSM::process(){
 void AIRO_CONTROL_FSM::fsm(){
     switch (state_fsm){
         case RC_MANUAL:{
-            if (!current_state.connected){
-                ROS_WARN_STREAM_THROTTLE(5.0,"[AIRo Control] Not yet connected to vehicle!");
-                break;
-            }
-
             // To AUTO_HOVER
-            else if (rc_input.enter_fsm && !is_landed){
+            if (rc_input.enter_fsm && !is_landed){
                 if (toggle_offboard(true)){
                     auto_hover_init();
                     state_fsm = AUTO_HOVER;
@@ -193,10 +197,10 @@ void AIRO_CONTROL_FSM::fsm(){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_CONTROL\033[32m");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_MANUAL\033[32m");
                 }
                 else{
-                ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_CONTROL mode.");
+                ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
                 }
             }
             else{
@@ -529,8 +533,9 @@ void AIRO_CONTROL_FSM::land_detector(){
 	}
 
 	// Land_detector parameters
-	constexpr double POSITION_DEVIATION = -0.5; // Constraint 1: target position below real position for POSITION_DEVIATION meters.
-	constexpr double VELOCITY_THRESHOLD = 0.25; // Constraint 2: velocity below VELOCITY_THRESHOLD m/s.
+	// constexpr double POSITION_DEVIATION = -0.5; // Constraint 1: target position below real position for POSITION_DEVIATION meters.
+	constexpr double POSITION_DEVIATION = -5000000;
+    constexpr double VELOCITY_THRESHOLD = 0.25; // Constraint 2: velocity below VELOCITY_THRESHOLD m/s.
 	constexpr double TIME_KEEP = 2.0; // Constraint 3: Constraint 1&2 satisfied for TIME_KEEP seconds.
 
 	static ros::Time time_C12_reached;
@@ -689,6 +694,10 @@ void AIRO_CONTROL_FSM::external_command_preview_cb(const airo_message::Reference
 void AIRO_CONTROL_FSM::takeoff_land_cb(const airo_message::TakeoffLandTrigger::ConstPtr& msg){
     takeoff_land_trigger.header.stamp = msg->header.stamp;
     takeoff_land_trigger.takeoff_land_trigger = msg->takeoff_land_trigger;
+}
+
+bool AIRO_CONTROL_FSM::state_received(const ros::Time& time){
+    return (time - current_state.header.stamp).toSec() < MESSAGE_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::rc_received(const ros::Time& time){
