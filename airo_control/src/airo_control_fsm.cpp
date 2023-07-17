@@ -423,7 +423,7 @@ bool AIRO_CONTROL_FSM::toggle_arm(bool flag){
 void AIRO_CONTROL_FSM::get_motor_speedup(){
     while(ros::ok() && (current_time - takeoff_land_time).toSec() < MOTOR_SPEEDUP_TIME){
         double delta_t = (current_time - takeoff_land_time).toSec();
-	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*controller->get_hover_thrust()*0.6 + 0.005;
+	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*controller->get_hover_thrust()*0.7 + 0.005;
 
         attitude_target.thrust = ref_thrust;
         attitude_target.orientation.w = takeoff_land_pose.pose.orientation.w;

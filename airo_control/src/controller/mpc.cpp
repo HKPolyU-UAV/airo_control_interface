@@ -21,6 +21,17 @@ MPC::MPC(ros::NodeHandle& nh){
     for(unsigned int i=0; i < QUADROTOR_NX; i++) acados_in.x0[i] = 0.0;
 }
 
+void MPC::print_debug(){
+    std::cout << "------------------------------------------------------------------------------" << std::endl;
+    std::cout << "x_ref:      " << acados_in.yref[0][0] << "\ty_ref:      " << acados_in.yref[0][1] << "\tz_ref:         " << acados_in.yref[0][2] << std::endl;
+    std::cout << "x_gt:       " << acados_in.x0[x] << "\ty_gt:       " << acados_in.x0[y] << "\tz_gt:          " << acados_in.x0[z] << std::endl;
+    std::cout << "theta_cmd:  " << target_euler.y() << "\tphi_cmd:    " << target_euler.x() <<  "\tpsi_cmd:       " << target_euler.z() << std::endl;
+    std::cout << "theta_gt:   " << current_euler.y() << "\tphi_gt:     " << current_euler.x() <<  "\tpsi_gt:        " << current_euler.z() << std::endl;
+    std::cout << "thrust_cmd: " << attitude_target.thrust << "\tsolve_time: "<< acados_out.cpu_time  << "\tacados_status: " << acados_out.status << std::endl;
+    std::cout << "ros_time:   " << std::fixed << ros::Time::now().toSec() << std::endl;
+    std::cout << "------------------------------------------------------------------------------" << std::endl;
+}
+
 mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){
     // Resize ref to fit prediction horizon
     airo_message::ReferencePreview ref_preview;
@@ -38,7 +49,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
 
 mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferencePreview& ref_preview){
     // Set reference
-    Eigen::Vector3d ref_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[0].orientation);
+    ref_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[0].orientation);
     for (int i = 0; i < QUADROTOR_N+1; i++){
         acados_in.yref[i][0] = ref_preview.ref_pose[i].position.x;
         acados_in.yref[i][1] = ref_preview.ref_pose[i].position.y;
@@ -55,7 +66,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
     }
 
     // Set initial states
-    Eigen::Vector3d current_euler = BASE_CONTROLLER::q2rpy(current_pose.pose.orientation);
+    current_euler = BASE_CONTROLLER::q2rpy(current_pose.pose.orientation);
     acados_in.x0[x] = current_pose.pose.position.x;
     acados_in.x0[y] = current_pose.pose.position.y;
     acados_in.x0[z] = current_pose.pose.position.z;
@@ -92,6 +103,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
     acados_status = quadrotor_acados_solve(mpc_capsule);
     if (acados_status != 0){
         ROS_INFO_STREAM("acados returned status " << acados_status << std::endl);
+        MPC::print_debug();
     }
     acados_out.status = acados_status;
     acados_out.kkt_res = (double)mpc_capsule->nlp_out->inf_norm_res;
@@ -99,8 +111,6 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
     ocp_nlp_get(mpc_capsule->nlp_config, mpc_capsule->nlp_solver, "time_tot", &acados_out.cpu_time);
     ocp_nlp_out_get(mpc_capsule->nlp_config, mpc_capsule->nlp_dims, mpc_capsule->nlp_out, 0, "u", (void *)acados_out.u0);
 
-    mavros_msgs::AttitudeTarget attitude_target;
-    Eigen::Vector3d target_euler;
     attitude_target.thrust = acados_out.u0[0]; 
     target_euler.x() = acados_out.u0[1];
     target_euler.y() = acados_out.u0[2];
@@ -111,14 +121,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
 
     if (param.show_debug){
         if(cout_counter > 2){ //reduce cout rate
-            std::cout << "------------------------------------------------------------------------------" << std::endl;
-            std::cout << "x_ref:      " << acados_in.yref[0][0] << "\ty_ref:      " << acados_in.yref[0][1] << "\tz_ref:         " << acados_in.yref[0][2] << std::endl;
-            std::cout << "x_gt:       " << acados_in.x0[x] << "\ty_gt:       " << acados_in.x0[y] << "\tz_gt:          " << acados_in.x0[z] << std::endl;
-            std::cout << "theta_cmd:  " << target_euler.y() << "\tphi_cmd:    " << target_euler.x() <<  "\tpsi_cmd:       " << target_euler.z() << std::endl;
-            std::cout << "theta_gt:   " << current_euler.y() << "\tphi_gt:     " << current_euler.x() <<  "\tpsi_gt:        " << current_euler.z() << std::endl;
-            std::cout << "thrust_cmd: " << attitude_target.thrust << "\tsolve_time: "<< acados_out.cpu_time  << "\tacados_status: " << acados_out.status << std::endl;
-            std::cout << "ros_time:   " << std::fixed << ros::Time::now().toSec() << std::endl;
-            std::cout << "------------------------------------------------------------------------------" << std::endl;
+            MPC::print_debug();
             cout_counter = 0;
         }
         else{

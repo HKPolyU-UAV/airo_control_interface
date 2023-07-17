@@ -1,0 +1,33 @@
+# ROS Topics
+pose_topic: /mavros/vision_pose/pose
+twist_topic: /mavros/local_position/velocity_local
+
+# FSM Parameters
+controller_type: mpc
+fsm_frequency: 100
+message_timeout: 0.5
+motor_speedup_time: 5.0
+takeoff_height: 1.0
+takeoff_land_speed: 0.3
+reject_takeoff_twist_threshold: 0.10
+hover_max_velocity: 1.5
+hover_max_yaw_rate: 1.5
+check_safety_volumn: true
+safety_volumn: [-2.5, 2.5, -1.5, 2.5, 2.5]
+
+# RC Transmitter Parameters
+without_rc: false
+throttle_channel: 3
+yaw_channel: 4
+pitch_channel: 2
+roll_channel: 1
+fsm_channel: 6
+command_channel: 7
+reboot_channel: 9
+reverse_throttle: false
+reverse_yaw: false
+reverse_pitch: true
+reverse_roll: false
+switch_threshold: 0.75
+joystick_deadzone: 0.10
+check_centered_threshold: 0.25
