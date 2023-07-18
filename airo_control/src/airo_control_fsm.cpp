@@ -76,13 +76,12 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     }
 
     // Wait for vehicle connection
-    ros::Rate dummy_rate(10);
-    while(!current_state.connected){
+    while(!(current_state.connected && extended_state_received(ros::Time::now()))){
         ROS_WARN_STREAM_THROTTLE(5.0,"[AIRo Control] Not yet connected to vehicle!");
         ros::spinOnce();
-        dummy_rate.sleep();
+        ros::Duration(0.05).sleep();
     }
-    ROS_INFO("[AIRo Control] Connect to vehicle. FSM spinning!");
+    ROS_INFO("[AIRo Control] Connected to vehicle. FSM spinning!");
 }
 
 void AIRO_CONTROL_FSM::process(){
@@ -123,6 +122,15 @@ void AIRO_CONTROL_FSM::process(){
 void AIRO_CONTROL_FSM::fsm(){
     switch (state_fsm){
         case RC_MANUAL:{
+            // Update is_landed according to external state
+            if (extended_state_received(current_time)){
+                is_landed = (current_extended_state.landed_state == mavros_msgs::ExtendedState::LANDED_STATE_ON_GROUND) ? true : false;
+            }
+            else{
+                ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] Extended state not received! Check MAVROS topic!");
+                break;
+            }
+
             // To AUTO_HOVER
             if (rc_input.enter_fsm && !is_landed){
                 if (toggle_offboard(true)){
@@ -130,6 +138,7 @@ void AIRO_CONTROL_FSM::fsm(){
                     state_fsm = AUTO_HOVER;
                     ROS_INFO("\033[32m[AIRo Control] RC_MANUAL ==>> AUTO_HOVER\033[32m");
                 }
+                break;
             }
 
             // To AUTO_TAKEOFF
@@ -140,7 +149,8 @@ void AIRO_CONTROL_FSM::fsm(){
                     break;
                 }
                 if (twist_norm(local_twist) > REJECT_TAKEOFF_TWIST_THRESHOLD){
-                    ROS_ERROR("[AIRo Control] Reject AUTO_TAKEOFF. Norm Twist=%fm/s, dynamic takeoff is not allowed!", twist_norm(local_twist));
+                    ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] Reject AUTO_TAKEOFF. Norm Twist=" << twist_norm(local_twist) << "m/s, dynamic takeoff is not allowed!");
+
                     break;
                 }
                 if (!rc_received(current_time)){
@@ -176,7 +186,7 @@ void AIRO_CONTROL_FSM::fsm(){
             }
 
             // Try to reboot
-            else if (rc_input.enter_reboot){
+            else if (rc_input.enter_reboot && is_landed){
                 if (current_state.armed){
                     ROS_ERROR("[AIRo Control] Reject reboot! Disarm the vehicle first!");
                     break;
@@ -293,6 +303,7 @@ void AIRO_CONTROL_FSM::fsm(){
             else if (!is_landed){
                 set_takeoff_land_ref(-TAKEOFF_LAND_SPEED);
             }
+            // Disarm vehicle
             else{
                 motor_idle_and_disarm();
                 ROS_INFO("\033[32m[AIRo Control] AUTO_LAND ==>> RC_MANUAL\033[32m");
@@ -333,7 +344,6 @@ void AIRO_CONTROL_FSM::fsm(){
                     set_ref_with_external_command();
                 }
             }
-
             break;
         }
     }
@@ -521,23 +531,6 @@ double AIRO_CONTROL_FSM::extract_yaw_from_quaternion(const geometry_msgs::Quater
 }
 
 void AIRO_CONTROL_FSM::land_detector(){
-	static STATE_FSM last_state_fsm = STATE_FSM::RC_MANUAL;
-	if (last_state_fsm == STATE_FSM::RC_MANUAL && (state_fsm == STATE_FSM::AUTO_HOVER || state_fsm == STATE_FSM::AUTO_TAKEOFF)){
-		is_landed = false; // Always holds
-	}
-	last_state_fsm = state_fsm;
-
-	if (state_fsm == STATE_FSM::RC_MANUAL && !current_state.armed){
-		is_landed = true;
-		return; // No need of other decisions
-	}
-
-	// Land_detector parameters
-	// constexpr double POSITION_DEVIATION = -0.5; // Constraint 1: target position below real position for POSITION_DEVIATION meters.
-	constexpr double POSITION_DEVIATION = -5000000;
-    constexpr double VELOCITY_THRESHOLD = 0.25; // Constraint 2: velocity below VELOCITY_THRESHOLD m/s.
-	constexpr double TIME_KEEP = 2.0; // Constraint 3: Constraint 1&2 satisfied for TIME_KEEP seconds.
-
 	static ros::Time time_C12_reached;
 	static bool is_last_C12_satisfy;
 
@@ -545,7 +538,20 @@ void AIRO_CONTROL_FSM::land_detector(){
 		time_C12_reached = ros::Time::now();
 		is_last_C12_satisfy = false;
 	}
-	else{
+
+	if (state_fsm == STATE_FSM::AUTO_TAKEOFF || state_fsm == STATE_FSM::POS_COMMAND){
+		is_landed = false;
+	}
+    if (state_fsm == STATE_FSM::RC_MANUAL || state_fsm == STATE_FSM::AUTO_TAKEOFF || state_fsm == STATE_FSM::POS_COMMAND){
+        return; // No need of other decisions
+    }
+
+	// Land_detector parameters
+	constexpr double POSITION_DEVIATION = -1.0; // Constraint 1: target position below real position for POSITION_DEVIATION meters.
+    constexpr double VELOCITY_THRESHOLD = 0.25; // Constraint 2: velocity below VELOCITY_THRESHOLD m/s.
+	constexpr double TIME_KEEP = 2.0; // Constraint 3: Constraint 1&2 satisfied for TIME_KEEP seconds.
+
+	if (!is_landed){
 		bool C12_satisfy = (controller_ref.ref_pose.position.z - local_pose.pose.position.z) < POSITION_DEVIATION && twist_norm(local_twist) < VELOCITY_THRESHOLD;
         if (C12_satisfy && !is_last_C12_satisfy){
 			time_C12_reached = ros::Time::now();
@@ -698,6 +704,10 @@ void AIRO_CONTROL_FSM::takeoff_land_cb(const airo_message::TakeoffLandTrigger::C
 
 bool AIRO_CONTROL_FSM::state_received(const ros::Time& time){
     return (time - current_state.header.stamp).toSec() < MESSAGE_TIMEOUT;
+}
+
+bool AIRO_CONTROL_FSM::extended_state_received(const ros::Time& time){
+    return (time - current_extended_state.header.stamp).toSec() < MESSAGE_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::rc_received(const ros::Time& time){
