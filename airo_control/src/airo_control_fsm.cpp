@@ -433,7 +433,7 @@ bool AIRO_CONTROL_FSM::toggle_arm(bool flag){
 void AIRO_CONTROL_FSM::get_motor_speedup(){
     while(ros::ok() && (current_time - takeoff_land_time).toSec() < MOTOR_SPEEDUP_TIME){
         double delta_t = (current_time - takeoff_land_time).toSec();
-	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*controller->get_hover_thrust()*0.7 + 0.005;
+	    double ref_thrust = (delta_t/MOTOR_SPEEDUP_TIME)*controller->get_hover_thrust()*0.65 + 0.005;
 
         attitude_target.thrust = ref_thrust;
         attitude_target.orientation.w = takeoff_land_pose.pose.orientation.w;
@@ -715,9 +715,18 @@ bool AIRO_CONTROL_FSM::rc_received(const ros::Time& time){
 }
 
 bool AIRO_CONTROL_FSM::odom_received(const ros::Time& time){
-    return (time - local_pose.header.stamp).toSec() < MESSAGE_TIMEOUT && 
-    (time - local_twist.header.stamp).toSec() < MESSAGE_TIMEOUT &&
-    (time - local_accel.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    bool have_odom = (time - local_pose.header.stamp).toSec() < MESSAGE_TIMEOUT && 
+    (time - local_twist.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    if (!have_odom){
+        std::cout<<"pose_delay: "<< (time - local_pose.header.stamp).toSec() <<std::endl;
+        std::cout<<"twist_delay: "<< (time - local_twist.header.stamp).toSec() <<std::endl;
+    }
+
+    return have_odom;
+    
+    // return (time - local_pose.header.stamp).toSec() < MESSAGE_TIMEOUT && 
+    // (time - local_twist.header.stamp).toSec() < MESSAGE_TIMEOUT &&
+    // (time - local_accel.header.stamp).toSec() < MESSAGE_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::external_command_received(const ros::Time& time){
