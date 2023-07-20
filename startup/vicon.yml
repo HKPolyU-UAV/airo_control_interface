@@ -2,13 +2,10 @@ name: airo_control_interface
 root: ./
 startup_window: control_interface
 windows:
-  - roscore:
+  - vicon:
       layout: tiled
       panes:
-        - roscore
-        - ./wait_for_ros.sh; roslaunch airo_control mavros_vicon.launch
+        - roslaunch airo_control mavros_vicon.launch
         - ./wait_for_ros.sh; roslaunch airo_control vrpn.launch
-  - control_interface:
-      layout: tiled
-      panes:
         - ./wait_for_ros.sh; roslaunch airo_control fsm_vicon.launch
+        - ./wait_for_ros.sh;
