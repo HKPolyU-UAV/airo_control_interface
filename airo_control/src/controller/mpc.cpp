@@ -10,6 +10,7 @@ MPC::MPC(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/mpc/enable_preview",param.enable_preview);
 
     // Initialize MPC
+    
     int create_status = 1;
     create_status = quadrotor_acados_create(mpc_capsule);
     if (create_status != 0){

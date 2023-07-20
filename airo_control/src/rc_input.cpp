@@ -61,12 +61,9 @@ void RC_INPUT::process(const mavros_msgs::RCIn::ConstPtr& msg){
         is_command = false;
 
     // Set reboot
-    if (!is_fsm && !is_command){
-        if (last_reboot_switch < rc_param.SWITCH_THRESHOLD && reboot_switch > rc_param.SWITCH_THRESHOLD)
-            enter_reboot = true;
-        else
-            enter_reboot = false;
-    }
+
+    if (last_reboot_switch < rc_param.SWITCH_THRESHOLD && reboot_switch > rc_param.SWITCH_THRESHOLD)
+        enter_reboot = true;
     else
         enter_reboot = false;
 

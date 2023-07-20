@@ -13,7 +13,7 @@ reject_takeoff_twist_threshold: 0.10
 hover_max_velocity: 1.5
 hover_max_yaw_rate: 1.5
 check_safety_volumn: true
-safety_volumn: [-2.5, 2.5, -1.5, 2.5, 2.5]
+safety_volumn: [-2.3, 2.7, -1.7, 2.3, 2.5]
 
 # RC Transmitter Parameters
 without_rc: false
@@ -24,7 +24,7 @@ roll_channel: 1
 fsm_channel: 6
 command_channel: 7
 reboot_channel: 9
-reverse_throttle: false
+reverse_throttle: true
 reverse_yaw: false
 reverse_pitch: true
 reverse_roll: false
