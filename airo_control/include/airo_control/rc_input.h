@@ -15,6 +15,7 @@ class RC_INPUT{
         int FSM_CHANNEL;
         int COMMAND_CHANNEL;
         int REBOOT_CHANNEL;
+        int KILL_CHANNEL;
         bool REVERSE_THROTTLE;
         bool REVERSE_YAW;
         bool REVERSE_PITCH;
@@ -32,10 +33,12 @@ class RC_INPUT{
     double command_switch; // Switch position mapped from 0~2000 to -1~1
     double reboot_switch; // Switch position mapped from 0~2000 to -1~1
     double last_reboot_switch;
+    double kill_switch;
     bool is_fsm;
     bool enter_fsm;
     bool is_command;
     bool enter_reboot;
+    bool is_killed;
     bool init_indicator;
 
     RC_INPUT();

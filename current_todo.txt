@@ -1,0 +1,35 @@
+done
+arm/offboard rejected
+    RC_MANUAL to AUTO_HOVER: stay in RC_MANUAL and try agiain
+    RC_MANUAL to AUTO_TAKEOFF by RC: try again
+    RC_MANUAL to AUTO_TAKEOFF by command: keep trying
+
+done
+disarm/offboard rejected
+    AUTO_HOVER to RC_MANUAL: try again
+    AUTO_LAND to RC_MANUAL: keep trying
+
+done
+kill switch engaged
+    Reset to RC_MANUAL
+
+done
+connection lost
+    Reset to RC_MANUAL
+
+not needed
+fsm ok
+    odom_received
+
+done
+check if extended_state still required
+
+
+check state after toggle_offboard(false)
+
+done
+fsm_init
+    state = RC_MANUAL
+
+auto_takeoff
+    arm/disarm is rejected

@@ -11,6 +11,7 @@ RC_INPUT::RC_INPUT(){
     enter_fsm = false;
     is_command = true;
     enter_reboot = false;
+    is_killed = false;
 
     for (int i = 0; i < 4; ++i){
         channel[i] = 0.0;
@@ -33,6 +34,7 @@ void RC_INPUT::process(const mavros_msgs::RCIn::ConstPtr& msg){
     fsm_switch = ((double)msg->channels[rc_param.FSM_CHANNEL - 1] - 1000.0) / 1000.0;
     command_switch = ((double)msg->channels[rc_param.COMMAND_CHANNEL - 1] - 1000.0) / 1000.0;
     reboot_switch = ((double)msg->channels[rc_param.REBOOT_CHANNEL - 1] - 1000.0) / 1000.0;
+    kill_switch = ((double)msg->channels[rc_param.KILL_CHANNEL - 1] - 1000.0) / 1000.0;
 
     check_validity();
 
@@ -66,6 +68,12 @@ void RC_INPUT::process(const mavros_msgs::RCIn::ConstPtr& msg){
         enter_reboot = true;
     else
         enter_reboot = false;
+
+    // Set kill
+    if (kill_switch > rc_param.SWITCH_THRESHOLD)
+        is_killed = true;
+    else
+        is_killed = false;
 
     // Update last indicators
     last_fsm_switch = fsm_switch;

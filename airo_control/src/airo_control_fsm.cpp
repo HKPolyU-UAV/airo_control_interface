@@ -5,7 +5,10 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/fsm/controller_type",CONTROLLER_TYPE);
     nh.getParam("airo_control_node/fsm/pose_topic",POSE_TOPIC);
     nh.getParam("airo_control_node/fsm/twist_topic",TWIST_TOPIC);
-    nh.getParam("airo_control_node/fsm/message_timeout",MESSAGE_TIMEOUT);
+    nh.getParam("airo_control_node/fsm/state_timeout",STATE_TIMEOUT);
+    nh.getParam("airo_control_node/fsm/rc_timeout",RC_TIMEOUT);
+    nh.getParam("airo_control_node/fsm/odom_timeout",ODOM_TIMEOUT);
+    nh.getParam("airo_control_node/fsm/command_timeout",COMMAND_TIMEOUT);
     nh.getParam("airo_control_node/fsm/motor_speedup_time",MOTOR_SPEEDUP_TIME);
     nh.getParam("airo_control_node/fsm/takeoff_height",TAKEOFF_HEIGHT);
     nh.getParam("airo_control_node/fsm/takeoff_land_speed",TAKEOFF_LAND_SPEED);
@@ -23,6 +26,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/fsm/fsm_channel",rc_param.FSM_CHANNEL);
     nh.getParam("airo_control_node/fsm/command_channel",rc_param.COMMAND_CHANNEL);
     nh.getParam("airo_control_node/fsm/reboot_channel",rc_param.REBOOT_CHANNEL);
+    nh.getParam("airo_control_node/fsm/kill_channel",rc_param.KILL_CHANNEL);
     nh.getParam("airo_control_node/fsm/reverse_throttle",rc_param.REVERSE_THROTTLE);
     nh.getParam("airo_control_node/fsm/reverse_yaw",rc_param.REVERSE_YAW);
     nh.getParam("airo_control_node/fsm/reverse_pitch",rc_param.REVERSE_PITCH);
@@ -76,7 +80,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     }
 
     // Wait for vehicle connection
-    while(!(current_state.connected && extended_state_received(ros::Time::now()))){
+    while(!current_state.connected){
         ROS_WARN_STREAM_THROTTLE(5.0,"[AIRo Control] Not yet connected to vehicle!");
         ros::spinOnce();
         ros::Duration(0.05).sleep();
@@ -91,7 +95,12 @@ void AIRO_CONTROL_FSM::process(){
     fsm_info.is_waiting_for_command = false;
 
     // Step 2: State machine
-    fsm();
+    if (check_connection(current_time)){
+        fsm();
+    }
+    else{
+        return;
+    }
 
     // Step 3: Solve position controller if needed
     if(solve_controller){
@@ -108,12 +117,14 @@ void AIRO_CONTROL_FSM::process(){
     land_detector();
 
     // Step 5: Publish control commands and fsm state
-    publish_control_commands(attitude_target,current_time);
+    if (state_fsm != RC_MANUAL){
+        publish_control_commands(attitude_target,current_time);
+    }
     fsm_info.header.stamp = current_time;
     fsm_info.is_landed = is_landed;
     fsm_info_pub.publish(fsm_info);
 
-    // Step 6: Reset all triggers
+    // Step 6: Reset all variables
 	rc_input.enter_fsm = false;
 	rc_input.enter_reboot = false;
     use_preview = false;
@@ -123,16 +134,14 @@ void AIRO_CONTROL_FSM::fsm(){
     switch (state_fsm){
         case RC_MANUAL:{
             // Update is_landed according to external state
-            if (extended_state_received(current_time)){
-                is_landed = (current_extended_state.landed_state == mavros_msgs::ExtendedState::LANDED_STATE_ON_GROUND) ? true : false;
-            }
-            else{
-                ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] Extended state not received! Check MAVROS topic!");
-                break;
-            }
+            is_landed = !current_state.armed;
 
             // To AUTO_HOVER
             if (rc_input.enter_fsm && !is_landed){
+                if (!odom_received(current_time)){
+                    ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] Reject AUTO_HOVER. No odom or imu!");
+                    break;
+                }
                 if (toggle_offboard(true)){
                     auto_hover_init();
                     state_fsm = AUTO_HOVER;
@@ -150,7 +159,6 @@ void AIRO_CONTROL_FSM::fsm(){
                 }
                 if (twist_norm(local_twist) > REJECT_TAKEOFF_TWIST_THRESHOLD){
                     ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] Reject AUTO_TAKEOFF. Norm Twist=" << twist_norm(local_twist) << "m/s, dynamic takeoff is not allowed!");
-
                     break;
                 }
                 if (!rc_received(current_time)){
@@ -158,7 +166,7 @@ void AIRO_CONTROL_FSM::fsm(){
                         ROS_WARN("[AIRo Control] Takeoff without RC. Take extra caution!");
                     }
                     else{
-                        ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] RC not connected. Reject takeoff!");
+                        ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] RC not connected. Reject AUTO_TAKEOFF!");
                         break;
                     }
                 }
@@ -178,11 +186,17 @@ void AIRO_CONTROL_FSM::fsm(){
                         // Wait for several seconds to warn prople
                         takeoff_land_init();
                         get_motor_speedup();
-                        state_fsm = AUTO_TAKEOFF;
-                        ROS_INFO("\033[32m[AIRo Control] RC_MANUAL ==>> AUTO_TAKEOFF\033[32m");
-                        break;
+                        if (current_state.armed){
+                            state_fsm = AUTO_TAKEOFF;
+                            ROS_INFO("\033[32m[AIRo Control] RC_MANUAL ==>> AUTO_TAKEOFF\033[32m");
+                            break;
+                        }
+                        else{
+                            ROS_ERROR("[AIRo Control] Takeoff failed! Vehicle cannot arm!");
+                        }
                     }
                 }
+                break;
             }
 
             // Try to reboot
@@ -347,6 +361,24 @@ void AIRO_CONTROL_FSM::fsm(){
             break;
         }
     }
+}
+
+bool AIRO_CONTROL_FSM::check_connection(const ros::Time& time){
+    // Connected to vehicle
+    bool is_connected = state_received(time) && current_state.connected;
+    if (!is_connected){
+        ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Connection to FCU lost! FSM reset to RC_MANUAL mode!");
+        state_fsm = RC_MANUAL;
+    }
+
+    // Kill switch engaged
+    bool is_killed = rc_received(time) && rc_input.is_killed;
+    if (is_killed){
+        ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Kill switch engaged. FSM reset to RC_MANUAL mode!");
+        state_fsm = RC_MANUAL;
+    }
+
+    return is_connected && !is_killed;
 }
 
 void AIRO_CONTROL_FSM::publish_control_commands(mavros_msgs::AttitudeTarget target,ros::Time time){
@@ -703,42 +735,39 @@ void AIRO_CONTROL_FSM::takeoff_land_cb(const airo_message::TakeoffLandTrigger::C
 }
 
 bool AIRO_CONTROL_FSM::state_received(const ros::Time& time){
-    return (time - current_state.header.stamp).toSec() < MESSAGE_TIMEOUT;
-}
-
-bool AIRO_CONTROL_FSM::extended_state_received(const ros::Time& time){
-    return (time - current_extended_state.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    bool have_state = (time - current_state.header.stamp).toSec() < STATE_TIMEOUT;
+    if (!have_state){
+        ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] No MAVROS state received!");
+        ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] " << (time - current_state.header.stamp).toSec() << "s since last state message!");
+    }
+    return have_state;
 }
 
 bool AIRO_CONTROL_FSM::rc_received(const ros::Time& time){
-    return (time - rc_input.stamp).toSec() < MESSAGE_TIMEOUT;
+    return (time - rc_input.stamp).toSec() < RC_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::odom_received(const ros::Time& time){
-    bool have_odom = (time - local_pose.header.stamp).toSec() < MESSAGE_TIMEOUT && 
-    (time - local_twist.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    bool have_odom = (time - local_pose.header.stamp).toSec() < ODOM_TIMEOUT && 
+    (time - local_twist.header.stamp).toSec() < ODOM_TIMEOUT;
     if (!have_odom){
-        std::cout<<"pose_delay: "<< (time - local_pose.header.stamp).toSec() <<std::endl;
-        std::cout<<"twist_delay: "<< (time - local_twist.header.stamp).toSec() <<std::endl;
+        ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] No odom received!");
+        ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] " << (time - local_pose.header.stamp).toSec() << "s since last pose message!");
+        ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] " << (time - local_twist.header.stamp).toSec() << "s since last twist message!");
     }
-
     return have_odom;
-    
-    // return (time - local_pose.header.stamp).toSec() < MESSAGE_TIMEOUT && 
-    // (time - local_twist.header.stamp).toSec() < MESSAGE_TIMEOUT &&
-    // (time - local_accel.header.stamp).toSec() < MESSAGE_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::external_command_received(const ros::Time& time){
-    return (time - external_command.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    return (time - external_command.header.stamp).toSec() < COMMAND_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::external_command_preview_received(const ros::Time& time){
-    return (time - external_command_preview.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    return (time - external_command_preview.header.stamp).toSec() < COMMAND_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::takeoff_land_received(const ros::Time& time){
-    return (time - takeoff_land_trigger.header.stamp).toSec() < MESSAGE_TIMEOUT;
+    return (time - takeoff_land_trigger.header.stamp).toSec() < COMMAND_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::takeoff_trigered(const ros::Time& time){

@@ -35,7 +35,7 @@ class AIRO_CONTROL_FSM{
 	std::string CONTROLLER_TYPE;
 	std::string POSE_TOPIC;
 	std::string TWIST_TOPIC;
-	double MESSAGE_TIMEOUT;
+	double STATE_TIMEOUT,RC_TIMEOUT,ODOM_TIMEOUT,COMMAND_TIMEOUT;
 	double MOTOR_SPEEDUP_TIME;
 	double TAKEOFF_HEIGHT;
 	double TAKEOFF_LAND_SPEED;
@@ -105,6 +105,7 @@ class AIRO_CONTROL_FSM{
 	AIRO_CONTROL_FSM(ros::NodeHandle&);
 	void process();
 	void fsm();
+	bool check_connection(const ros::Time&);
 	void publish_control_commands(mavros_msgs::AttitudeTarget,ros::Time);
 	bool toggle_offboard(bool);
 	bool toggle_arm(bool);
@@ -130,7 +131,6 @@ class AIRO_CONTROL_FSM{
 	void external_command_preview_cb(const airo_message::ReferencePreview::ConstPtr&);
 	void takeoff_land_cb(const airo_message::TakeoffLandTrigger::ConstPtr&);
 	bool state_received(const ros::Time&);
-	bool extended_state_received(const ros::Time&);
 	bool rc_received(const ros::Time&);
 	bool odom_received(const ros::Time&);
 	bool external_command_received(const ros::Time&);
