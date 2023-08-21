@@ -55,6 +55,10 @@ int main(int argc, char **argv)
     target_pose_2.ref_pose.position.x = 0;
     target_pose_2.ref_pose.position.y = 2.5;
     target_pose_2.ref_pose.position.z = 1.5;
+    target_pose_2.ref_pose.orientation.w = 1.0;
+    target_pose_2.ref_pose.orientation.x = 0.0;
+    target_pose_2.ref_pose.orientation.y = 0.0;
+    target_pose_2.ref_pose.orientation.z = 0.0;
 
     while(ros::ok()){
         switch(state){

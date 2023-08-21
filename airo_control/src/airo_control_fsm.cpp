@@ -53,7 +53,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
     reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
 
-    // Initialize FSM
+    // Initialize FSM & Controller
     state_fsm = RC_MANUAL;
     if (CONTROLLER_TYPE == "mpc"){
         controller = std::make_unique<MPC>(nh);
@@ -80,7 +80,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     }
 
     // Wait for vehicle connection
-    while(!current_state.connected){
+    while(!current_state.connected || !odom_received(ros::Time::now())){
         ROS_WARN_STREAM_THROTTLE(5.0,"[AIRo Control] Not yet connected to vehicle!");
         ros::spinOnce();
         ros::Duration(0.05).sleep();
@@ -750,11 +750,11 @@ bool AIRO_CONTROL_FSM::rc_received(const ros::Time& time){
 bool AIRO_CONTROL_FSM::odom_received(const ros::Time& time){
     bool have_odom = (time - local_pose.header.stamp).toSec() < ODOM_TIMEOUT && 
     (time - local_twist.header.stamp).toSec() < ODOM_TIMEOUT;
-    if (!have_odom){
-        ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] No odom received!");
-        ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] " << (time - local_pose.header.stamp).toSec() << "s since last pose message!");
-        ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] " << (time - local_twist.header.stamp).toSec() << "s since last twist message!");
-    }
+    // if (!have_odom){
+    //     ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] No odom received!");
+    //     ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] " << (time - local_pose.header.stamp).toSec() << "s since last pose message!");
+    //     ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] " << (time - local_twist.header.stamp).toSec() << "s since last twist message!");
+    // }
     return have_odom;
 }
 
