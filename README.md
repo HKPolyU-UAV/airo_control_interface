@@ -9,7 +9,7 @@ This project focuses on developing a control interface with customized outer-loo
 
 ## Installation
 
-It is recommanded to run the code in our docker following instructions ([here](https://github.com/HKPolyU-UAV/docker_practiceJ)). By doing so, you can skip the installation section.
+It is recommanded to run the code in our docker following instructions ([here](https://github.com/HKPolyU-UAV/docker_practice)). By doing so, you can skip the installation section. Just install the Docker image with airo-packages.
 
 First, install Acados at your home directory. If you want to install Acados at other directory, change the acados_include and acados_lib directory written in CMakeLists.txt of airo_control package, and also change ```~/acados``` in the following codes to your customized directory in the following codes.
 ```
