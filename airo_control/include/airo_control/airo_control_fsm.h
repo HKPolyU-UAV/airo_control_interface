@@ -19,6 +19,7 @@
 #include <airo_message/TakeoffLandTrigger.h>
 #include "airo_control/rc_input.h"
 #include "airo_control/controller/mpc.h"
+#include "airo_control/controller/backstepping.h"
 
 class AIRO_CONTROL_FSM{
     private:

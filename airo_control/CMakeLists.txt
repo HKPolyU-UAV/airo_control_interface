@@ -49,6 +49,7 @@ add_executable(airo_control_node
   src/airo_control_fsm.cpp
   src/controller/base_controller.cpp
   src/controller/mpc.cpp
+  src/controller/backstepping.cpp
   src/rc_input.cpp
 )
 target_link_libraries(airo_control_node

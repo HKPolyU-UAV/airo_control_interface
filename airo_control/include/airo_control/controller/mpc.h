@@ -63,16 +63,13 @@ class MPC : public BASE_CONTROLLER{
         double acados_param[QUADROTOR_N+1][QUADROTOR_NP];  // hover_thrust, tau_phi, tau_theta, psi
         int acados_status;   
         quadrotor_solver_capsule *mpc_capsule = quadrotor_acados_create_capsule();
+        int debug_counter = 0;
         
-        // Other variables
-        Eigen::Vector3d ref_euler,current_euler, target_euler;
-        mavros_msgs::AttitudeTarget attitude_target;
-        int cout_counter = 0;
-
     public:
         Param param;
         MPC(ros::NodeHandle&);
-        void print_debug();
+        void show_debug();
+        void print();
         mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&);
         mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferencePreview&);
 };

@@ -16,9 +16,14 @@ protected:
         bool show_debug;
         double hover_thrust;
     };
+
     Param param;
+    Eigen::Vector3d ref_euler,current_euler,target_euler;
+    mavros_msgs::AttitudeTarget attitude_target;
+
     Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
     geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
+    virtual void show_debug() = 0;
 
 public:
     double get_hover_thrust();

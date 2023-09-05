@@ -58,9 +58,8 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     if (CONTROLLER_TYPE == "mpc"){
         controller = std::make_unique<MPC>(nh);
     }
-    else if (CONTROLLER_TYPE == "sliding_mode"){
-        ROS_ERROR("[AIRo Control] Sliding mode control not supported yet!");
-        // controller = std::make_unique<SLIDING_MODE_CONTROLLER>(nh);
+    else if (CONTROLLER_TYPE == "backstepping"){
+        controller = std::make_unique<BACKSTEPPING>(nh);
     }
     else {
         ROS_ERROR("[AIRo Control] Invalid controller type!");

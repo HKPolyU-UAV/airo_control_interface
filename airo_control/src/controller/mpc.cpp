@@ -22,7 +22,20 @@ MPC::MPC(ros::NodeHandle& nh){
     for(unsigned int i=0; i < QUADROTOR_NX; i++) acados_in.x0[i] = 0.0;
 }
 
-void MPC::print_debug(){
+
+void MPC::show_debug(){
+    if (param.show_debug){
+        if(debug_counter > 2){ //reduce cout rate
+            MPC::print();
+            debug_counter = 0;
+        }
+        else{
+            debug_counter++;
+        }
+    }
+}
+
+void MPC::print(){
     std::cout << "------------------------------------------------------------------------------" << std::endl;
     std::cout << "x_ref:      " << acados_in.yref[0][0] << "\ty_ref:      " << acados_in.yref[0][1] << "\tz_ref:         " << acados_in.yref[0][2] << std::endl;
     std::cout << "x_gt:       " << acados_in.x0[x] << "\ty_gt:       " << acados_in.x0[y] << "\tz_gt:          " << acados_in.x0[z] << std::endl;
@@ -104,7 +117,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
     acados_status = quadrotor_acados_solve(mpc_capsule);
     if (acados_status != 0){
         ROS_INFO_STREAM("acados returned status " << acados_status << std::endl);
-        MPC::print_debug();
+        MPC::print();
     }
     acados_out.status = acados_status;
     acados_out.kkt_res = (double)mpc_capsule->nlp_out->inf_norm_res;
@@ -120,15 +133,6 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
     geometry_msgs::Quaternion target_quaternion = BASE_CONTROLLER::rpy2q(target_euler);
     attitude_target.orientation = target_quaternion;
 
-    if (param.show_debug){
-        if(cout_counter > 2){ //reduce cout rate
-            MPC::print_debug();
-            cout_counter = 0;
-        }
-        else{
-            cout_counter++;
-        }
-    }   
-    
+    MPC::show_debug();
     return attitude_target;
 }
