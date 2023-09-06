@@ -23,10 +23,10 @@ protected:
 
     Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
     geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
-    virtual void show_debug() = 0;
 
 public:
-    double get_hover_thrust();
+    virtual void show_debug() = 0;
+    virtual double get_hover_thrust() = 0;
     virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&) = 0;
 };
 

@@ -136,3 +136,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
     MPC::show_debug();
     return attitude_target;
 }
+
+double MPC::get_hover_thrust(){
+    return param.hover_thrust;
+}

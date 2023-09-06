@@ -13,19 +13,16 @@ BACKSTEPPING::BACKSTEPPING(ros::NodeHandle& nh){
 } 
 
 void BACKSTEPPING::print(){
-    // std::cout << "------------------------------------------------------------------------------" << std::endl;
-    // std::cout << "x_ref:      " << acados_in.yref[0][0] << "\ty_ref:      " << acados_in.yref[0][1] << "\tz_ref:         " << acados_in.yref[0][2] << std::endl;
-    // std::cout << "x_gt:       " << acados_in.x0[x] << "\ty_gt:       " << acados_in.x0[y] << "\tz_gt:          " << acados_in.x0[z] << std::endl;
-    // std::cout << "theta_cmd:  " << target_euler.y() << "\tphi_cmd:    " << target_euler.x() <<  "\tpsi_cmd:       " << target_euler.z() << std::endl;
-    // std::cout << "theta_gt:   " << current_euler.y() << "\tphi_gt:     " << current_euler.x() <<  "\tpsi_gt:        " << current_euler.z() << std::endl;
-    // std::cout << "thrust_cmd: " << attitude_target.thrust << "\tsolve_time: "<< acados_out.cpu_time  << "\tacados_status: " << acados_out.status << std::endl;
-    // std::cout << "ros_time:   " << std::fixed << ros::Time::now().toSec() << std::endl;
-    // std::cout << "------------------------------------------------------------------------------" << std::endl;
+    std::cout << "------------------------------------------------------------------------------" << std::endl;
+    std::cout << "e_z1: " << e_z1 << std::endl;
+    std::cout << "e_z2: " << e_z2 << std::endl;
+    std::cout << "thrust: " << attitude_target.thrust << std::endl;
+    std::cout << "------------------------------------------------------------------------------" << std::endl;
 }
 
 void BACKSTEPPING::show_debug(){
     if (param.show_debug){
-        if(debug_counter > 2){ //reduce cout rate
+        if(debug_counter > 0){ //reduce cout rate
             BACKSTEPPING::print();
             debug_counter = 0;
         }
@@ -39,10 +36,16 @@ mavros_msgs::AttitudeTarget BACKSTEPPING::solve(const geometry_msgs::PoseStamped
     current_euler = q2rpy(current_pose.pose.orientation);
     ref_euler = q2rpy(ref.ref_pose.orientation);
 
-    // Altitude Control   
+    // Altitude Control
     e_z1 = ref.ref_pose.position.z - current_pose.pose.position.z;
     e_z2 = current_twist.twist.linear.z - ref.ref_twist.linear.z - param.k_z1*e_z1;
     attitude_target.thrust = param.hover_thrust/(g*cos(current_euler.x())*cos(current_euler.y())) * (e_z1+g+ref.ref_accel.linear.z-param.k_z1*(e_z2 + param.k_z1*e_z1)-param.k_z2*e_z2);
+    if (attitude_target.thrust > 1.0){
+        attitude_target.thrust = 1.0;
+    }
+    else if (attitude_target.thrust < 0.0){
+        attitude_target.thrust = 0.0;
+    }
 
     // X Translation Control
     e_x1 = ref.ref_pose.position.x - current_pose.pose.position.x;
@@ -62,4 +65,8 @@ mavros_msgs::AttitudeTarget BACKSTEPPING::solve(const geometry_msgs::PoseStamped
 
     show_debug();
     return attitude_target;
+}
+
+double BACKSTEPPING::get_hover_thrust(){
+    return param.hover_thrust;
 }

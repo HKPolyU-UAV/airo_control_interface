@@ -12,7 +12,3 @@ geometry_msgs::Quaternion BASE_CONTROLLER::rpy2q(const Eigen::Vector3d& euler){
     geometry_msgs::Quaternion quaternion = tf::createQuaternionMsgFromRollPitchYaw(euler.x(), euler.y(), euler.z());
     return quaternion;
 }
-
-double BASE_CONTROLLER::get_hover_thrust(){
-    return param.hover_thrust;
-}

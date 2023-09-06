@@ -53,7 +53,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
     reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
 
-    // Initialize FSM & Controller
+    // Initialize FSM & Controller 
     state_fsm = RC_MANUAL;
     if (CONTROLLER_TYPE == "mpc"){
         controller = std::make_unique<MPC>(nh);
