@@ -1,27 +1,28 @@
-#ifndef BACKSTEPPING_H
-#define BACKSTEPPING_H
+#ifndef SLIDINGMODE_H
+#define SLIDINGMODE_H
 
 #include <iostream>
 
 #include "airo_control/controller/base_controller.h"
 
-class BACKSTEPPING : public BASE_CONTROLLER{
+class SLIDINGMODE : public BASE_CONTROLLER{
     private:
         struct Param : public BASE_CONTROLLER::Param{
-            double k_x1,k_x2,k_y1,k_y2,k_z1,k_z2;
+            double k_xe,k_xs,k_xt,k_ye,k_ys,k_yt,k_ze,k_zs,k_zt;
         };
 
         int debug_counter;
         double g = 9.80665;
-        double e_x1,e_x2,e_y1,e_y2,e_z1,e_z2,u_x,u_y;
+        double e_x,e_dx,s_x,e_y,e_dy,s_y,e_z,e_dz,s_z,u_x,u_y;
 
     public:
         Param param;
-        BACKSTEPPING(ros::NodeHandle&);
+        SLIDINGMODE(ros::NodeHandle&);
         void show_debug();
         void print();
         mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&);
         double get_hover_thrust();
+        int sign(double&);
 };
 
 #endif

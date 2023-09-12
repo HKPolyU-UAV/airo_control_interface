@@ -61,6 +61,9 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     else if (CONTROLLER_TYPE == "backstepping"){
         controller = std::make_unique<BACKSTEPPING>(nh);
     }
+    else if (CONTROLLER_TYPE == "slidingmode"){
+        controller = std::make_unique<SLIDINGMODE>(nh);
+    }
     else {
         ROS_ERROR("[AIRo Control] Invalid controller type!");
     }
@@ -162,7 +165,7 @@ void AIRO_CONTROL_FSM::fsm(){
                 }
                 if (!rc_received(current_time)){
                     if (WITHOUT_RC){
-                        ROS_WARN("[AIRo Control] Takeoff without RC. Take extra caution!");
+                        ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] Takeoff without RC. Take extra caution!");
                     }
                     else{
                         ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] RC not connected. Reject AUTO_TAKEOFF!");
@@ -216,14 +219,18 @@ void AIRO_CONTROL_FSM::fsm(){
 
         case AUTO_TAKEOFF:{
             // To RC_MANUAL
-            if (!rc_input.is_fsm || !odom_received(current_time)){
+            if (!rc_input.is_fsm || !odom_received(current_time) || !current_state.armed){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
                 ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_MANUAL\033[32m");
                 }
-                else{
+                else if(!odom_received(current_time)){
                 ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
+                }
+                else{
+                ROS_WARN("[AIRo Control] Vehicle disarmed!");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_MANUAL\033[32m");
                 }
             }
             else{
@@ -244,16 +251,19 @@ void AIRO_CONTROL_FSM::fsm(){
 
         case AUTO_HOVER:{
             // To RC_MANUAL
-            if (!rc_input.is_fsm || !odom_received(current_time)){
+            if (!rc_input.is_fsm || !odom_received(current_time) || !current_state.armed){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                    ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> RC_MANUAL\033[32m");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_MANUAL\033[32m");
+                }
+                else if(!odom_received(current_time)){
+                ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
                 }
                 else{
-                    ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
+                ROS_WARN("[AIRo Control] Vehicle disarmed!");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_MANUAL\033[32m");
                 }
-                break;
             }
 
             // To AUTO_LAND
@@ -266,7 +276,6 @@ void AIRO_CONTROL_FSM::fsm(){
                     state_fsm = AUTO_LAND;
                     ROS_INFO("\033[32m[AIRo Control] AUTO_HOVER ==>> AUTO_LAND\033[32m");
                 }
-
             }
 
             // To POS_COMMAND
@@ -294,14 +303,18 @@ void AIRO_CONTROL_FSM::fsm(){
 
         case AUTO_LAND:{
             // To RC_MANUAL
-            if (!rc_input.is_fsm || !odom_received(current_time)){
+            if (!rc_input.is_fsm || !odom_received(current_time) || !current_state.armed){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                    ROS_INFO("\033[32m[AIRo Control] AUTO_LAND ==>> RC_MANUAL\033[32m");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_MANUAL\033[32m");
+                }
+                else if(!odom_received(current_time)){
+                ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
                 }
                 else{
-                    ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
+                ROS_WARN("[AIRo Control] Vehicle disarmed!");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_MANUAL\033[32m");
                 }
             }
 
@@ -327,14 +340,18 @@ void AIRO_CONTROL_FSM::fsm(){
 
         case POS_COMMAND:{
             // To RC_MANUAL
-            if (!rc_input.is_fsm || !odom_received(current_time)){
+            if (!rc_input.is_fsm || !odom_received(current_time) || !current_state.armed){
                 state_fsm = RC_MANUAL;
                 toggle_offboard(false);
                 if(!rc_input.is_fsm){
-                    ROS_INFO("\033[32m[AIRo Control] POS_COMMAND ==>> RC_MANUAL\033[32m");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_MANUAL\033[32m");
+                }
+                else if(!odom_received(current_time)){
+                ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
                 }
                 else{
-                    ROS_ERROR("[AIRo Control] No odom or imu! Switching to RC_MANUAL mode.");
+                ROS_WARN("[AIRo Control] Vehicle disarmed!");
+                ROS_INFO("\033[32m[AIRo Control] AUTO_TAKEOFF ==>> RC_MANUAL\033[32m");
                 }
             }
 
@@ -415,20 +432,20 @@ bool AIRO_CONTROL_FSM::toggle_offboard(bool flag){
         ros::Time offboard_start;
         while(ros::ok() && (ros::Time::now() - offboard_start).toSec() > 2.0){
             if (setmode_srv.call(offboard_setmode) && offboard_setmode.response.mode_sent){
-                ROS_INFO("[AIRo Control] Offboard mode enabled!");
+                ROS_INFO_STREAM_THROTTLE(1.0,"[AIRo Control] Offboard mode enabled!");
                 return true;
             }
             setpoint_pub.publish(attitude_target);
             ros::spinOnce();
             ros::Duration(0.01).sleep();
         }
-        ROS_ERROR("[AIRo Control] Can not enable offboard mode!");
+        ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Can not enable offboard mode!");
         return false;
 	}
 	else{
 		offboard_setmode.request.custom_mode = previous_state.mode;
 		if (!(setmode_srv.call(offboard_setmode) && offboard_setmode.response.mode_sent)){
-			ROS_ERROR("[AIRo Control] Exit OFFBOARD rejected by PX4!");
+			ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Exit OFFBOARD rejected by PX4!");
 			return false;
 		}
         else{
@@ -444,18 +461,18 @@ bool AIRO_CONTROL_FSM::toggle_arm(bool flag){
 
 	if (!(arm_srv.call(arm_cmd) && arm_cmd.response.success)){
 		if (flag)
-			ROS_ERROR("[AIRo Control] ARM rejected by PX4!");
+			ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Arm rejected by PX4!");
 		else
-			ROS_ERROR("[AIRo Control] DISARM rejected by PX4!");
+			ROS_ERROR_STREAM_THROTTLE(1.0,"[AIRo Control] Disarm rejected by PX4!");
 
 		return false;
 	}
 
     if (flag){
-        ROS_WARN("[AIRo Control] Vehicle arming!");
+        ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] Vehicle arming!");
     }
     else{
-        ROS_WARN("[AIRo Control] Vehicle disarmed!");
+        ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] Vehicle disarmed!");
     }
     
 	return true; 
