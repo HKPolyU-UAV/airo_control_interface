@@ -19,7 +19,7 @@
       #- SecondTracker
     </rosparam>
 
-    <remap from="/vrpn_client_node/gh034_agile/pose" to="/mavros/vision_pose/pose" />
-    <remap from="/vrpn_client_node/gh034_agile/twist" to="/mavros/vision_speed/speed_vector" />
+    <remap from="/vrpn_client_node/gh034_yyf/pose" to="/mavros/vision_pose/pose" />
+    <remap from="/vrpn_client_node/gh034_yyf/twist" to="/mavros/vision_speed/speed_vector" />
   </node>
 </launch>

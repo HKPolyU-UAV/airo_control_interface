@@ -1,0 +1,11 @@
+hover_thrust: 0.20
+show_debug: false
+k_xe: 2.0
+k_xs: 1.0
+k_xt: 5.0
+k_ye: 2.0
+k_ys: 1.0
+k_yt: 5.0
+k_ze: 3.0
+k_zs: 2.5
+k_zt: 3.0
