@@ -64,6 +64,9 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     else if (CONTROLLER_TYPE == "slidingmode"){
         controller = std::make_unique<SLIDINGMODE>(nh);
     }
+    else if (CONTROLLER_TYPE == "hmpc"){
+        controller = std::make_unique<HMPC>(nh);
+    }
     else {
         ROS_ERROR("[AIRo Control] Invalid controller type!");
     }
@@ -72,6 +75,15 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
 
     // For MPC Preview
     if(auto dummy_mpc = dynamic_cast<MPC*>(controller.get())){
+        enable_preview = dummy_mpc->param.enable_preview;
+        if (enable_preview){
+            controller_ref_preview.header.stamp = ros::Time::now();
+            controller_ref_preview.ref_pose.resize(QUADROTOR_N+1);
+            controller_ref_preview.ref_twist.resize(QUADROTOR_N+1);
+            controller_ref_preview.ref_accel.resize(QUADROTOR_N+1);
+        }
+    }
+    else if (auto dummy_mpc = dynamic_cast<HMPC*>(controller.get())){
         enable_preview = dummy_mpc->param.enable_preview;
         if (enable_preview){
             controller_ref_preview.header.stamp = ros::Time::now();
@@ -109,10 +121,14 @@ void AIRO_CONTROL_FSM::process(){
         if (!use_preview){
             attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref);
         }
-        else{
+        else if (CONTROLLER_TYPE == "mpc"){
             MPC* dummy_mpc = dynamic_cast<MPC*>(controller.get());
             attitude_target = dummy_mpc->solve(local_pose,local_twist,local_accel,controller_ref_preview);
         }
+        else if (CONTROLLER_TYPE == "hmpc"){
+            HMPC* dummy_hmpc = dynamic_cast<HMPC*>(controller.get());
+            attitude_target = dummy_hmpc->solve(local_pose,local_twist,local_accel,controller_ref_preview);
+        } 
     }
 
     // Step 4: Detect if landed

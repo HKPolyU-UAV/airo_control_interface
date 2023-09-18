@@ -89,7 +89,7 @@ int main(int argc, char **argv)
                          + abs(local_pose.pose.position.z - target_pose_1.ref_pose.position.z) < 0.5){
                             target_1_reached = true;
                         }
-                    }
+                        }
                     else{
                         target_pose_2.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_2);

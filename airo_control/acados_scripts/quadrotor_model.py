@@ -6,7 +6,7 @@ from scipy.linalg import block_diag
 
 def export_quadrotor_model() -> AcadosModel:
 
-    model_name = 'quadrotor'
+    model_name = 'quadrotor_test'
 
     # constent parameters
     g = 9.80665                       # gravity constant [m/s^2]

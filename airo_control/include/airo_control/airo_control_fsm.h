@@ -21,6 +21,7 @@
 #include "airo_control/controller/mpc.h"
 #include "airo_control/controller/backstepping.h"
 #include "airo_control/controller/slidingmode.h"
+#include "airo_control/controller/hmpc.h"
 
 class AIRO_CONTROL_FSM{
     private:

@@ -6,6 +6,7 @@
 		<rosparam command="load" file="$(find airo_control)/config/vicon/mpc_vicon.yaml" ns="mpc"/>
 		<rosparam command="load" file="$(find airo_control)/config/vicon/backstepping_vicon.yaml" ns="backstepping"/>
 		<rosparam command="load" file="$(find airo_control)/config/vicon/slidingmode_vicon.yaml" ns="slidingmode"/>
+		<rosparam command="load" file="$(find airo_control)/config/vicon/hmpc_vicon.yaml" ns="hmpc"/>
 	</node>
 
 </launch>

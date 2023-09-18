@@ -51,6 +51,7 @@ add_executable(airo_control_node
   src/controller/mpc.cpp
   src/controller/backstepping.cpp
   src/controller/slidingmode.cpp
+  src/controller/hmpc.cpp
   src/rc_input.cpp
 )
 target_link_libraries(airo_control_node
@@ -58,6 +59,7 @@ target_link_libraries(airo_control_node
   ${acados_lib}/libacados.so
   ${catkin_LIBRARIES}
 )
+add_dependencies(airo_control_node airo_message_generate_messages_cpp)
 
 add_executable(system_identification src/system_identification.cpp)
 target_link_libraries(system_identification
@@ -80,3 +82,4 @@ target_link_libraries(mpc_eva_node
   ${acados_lib}/libacados.so
   ${catkin_LIBRARIES}
 )
+add_dependencies(mpc_eva_node airo_message_generate_messages_cpp)
