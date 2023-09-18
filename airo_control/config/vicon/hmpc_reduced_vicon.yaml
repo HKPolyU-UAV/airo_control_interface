@@ -2,4 +2,4 @@ hover_thrust: 0.20
 show_debug: false
 enable_preview: true
 tau_phi: 0.1520336055355853
-tau_theta: 0.1413976464134012airo_control/config/vicon/hmpc_vicon.yaml
+tau_theta: 0.1413976464134012

@@ -6,7 +6,7 @@ from scipy.linalg import block_diag
 
 def export_quadrotor_model() -> AcadosModel:
 
-    model_name = 'quadrotor_test'
+    model_name = 'quadrotor'
 
     # constent parameters
     g = 9.80665                       # gravity constant [m/s^2]
@@ -96,8 +96,8 @@ def main():
     ocp.parameter_values = np.zeros((nparam, ))
 
     # set cost
-    W_x = np.diag([60, 60, 60, 30, 30, 30, 10, 10])    #Q_mat
-    W_u = np.diag([5000, 2000, 2000])                  #R_mat
+    W_x = np.diag([120, 120, 120, 30, 30, 30, 1, 1])    #Q_mat
+    W_u = np.diag([4000, 300, 300])                  #R_mat
     W = block_diag(W_x, W_u)
     ocp.cost.W_e = W_x
     ocp.cost.W = W

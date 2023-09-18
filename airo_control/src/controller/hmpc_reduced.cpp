@@ -1,31 +1,31 @@
-#include "airo_control/controller/hmpc.h"
+#include "airo_control/controller/hmpc_reduced.h"
 
-HMPC::HMPC(ros::NodeHandle& nh){
+HMPC_REDUCED::HMPC_REDUCED(ros::NodeHandle& nh){
     // Get MPC parameters
-    nh.getParam("airo_control_node/hmpc/hover_thrust",param.hover_thrust);
-    nh.getParam("airo_control_node/hmpc/tau_phi",param.tau_phi);
-    nh.getParam("airo_control_node/hmpc/tau_theta",param.tau_theta);
-    nh.getParam("airo_control_node/hmpc/show_debug",param.show_debug);
-    nh.getParam("airo_control_node/hmpc/enable_preview",param.enable_preview);
+    nh.getParam("airo_control_node/hmpc_reduced/hover_thrust",param.hover_thrust);
+    nh.getParam("airo_control_node/hmpc_reduced/tau_phi",param.tau_phi);
+    nh.getParam("airo_control_node/hmpc_reduced/tau_theta",param.tau_theta);
+    nh.getParam("airo_control_node/hmpc_reduced/show_debug",param.show_debug);
+    nh.getParam("airo_control_node/hmpc_reduced/enable_preview",param.enable_preview);
 
     // Initialize MPC
     
     int create_status = 1;
-    create_status = quadrotor_tailsitter_hybrid_acados_create(mpc_capsule);
+    create_status = quadrotor_tailsitter_hybrid_reduced_acados_create(mpc_capsule);
     if (create_status != 0){
         ROS_INFO_STREAM("acados_create() returned status " << create_status << ". Exiting." << std::endl);
         exit(1);
     }
 
-    for(unsigned int i=0; i < QUADROTOR_TAILSITTER_HYBRID_NU; i++) acados_out.u0[i] = 0.0;
-    for(unsigned int i=0; i < QUADROTOR_TAILSITTER_HYBRID_NX; i++) acados_in.x0[i] = 0.0;
+    for(unsigned int i=0; i < QUADROTOR_TAILSITTER_HYBRID_REDUCED_NU; i++) acados_out.u0[i] = 0.0;
+    for(unsigned int i=0; i < QUADROTOR_TAILSITTER_HYBRID_REDUCED_NX; i++) acados_in.x0[i] = 0.0;
 }
 
 
-void HMPC::show_debug(){
+void HMPC_REDUCED::show_debug(){
     if (param.show_debug){
         if(debug_counter > 2){ //reduce cout rate
-            HMPC::print();
+            HMPC_REDUCED::print();
             debug_counter = 0;
         }
         else{
@@ -34,7 +34,7 @@ void HMPC::show_debug(){
     }
 }
 
-void HMPC::print(){
+void HMPC_REDUCED::print(){
     std::cout << "------------------------------------------------------------------------------" << std::endl;
     std::cout << "x_ref:      " << acados_in.yref[0][0] << "\ty_ref:      " << acados_in.yref[0][1] << "\tz_ref:         " << acados_in.yref[0][2] << std::endl;
     std::cout << "x_gt:       " << acados_in.x0[x] << "\ty_gt:       " << acados_in.x0[y] << "\tz_gt:          " << acados_in.x0[z] << std::endl;
@@ -45,25 +45,25 @@ void HMPC::print(){
     std::cout << "------------------------------------------------------------------------------" << std::endl;
 }
 
-mavros_msgs::AttitudeTarget HMPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){
+mavros_msgs::AttitudeTarget HMPC_REDUCED::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){
     // Resize ref to fit prediction horizon
     airo_message::ReferencePreview ref_preview;
     ref_preview.header = ref.header;
-    ref_preview.ref_pose.resize(QUADROTOR_TAILSITTER_HYBRID_N+1);
-    ref_preview.ref_twist.resize(QUADROTOR_TAILSITTER_HYBRID_N+1);
-    ref_preview.ref_accel.resize(QUADROTOR_TAILSITTER_HYBRID_N+1);
-    for (int i = 0; i < QUADROTOR_TAILSITTER_HYBRID_N+1; i++){
+    ref_preview.ref_pose.resize(QUADROTOR_TAILSITTER_HYBRID_REDUCED_N+1);
+    ref_preview.ref_twist.resize(QUADROTOR_TAILSITTER_HYBRID_REDUCED_N+1);
+    ref_preview.ref_accel.resize(QUADROTOR_TAILSITTER_HYBRID_REDUCED_N+1);
+    for (int i = 0; i < QUADROTOR_TAILSITTER_HYBRID_REDUCED_N+1; i++){
         ref_preview.ref_pose[i] = ref.ref_pose;
         ref_preview.ref_twist[i] = ref.ref_twist;
         ref_preview.ref_accel[i] = ref.ref_accel;
     }
-    return HMPC::solve(current_pose,current_twist,current_accel,ref_preview);
+    return HMPC_REDUCED::solve(current_pose,current_twist,current_accel,ref_preview);
 }
 
-mavros_msgs::AttitudeTarget HMPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferencePreview& ref_preview){
+mavros_msgs::AttitudeTarget HMPC_REDUCED::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferencePreview& ref_preview){
     // Set reference
     ref_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[0].orientation);
-    for (int i = 0; i < QUADROTOR_TAILSITTER_HYBRID_N+1; i++){
+    for (int i = 0; i < QUADROTOR_TAILSITTER_HYBRID_REDUCED_N+1; i++){
         acados_in.yref[i][0] = ref_preview.ref_pose[i].position.x;
         acados_in.yref[i][1] = ref_preview.ref_pose[i].position.y;
         acados_in.yref[i][2] = ref_preview.ref_pose[i].position.z;
@@ -92,10 +92,10 @@ mavros_msgs::AttitudeTarget HMPC::solve(const geometry_msgs::PoseStamped& curren
     ocp_nlp_constraints_model_set(mpc_capsule->nlp_config,mpc_capsule->nlp_dims,mpc_capsule->nlp_in, 0, "ubx", acados_in.x0);
 
     // Solve OCP
-    acados_status = quadrotor_tailsitter_hybrid_acados_solve(mpc_capsule);
+    acados_status = quadrotor_tailsitter_hybrid_reduced_acados_solve(mpc_capsule);
     if (acados_status != 0){
         ROS_INFO_STREAM("acados returned status " << acados_status << std::endl);
-        HMPC::print();
+        HMPC_REDUCED::print();
     }
     acados_out.status = acados_status;
     acados_out.kkt_res = (double)mpc_capsule->nlp_out->inf_norm_res;
@@ -111,10 +111,10 @@ mavros_msgs::AttitudeTarget HMPC::solve(const geometry_msgs::PoseStamped& curren
     geometry_msgs::Quaternion target_quaternion = BASE_CONTROLLER::rpy2q(target_euler);
     attitude_target.orientation = target_quaternion;
 
-    HMPC::show_debug();
+    HMPC_REDUCED::show_debug();
     return attitude_target;
 }
 
-double HMPC::get_hover_thrust(){
+double HMPC_REDUCED::get_hover_thrust(){
     return param.hover_thrust;
 }

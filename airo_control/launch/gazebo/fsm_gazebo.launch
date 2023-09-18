@@ -7,6 +7,7 @@
 		<rosparam command="load" file="$(find airo_control)/config/gazebo/backstepping_gazebo.yaml" ns="backstepping"/>
 		<rosparam command="load" file="$(find airo_control)/config/gazebo/slidingmode_gazebo.yaml" ns="slidingmode"/>
 		<rosparam command="load" file="$(find airo_control)/config/gazebo/hmpc_gazebo.yaml" ns="hmpc"/>
+		<rosparam command="load" file="$(find airo_control)/config/gazebo/hmpc_reduced_gazebo.yaml" ns="hmpc_reduced"/>
 	</node>
 
 </launch>

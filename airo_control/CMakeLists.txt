@@ -52,10 +52,13 @@ add_executable(airo_control_node
   src/controller/backstepping.cpp
   src/controller/slidingmode.cpp
   src/controller/hmpc.cpp
+  src/controller/hmpc_reduced.cpp
   src/rc_input.cpp
 )
 target_link_libraries(airo_control_node
   ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
+  ${quadrotor_model}/libacados_ocp_solver_quadrotor_tailsitter_hybrid.so
+  ${quadrotor_model}/libacados_ocp_solver_quadrotor_tailsitter_hybrid_reduced.so
   ${acados_lib}/libacados.so
   ${catkin_LIBRARIES}
 )
