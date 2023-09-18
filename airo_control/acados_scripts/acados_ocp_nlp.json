@@ -1,0 +1,668 @@
+{
+	"dims": {
+		"nx": 8,
+		"nz": 0,
+		"nu": 3,
+		"np": 0,
+		"ny_0": 11,
+		"ny": 11,
+		"ny_e": 8,
+		"nbx_0": 8,
+		"npd": 0,
+		"npd_e": 0,
+		"nh": 0,
+		"nh_e": 0,
+		"nbx": 0,
+		"nbx_e": 0,
+		"nbu": 3,
+		"nsbx": 0,
+		"nsbu": 0,
+		"nsbx_e": 0,
+		"ns": 0,
+		"ns_e": 0,
+		"nsh": 0,
+		"nsh_e": 0,
+		"ng": 0,
+		"ng_e": 0,
+		"nsg": 0,
+		"nsg_e": 0,
+		"N": 20,
+		"nphi": 0,
+		"nphi_e": 0,
+		"nsphi": 0,
+		"nsphi_e": 0,
+		"nr": 0,
+		"nr_e": 0,
+		"nbxe_0": 8,
+		"gnsf_nx1": 0,
+		"gnsf_nz1": 0,
+		"gnsf_nout": 0,
+		"gnsf_ny": 0,
+		"gnsf_nuhat": 0
+	},
+	"cost": {
+		"cost_type": "LINEAR_LS",
+		"cost_ext_fun_type": "casadi",
+		"cost_source_ext_cost": [],
+		"cost_function_ext_cost": [],
+		"W": [
+			[120,0,0,0,0,0,0,0,0,0,0],
+			[0,120,0,0,0,0,0,0,0,0,0],
+			[0,0,120,0,0,0,0,0,0,0,0],
+			[0,0,0,20,0,0,0,0,0,0,0],
+			[0,0,0,0,20,0,0,0,0,0,0],
+			[0,0,0,0,0,20,0,0,0,0,0],
+			[0,0,0,0,0,0,20,0,0,0,0],
+			[0,0,0,0,0,0,0,20,0,0,0],
+			[0,0,0,0,0,0,0,0,4000,0,0],
+			[0,0,0,0,0,0,0,0,0,400,0],
+			[0,0,0,0,0,0,0,0,0,0,600]
+		],
+		"Vx": [
+			[1,0,0,0,0,0,0,0],
+			[0,1,0,0,0,0,0,0],
+			[0,0,1,0,0,0,0,0],
+			[0,0,0,1,0,0,0,0],
+			[0,0,0,0,1,0,0,0],
+			[0,0,0,0,0,1,0,0],
+			[0,0,0,0,0,0,1,0],
+			[0,0,0,0,0,0,0,1],
+			[0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0]
+		],
+		"Vu": [
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[1,0,0],
+			[0,1,0],
+			[0,0,1]
+		],
+		"Vz": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [11,0],
+			"_ArrayData_": []
+		},
+		"yref": [-0,-0,-0,-0,-0,-0,-0,-0,-0,-0,-0],
+		"Zl": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"Zu": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"zl": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"zu": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"cost_type_0": "LINEAR_LS",
+		"cost_ext_fun_type_0": "casadi",
+		"cost_source_ext_cost_0": [],
+		"cost_function_ext_cost_0": [],
+		"W_0": [
+			[120,0,0,0,0,0,0,0,0,0,0],
+			[0,120,0,0,0,0,0,0,0,0,0],
+			[0,0,120,0,0,0,0,0,0,0,0],
+			[0,0,0,20,0,0,0,0,0,0,0],
+			[0,0,0,0,20,0,0,0,0,0,0],
+			[0,0,0,0,0,20,0,0,0,0,0],
+			[0,0,0,0,0,0,20,0,0,0,0],
+			[0,0,0,0,0,0,0,20,0,0,0],
+			[0,0,0,0,0,0,0,0,4000,0,0],
+			[0,0,0,0,0,0,0,0,0,400,0],
+			[0,0,0,0,0,0,0,0,0,0,600]
+		],
+		"Vx_0": [
+			[1,0,0,0,0,0,0,0],
+			[0,1,0,0,0,0,0,0],
+			[0,0,1,0,0,0,0,0],
+			[0,0,0,1,0,0,0,0],
+			[0,0,0,0,1,0,0,0],
+			[0,0,0,0,0,1,0,0],
+			[0,0,0,0,0,0,1,0],
+			[0,0,0,0,0,0,0,1],
+			[0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0],
+			[0,0,0,0,0,0,0,0]
+		],
+		"Vu_0": [
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[0,0,0],
+			[1,0,0],
+			[0,1,0],
+			[0,0,1]
+		],
+		"Vz_0": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [11,0],
+			"_ArrayData_": []
+		},
+		"yref_0": [-0,-0,-0,-0,-0,-0,-0,-0,-0,-0,-0],
+		"cost_type_e": "LINEAR_LS",
+		"cost_ext_fun_type_e": "casadi",
+		"cost_source_ext_cost_e": [],
+		"cost_function_ext_cost_e": [],
+		"W_e": [
+			[120,0,0,0,0,0,0,0],
+			[0,120,0,0,0,0,0,0],
+			[0,0,120,0,0,0,0,0],
+			[0,0,0,20,0,0,0,0],
+			[0,0,0,0,20,0,0,0],
+			[0,0,0,0,0,20,0,0],
+			[0,0,0,0,0,0,20,0],
+			[0,0,0,0,0,0,0,20]
+		],
+		"Vx_e": [
+			[1,0,0,0,0,0,0,0],
+			[0,1,0,0,0,0,0,0],
+			[0,0,1,0,0,0,0,0],
+			[0,0,0,1,0,0,0,0],
+			[0,0,0,0,1,0,0,0],
+			[0,0,0,0,0,1,0,0],
+			[0,0,0,0,0,0,1,0],
+			[0,0,0,0,0,0,0,1]
+		],
+		"yref_e": [-0,-0,-0,-0,-0,-0,-0,-0],
+		"Zl_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"Zu_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"zl_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"zu_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		}
+	},
+	"constraints": {
+		"constr_type": "BGH",
+		"constr_type_e": "BGH",
+		"lbx": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lbu": [0.1,-1.047197551,-1.047197551],
+		"idxbx": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"ubx": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"ubu": [0.6,1.047197551,1.047197551],
+		"idxbu": [0,1,2],
+		"lbx_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"ubx_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"idxbx_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"idxsbx": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"idxsbu": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lsbx": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lsbu": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"usbx": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"usbu": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"idxsbx_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lsbx_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"usbx_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lsg": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"usg": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"idxsg": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lsg_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"usg_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"idxsg_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lsh": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"ush": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"idxsh": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lsh_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"ush_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"idxsh_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"D": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [0,3],
+			"_ArrayData_": []
+		},
+		"C": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [0,8],
+			"_ArrayData_": []
+		},
+		"lg": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"ug": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"C_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [0,8],
+			"_ArrayData_": []
+		},
+		"lg_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"ug_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lh": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"uh": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lh_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"uh_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lbx_0": [0,0,0,0,0,0,0,0],
+		"ubx_0": [0,0,0,0,0,0,0,0],
+		"idxbx_0": [0,1,2,3,4,5,6,7],
+		"idxbxe_0": [0,1,2,3,4,5,6,7],
+		"lphi": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"uphi": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lphi_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"uphi_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lsphi": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"usphi": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"lsphi_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"usphi_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"idxsphi": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		},
+		"idxsphi_e": {
+			"_ArrayType_": "double",
+			"_ArraySize_": [1,0],
+			"_ArrayData_": []
+		}
+	},
+	"solver_options": {
+		"qp_solver": "PARTIAL_CONDENSING_HPIPM",
+		"hessian_approx": "GAUSS_NEWTON",
+		"integrator_type": "ERK",
+		"tf": 1,
+		"Tsim": 0.05,
+		"time_steps": [
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05,
+			0.05
+		],
+		"nlp_solver_type": "SQP",
+		"sim_method_num_steps": [
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1,
+			1
+		],
+		"sim_method_num_stages": [
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4,
+			4
+		],
+		"sim_method_newton_iter": 3,
+		"sim_method_newton_tol": 0,
+		"sim_method_jac_reuse": [
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0
+		],
+		"nlp_solver_max_iter": 100,
+		"nlp_solver_tol_stat": 1e-06,
+		"nlp_solver_tol_eq": 1e-06,
+		"nlp_solver_tol_ineq": 1e-06,
+		"nlp_solver_tol_comp": 1e-06,
+		"nlp_solver_step_length": 1,
+		"nlp_solver_warm_start_first_qp": [],
+		"rti_phase": 0,
+		"qp_solver_cond_N": 5,
+		"qp_solver_iter_max": 50,
+		"qp_solver_tol_stat": [],
+		"qp_solver_tol_eq": [],
+		"qp_solver_tol_ineq": [],
+		"qp_solver_tol_comp": [],
+		"qp_solver_warm_start": 0,
+		"print_level": 0,
+		"initialize_t_slacks": 0,
+		"levenberg_marquardt": 0,
+		"regularize_method": "NO_REGULARIZE",
+		"exact_hess_cost": 1,
+		"exact_hess_constr": 1,
+		"exact_hess_dyn": 1,
+		"ext_cost_num_hess": 0,
+		"alpha_min": 0.05,
+		"alpha_reduction": 0.7,
+		"globalization": "FIXED_STEP",
+		"collocation_type": "GAUSS_LEGENDRE",
+		"line_search_use_sufficient_descent": 0,
+		"globalization_use_SOC": 0,
+		"full_step_dual": 0,
+		"eps_sufficient_descent": 0.0001,
+		"hpipm_mode": "BALANCE",
+		"qp_solver_ric_alg": 1,
+		"qp_solver_cond_ric_alg": 1,
+		"nlp_solver_ext_qp_res": 0,
+		"ext_fun_compile_flags": "",
+		"cost_discretization": "EULER"
+	},
+	"model": {
+		"name": "quadrotor_tailsitter_hybrid_reduced",
+		"dyn_ext_fun_type": "casadi",
+		"dyn_generic_source": [],
+		"dyn_disc_fun_jac_hess": [],
+		"dyn_disc_fun_jac": [],
+		"dyn_disc_fun": [],
+		"gnsf": {
+			"nontrivial_f_LO": 1,
+			"purely_linear": 0
+		}
+	},
+	"parameter_values": [],
+	"acados_include_path": "\/home\/rocky\/acados\/examples\/acados_matlab_octave\/getting_started\/..\/..\/..\/include",
+	"acados_lib_path": "\/home\/rocky\/acados\/examples\/acados_matlab_octave\/getting_started\/..\/..\/..\/lib",
+	"problem_class": "OCP",
+	"simulink_opts": {
+		"outputs": {
+			"u0": 1,
+			"utraj": 0,
+			"xtraj": 0,
+			"solver_status": 1,
+			"cost_value": 0,
+			"KKT_residual": 1,
+			"KKT_residuals": 0,
+			"x1": 1,
+			"CPU_time": 1,
+			"CPU_time_sim": 0,
+			"CPU_time_qp": 0,
+			"CPU_time_lin": 0,
+			"sqp_iter": 1
+		},
+		"inputs": {
+			"lbx_0": 1,
+			"ubx_0": 1,
+			"parameter_traj": 1,
+			"y_ref_0": 1,
+			"y_ref": 1,
+			"y_ref_e": 1,
+			"lbx": 1,
+			"ubx": 1,
+			"lbx_e": 1,
+			"ubx_e": 1,
+			"lbu": 1,
+			"ubu": 1,
+			"lg": 1,
+			"ug": 1,
+			"lh": 1,
+			"uh": 1,
+			"lh_e": 1,
+			"uh_e": 1,
+			"cost_W_0": 0,
+			"cost_W": 0,
+			"cost_W_e": 0,
+			"reset_solver": 0,
+			"x_init": 0,
+			"u_init": 0
+		},
+		"samplingtime": "t0"
+	},
+	"cython_include_dirs": [],
+	"code_export_directory": "\/home\/rocky\/airo_control_interface\/airo_control\/acados_scripts\/c_generated_code",
+	"json_file": "acados_ocp_nlp.json",
+	"shared_lib_ext": ".so",
+	"acados_link_libs": {
+		"openmp": "",
+		"qpoases": "-lqpOASES_e",
+		"daqp": "",
+		"qpdunes": "",
+		"osqp": "",
+		"hpmpc": "",
+		"ooqp": ""
+	},
+	"os": "unix"
+}

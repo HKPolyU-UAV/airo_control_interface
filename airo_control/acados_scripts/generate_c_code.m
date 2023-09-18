@@ -15,10 +15,10 @@ sim_method = 'erk';
 
 %% model dynamics
 
-model = quadrotor_tailsitter_hybrid;
-model_name = 'quadrotor_tailsitter_hybrid';
-// model = quadrotor_tailsitter_hybrid_reduced;
-// model_name = 'quadrotor_tailsitter_hybrid_reduced';
+% model = quadrotor_tailsitter_hybrid;
+% model_name = 'quadrotor_tailsitter_hybrid';
+model = quadrotor_tailsitter_hybrid_reduced;
+model_name = 'quadrotor_tailsitter_hybrid_reduced';
 nx = model.nx;
 nu = model.nu;
 ny = size(model.cost_expr_y, 1);
