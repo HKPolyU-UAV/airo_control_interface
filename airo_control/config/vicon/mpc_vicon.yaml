@@ -1,6 +1,6 @@
-hover_thrust: 0.20
-show_debug: false
+hover_thrust: 0.2376726013422012
+show_debug: true
 enable_preview: true
-tau_phi: 0.1520336055355853
-tau_theta: 0.1413976464134012
-tau_psi: 0.540818835503479
+tau_phi: 0.1667
+tau_theta: 0.1667
+tau_psi: 1.364456812259516

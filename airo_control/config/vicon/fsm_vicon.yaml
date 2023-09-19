@@ -3,10 +3,10 @@ pose_topic: /mavros/vision_pose/pose
 twist_topic: /mavros/local_position/velocity_local
 
 # FSM Parameters
-controller_type: mpc
+# controller_type: mpc
 # controller_type: backstepping
 # controller_type: slidingmode
-# controller_type: hmpc
+controller_type: hmpc
 # controller_type: hmpc_reduced
 fsm_frequency: 100
 state_timeout: 1.5
@@ -20,7 +20,7 @@ reject_takeoff_twist_threshold: 0.10
 hover_max_velocity: 1.5
 hover_max_yaw_rate: 1.5
 check_safety_volumn: true
-safety_volumn: [-2.3, 2.7, -1.7, 2.3, 2.5]
+safety_volumn: [-2.3, 2.7, -1.7, 2.3, 2.75]
 
 # RC Transmitter Parameters
 without_rc: false
@@ -32,7 +32,7 @@ fsm_channel: 6
 command_channel: 7
 reboot_channel: 9
 kill_channel: 8
-reverse_throttle: true
+reverse_throttle: false
 reverse_yaw: false
 reverse_pitch: true
 reverse_roll: false
