@@ -1,5 +1,5 @@
 from acados_template import AcadosOcp, AcadosOcpSolver, AcadosModel
-from casadi import SX, vertcat, sin, cos
+from casadi import SX, vertcat, sin, cos, fabs
 import numpy as np
 import math
 from scipy.linalg import block_diag
@@ -10,6 +10,9 @@ def export_quadrotor_model() -> AcadosModel:
 
     # constent parameters
     g = 9.80665                       # gravity constant [m/s^2]
+    cd_u = 0.50
+    cd_v = 0.10
+    cd_w = 0.10
     
     # states
     x = SX.sym('x')                 # earth position x
@@ -50,9 +53,9 @@ def export_quadrotor_model() -> AcadosModel:
     dx = u
     dy = v
     dz = w
-    du = (cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi)) * thrust/hover_thrust*g
-    dv = (cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi)) * thrust/hover_thrust*g
-    dw = -g + cos(theta) * cos(phi) * thrust/hover_thrust*g
+    du = (cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi)) * thrust/hover_thrust*g - fabs(u)*u*cd_u
+    dv = (cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi)) * thrust/hover_thrust*g - fabs(v)*v*cd_v
+    dw = -g + cos(theta) * cos(phi) * thrust/hover_thrust*g - fabs(w)*w*cd_w
     dphi = (phi_cmd - phi) / tau_phi
     dtheta = (theta_cmd - theta) / tau_theta
     f_expl = vertcat(dx,dy,dz,du,dv,dw,dphi,dtheta)
