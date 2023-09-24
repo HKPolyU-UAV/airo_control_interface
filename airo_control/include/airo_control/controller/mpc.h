@@ -25,6 +25,7 @@ class MPC : public BASE_CONTROLLER{
             double tau_theta;
             double tau_psi;
             bool enable_preview;
+            std::vector<double> diag_cost_x,diag_cost_u,diag_cost_xn;
         };
 
         enum SystemStates{
@@ -71,6 +72,8 @@ class MPC : public BASE_CONTROLLER{
         void show_debug();
         void print();
         double get_hover_thrust();
+        bool set_intermediate_weights(const std::vector<double>&,const std::vector<double>&);
+        bool set_terminal_weights(const std::vector<double>&);
         mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&);
         mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferencePreview&);
 };

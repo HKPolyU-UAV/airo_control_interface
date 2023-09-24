@@ -8,9 +8,11 @@ MPC::MPC(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/mpc/tau_psi",param.tau_psi);
     nh.getParam("airo_control_node/mpc/show_debug",param.show_debug);
     nh.getParam("airo_control_node/mpc/enable_preview",param.enable_preview);
+    nh.getParam("airo_control_node/mpc/diag_cost_x",param.diag_cost_x);
+    nh.getParam("airo_control_node/mpc/diag_cost_u",param.diag_cost_u);
+    nh.getParam("airo_control_node/mpc/diag_cost_xn",param.diag_cost_xn);
 
     // Initialize MPC
-    
     int create_status = 1;
     create_status = quadrotor_acados_create(mpc_capsule);
     if (create_status != 0){
@@ -20,8 +22,13 @@ MPC::MPC(ros::NodeHandle& nh){
 
     for(unsigned int i=0; i < QUADROTOR_NU; i++) acados_out.u0[i] = 0.0;
     for(unsigned int i=0; i < QUADROTOR_NX; i++) acados_in.x0[i] = 0.0;
-}
 
+    set_intermediate_weights(param.diag_cost_x,param.diag_cost_u);
+    for (size_t i = 0; i < param.diag_cost_x.size(); ++i) {
+        param.diag_cost_xn[i] *= 5;
+    }
+    set_terminal_weights(param.diag_cost_xn);
+}
 
 void MPC::show_debug(){
     if (param.show_debug){
@@ -97,11 +104,14 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
         acados_param[i][0] = param.hover_thrust;
         acados_param[i][1] = param.tau_phi;
         acados_param[i][2] = param.tau_theta;
+
+        // For yaw prediction
         if (i == 0){
             acados_param[i][3] = current_euler.z();
         }
         else{
-            Eigen::Vector3d dummy_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[i-1].orientation); // For yaw prediction
+            Eigen::Vector3d dummy_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[i-1].orientation);
+            // Eigen::Vector3d dummy_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[0].orientation);
             if (dummy_euler.z() - acados_param[i-1][3] > M_PI){
                 dummy_euler.z() = dummy_euler.z() - 2*M_PI;
             }
@@ -110,6 +120,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
             }
             acados_param[i][3] = acados_param[i-1][3] + 1/QUADROTOR_N * (dummy_euler.z() - acados_param[i-1][3]) / param.tau_psi;
         }
+        
         quadrotor_acados_update_params(mpc_capsule,i,acados_param[i],QUADROTOR_NP);
     }
 
@@ -139,4 +150,43 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
 
 double MPC::get_hover_thrust(){
     return param.hover_thrust;
+}
+
+bool MPC::set_intermediate_weights(const std::vector<double>&diag_weight_x, const std::vector<double>&diag_weight_u){
+    if (diag_weight_x.size() != QUADROTOR_NX || diag_weight_u.size() != QUADROTOR_NU){
+        return false;
+    }
+
+	double w[(QUADROTOR_NX+QUADROTOR_NU)*(QUADROTOR_NX+QUADROTOR_NU)];
+	for (int j = 0; j < (QUADROTOR_NX+QUADROTOR_NU)*(QUADROTOR_NX+QUADROTOR_NU); j++){
+		w[j] = 0.0;
+    }
+	for (int j = 0; j < QUADROTOR_NX; j++){
+        w[j + (QUADROTOR_NX+QUADROTOR_NU) * j] = diag_weight_x[j];
+    }
+	for (int j = 0; j < QUADROTOR_NU; j++){
+        w[QUADROTOR_NX+j + (QUADROTOR_NX+QUADROTOR_NU) * (QUADROTOR_NX+j)] = diag_weight_u[j];
+    }
+		
+    for (int i = 0; i < QUADROTOR_N; i++){
+        ocp_nlp_cost_model_set(mpc_capsule->nlp_config,mpc_capsule->nlp_dims,mpc_capsule->nlp_in,i,"W",w);
+    }
+    return true;
+}
+
+bool MPC::set_terminal_weights(const std::vector<double>&diag_weight_xn){
+    if (diag_weight_xn.size() != QUADROTOR_NX){
+        return false;
+    }
+
+    double w_n[QUADROTOR_NX*QUADROTOR_NX];
+	for (int j = 0; j < QUADROTOR_NX*QUADROTOR_NX; j++){
+        w_n[j] = 0.0;
+    }
+	for (int j = 0; j < QUADROTOR_NX; j++){
+        w_n[j + QUADROTOR_NX * j] = diag_weight_xn[j];
+    }
+
+    ocp_nlp_cost_model_set(mpc_capsule->nlp_config,mpc_capsule->nlp_dims,mpc_capsule->nlp_in,QUADROTOR_N,"W",w_n);
+    return true;
 }

@@ -98,6 +98,7 @@ def main():
     # set cost
     W_x = np.diag([60, 60, 60, 30, 30, 30, 10, 10])    #Q_mat
     W_u = np.diag([5000, 2000, 2000])                  #R_mat
+    
     W = block_diag(W_x, W_u)
     ocp.cost.W_e = W_x
     ocp.cost.W = W
