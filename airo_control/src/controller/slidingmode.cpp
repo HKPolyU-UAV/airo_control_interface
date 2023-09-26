@@ -3,7 +3,7 @@
 SLIDINGMODE::SLIDINGMODE(ros::NodeHandle& nh){
     // Get Parameters
     nh.getParam("airo_control_node/slidingmode/hover_thrust",param.hover_thrust);
-    nh.getParam("airo_control_node/slidingmode/show_debug",param.show_debug);
+    nh.getParam("airo_control_node/slidingmode/pub_debug",param.pub_debug);
     nh.getParam("airo_control_node/slidingmode/k_xe",param.k_xe);
     nh.getParam("airo_control_node/slidingmode/k_xs",param.k_xs);
     nh.getParam("airo_control_node/slidingmode/k_xt",param.k_xt);
@@ -13,30 +13,29 @@ SLIDINGMODE::SLIDINGMODE(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/slidingmode/k_ze",param.k_ze);
     nh.getParam("airo_control_node/slidingmode/k_zs",param.k_zs);
     nh.getParam("airo_control_node/slidingmode/k_zt",param.k_zt);
+
+    debug_pub = nh.advertise<std_msgs::Float64MultiArray>("/airo_control/slidingmode/debug",1);
 }
 
-void SLIDINGMODE::print(){
-    std::cout << "------------------------------------------------------------------------------" << std::endl;
-    std::cout << "hover_thrust:" << param.hover_thrust << std::endl;
-    std::cout << "thrust: " << attitude_target.thrust << std::endl;
-    std::cout << "e_z: " << e_z << std::endl;
-    std::cout << "s_z: " << s_z << std::endl;
-    std::cout << "tanh: " << tanh(param.k_zt*s_z) << std::endl;
-    std::cout << "u_x: " << u_x << std::endl;
-    std::cout << "u_y: " << u_y << std::endl;
-    std::cout << "------------------------------------------------------------------------------" << std::endl;
-}
+void SLIDINGMODE::pub_debug(){
+    std_msgs::Float64MultiArray debug_msg;
+    debug_msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
+    debug_msg.layout.dim[0].size = 11;
+    debug_msg.layout.dim[0].stride = 1;
+    debug_msg.data.clear();
+    debug_msg.data.push_back(e_z);
+    debug_msg.data.push_back(e_dz);
+    debug_msg.data.push_back(s_z);
+    debug_msg.data.push_back(e_x);
+    debug_msg.data.push_back(e_dx);
+    debug_msg.data.push_back(s_x);
+    debug_msg.data.push_back(u_x);
+    debug_msg.data.push_back(e_y);
+    debug_msg.data.push_back(e_dy);
+    debug_msg.data.push_back(s_y);
+    debug_msg.data.push_back(u_y);
 
-void SLIDINGMODE::show_debug(){
-    if (param.show_debug){
-        if(debug_counter > 0){ //reduce cout rate
-            SLIDINGMODE::print();
-            debug_counter = 0;
-        }
-        else{
-            debug_counter++;
-        }
-    }
+    debug_pub.publish(debug_msg);
 }
 
 mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){  
@@ -46,7 +45,7 @@ mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped&
     // Altitude Control
     e_z = ref.ref_pose.position.z - current_pose.pose.position.z;
     e_dz= ref.ref_twist.linear.z - current_twist.twist.linear.z;
-    s_z = param.k_ze*e_z + e_dz;
+    s_z = param.k_ze * e_z + e_dz;
     attitude_target.thrust = param.hover_thrust/(g*cos(current_euler.x())*cos(current_euler.y())) * (param.k_ze*e_dz+ref.ref_accel.linear.z+g+param.k_zs*tanh(param.k_zt*s_z));
     if (attitude_target.thrust > 1.0){
         attitude_target.thrust = 1.0;
@@ -67,13 +66,16 @@ mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped&
     s_y = param.k_ye*e_y + e_dy;
     u_y = param.hover_thrust/(attitude_target.thrust*g)*(param.k_ye*e_dy+ref.ref_accel.linear.y+param.k_ys*tanh(param.k_yt*s_y));
 
-    // Calculate Targer Eulers
+    // Calculate Target Eulers
     target_euler.x() = asin(u_x*sin(ref_euler.z()) - u_y*cos(ref_euler.z()));
     target_euler.y() = asin((u_x*cos(ref_euler.z()) + u_y*sin(ref_euler.z()))/cos(target_euler.x()));
     target_euler.z() = ref_euler.z();
     attitude_target.orientation = rpy2q(target_euler);
 
-    show_debug();
+    if (param.pub_debug){
+        pub_debug();
+    }
+    
     return attitude_target;
 }
 

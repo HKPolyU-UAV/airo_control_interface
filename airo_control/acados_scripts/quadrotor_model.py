@@ -97,11 +97,17 @@ def main():
 
     # set cost
     W_x = np.diag([60, 60, 60, 30, 30, 30, 10, 10])    #Q_mat
-    W_u = np.diag([5000, 2000, 2000])                  #R_mat
-    
+    W_u = np.diag([5000, 2000, 2000])                  #R_mat  
     W = block_diag(W_x, W_u)
     ocp.cost.W_e = W_x
     ocp.cost.W = W
+
+    # V_x = np.diag([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+    # V_xe = np.diag([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+    # V_u = np.diag([1.0, 1.0, 1.0])
+    # ocp.cost.Vx = V_x
+    # ocp.cost.Vx_e = V_xe
+    # ocp.cost.Vu = V_u
 
     # the 'EXTERNAL' cost type can be used to define general cost terms
     # NOTE: This leads to additional (exact) hessian contributions when using GAUSS_NEWTON hessian.
@@ -111,10 +117,10 @@ def main():
     ocp.cost.cost_type_e = 'NONLINEAR_LS'
 
     # set constraints
-    u_min = np.array([0, -math.pi/2, -math.pi/2])
-    u_max = np.array([1, math.pi/2, math.pi/2])
-    x_min = np.array([-math.pi/2,-math.pi/2])
-    x_max = np.array([math.pi/2,math.pi/2])
+    u_min = np.array([0, -math.pi/3, -math.pi/3])
+    u_max = np.array([1, math.pi/3, math.pi/3])
+    x_min = np.array([-math.pi/3,-math.pi/3])
+    x_max = np.array([math.pi/3,math.pi/3])
     ocp.constraints.lbu = u_min
     ocp.constraints.ubu = u_max
     ocp.constraints.idxbu = np.array([0,1,2])

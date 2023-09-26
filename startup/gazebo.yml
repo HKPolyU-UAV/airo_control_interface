@@ -13,4 +13,4 @@ windows:
       layout: tiled
       panes:
         - ./wait_for_ros.sh; roslaunch airo_control fsm_gazebo.launch
-        - ./wait_for_ros.sh; roslaunch airo_trajectory file_trajectory.launch
+        - ./wait_for_ros.sh; rosrun airo_control example_mission_node

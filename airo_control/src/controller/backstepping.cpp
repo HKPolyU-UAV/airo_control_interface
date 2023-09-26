@@ -3,33 +3,33 @@
 BACKSTEPPING::BACKSTEPPING(ros::NodeHandle& nh){
     // Get Parameters
     nh.getParam("airo_control_node/backstepping/hover_thrust",param.hover_thrust);
-    nh.getParam("airo_control_node/backstepping/show_debug",param.show_debug);
+    nh.getParam("airo_control_node/backstepping/pub_debug",param.pub_debug);
     nh.getParam("airo_control_node/backstepping/k_x1",param.k_x1);
     nh.getParam("airo_control_node/backstepping/k_x2",param.k_x2);
     nh.getParam("airo_control_node/backstepping/k_y1",param.k_y1);
     nh.getParam("airo_control_node/backstepping/k_y2",param.k_y2);
     nh.getParam("airo_control_node/backstepping/k_z1",param.k_z1);
     nh.getParam("airo_control_node/backstepping/k_z2",param.k_z2);
+
+    debug_pub = nh.advertise<std_msgs::Float64MultiArray>("/airo_control/backstepping/debug",1);
 } 
 
-void BACKSTEPPING::print(){
-    std::cout << "------------------------------------------------------------------------------" << std::endl;
-    std::cout << "e_z1: " << e_z1 << std::endl;
-    std::cout << "e_z2: " << e_z2 << std::endl;
-    std::cout << "thrust: " << attitude_target.thrust << std::endl;
-    std::cout << "------------------------------------------------------------------------------" << std::endl;
-}
+void BACKSTEPPING::pub_debug(){
+    std_msgs::Float64MultiArray debug_msg;
+    debug_msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
+    debug_msg.layout.dim[0].size = 8;
+    debug_msg.layout.dim[0].stride = 1;
+    debug_msg.data.clear();
+    debug_msg.data.push_back(e_z1);
+    debug_msg.data.push_back(e_z2);
+    debug_msg.data.push_back(e_x1);
+    debug_msg.data.push_back(e_x2);
+    debug_msg.data.push_back(u_x);
+    debug_msg.data.push_back(e_y1);
+    debug_msg.data.push_back(e_y2);
+    debug_msg.data.push_back(u_y);
 
-void BACKSTEPPING::show_debug(){
-    if (param.show_debug){
-        if(debug_counter > 0){ //reduce cout rate
-            BACKSTEPPING::print();
-            debug_counter = 0;
-        }
-        else{
-            debug_counter++;
-        }
-    }
+    debug_pub.publish(debug_msg);  
 }
 
 mavros_msgs::AttitudeTarget BACKSTEPPING::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){  
@@ -63,7 +63,10 @@ mavros_msgs::AttitudeTarget BACKSTEPPING::solve(const geometry_msgs::PoseStamped
     target_euler.z() = ref_euler.z();
     attitude_target.orientation = rpy2q(target_euler);
 
-    show_debug();
+    if (param.pub_debug){
+        pub_debug();
+    }
+
     return attitude_target;
 }
 

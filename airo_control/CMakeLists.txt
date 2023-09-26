@@ -58,6 +58,7 @@ target_link_libraries(airo_control_node
   ${acados_lib}/libacados.so
   ${catkin_LIBRARIES}
 )
+add_dependencies(airo_control_node airo_message_generate_messages_cpp)
 
 add_executable(system_identification src/system_identification.cpp)
 target_link_libraries(system_identification
@@ -69,14 +70,4 @@ add_executable(example_mission_node src/example_mission_node.cpp)
 target_link_libraries(example_mission_node
   ${catkin_LIBRARIES}
 )
-
-add_executable(mpc_eva_node
-  src/mpc_eva/mpc_eva_node.cpp
-  src/controller/base_controller.cpp
-  src/controller/mpc.cpp
-)
-target_link_libraries(mpc_eva_node
-  ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
-  ${acados_lib}/libacados.so
-  ${catkin_LIBRARIES}
-)
+add_dependencies(example_mission_node airo_message_generate_messages_cpp)

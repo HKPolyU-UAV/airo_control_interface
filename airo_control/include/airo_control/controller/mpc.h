@@ -55,8 +55,10 @@ class MPC : public BASE_CONTROLLER{
         struct SolverOutput{
             double u0[QUADROTOR_NU];
             double x1[QUADROTOR_NX];
-            double status, kkt_res, cpu_time;
+            double status,kkt_res, cpu_time;
         };
+
+        ros::Publisher acados_status_pub,kkt_res_pub,cpu_time_pub,yaw_prediction_pub;
 
         // Acados variables
         SolverInput acados_in;
@@ -64,13 +66,12 @@ class MPC : public BASE_CONTROLLER{
         double acados_param[QUADROTOR_N+1][QUADROTOR_NP];  // hover_thrust, tau_phi, tau_theta, psi
         int acados_status;   
         quadrotor_solver_capsule *mpc_capsule = quadrotor_acados_create_capsule();
-        int debug_counter = 0;
         
     public:
         Param param;
         MPC(ros::NodeHandle&);
-        void show_debug();
-        void print();
+        void pub_debug();
+        void print_debug();
         double get_hover_thrust();
         bool set_intermediate_weights(const std::vector<double>&,const std::vector<double>&);
         bool set_terminal_weights(const std::vector<double>&);

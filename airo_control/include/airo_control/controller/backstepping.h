@@ -11,15 +11,14 @@ class BACKSTEPPING : public BASE_CONTROLLER{
             double k_x1,k_x2,k_y1,k_y2,k_z1,k_z2;
         };
 
-        int debug_counter;
         double g = 9.80665;
         double e_x1,e_x2,e_y1,e_y2,e_z1,e_z2,u_x,u_y;
+        ros::Publisher debug_pub;
 
     public:
         Param param;
         BACKSTEPPING(ros::NodeHandle&);
-        void show_debug();
-        void print();
+        void pub_debug();
         mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&);
         double get_hover_thrust();
 };
