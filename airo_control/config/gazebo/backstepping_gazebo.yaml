@@ -1,5 +1,5 @@
 hover_thrust: 0.5656428200006485
-show_debug: false
+pub_debug: true
 k_x1: 1.0
 k_x2: 1.0
 k_y1: 1.0

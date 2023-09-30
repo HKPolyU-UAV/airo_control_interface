@@ -6,7 +6,7 @@ BACKSTEPPING::BACKSTEPPING(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/backstepping/pub_debug",param.pub_debug);
     nh.getParam("airo_control_node/backstepping/k_x1",param.k_x1);
     nh.getParam("airo_control_node/backstepping/k_x2",param.k_x2);
-    nh.getParam("airo_control_node/backstepping/k_y1",param.k_y1);
+    nh.getParam("airo_control_node/backstepping/k_y1",param.k_y1);  
     nh.getParam("airo_control_node/backstepping/k_y2",param.k_y2);
     nh.getParam("airo_control_node/backstepping/k_z1",param.k_z1);
     nh.getParam("airo_control_node/backstepping/k_z2",param.k_z2);

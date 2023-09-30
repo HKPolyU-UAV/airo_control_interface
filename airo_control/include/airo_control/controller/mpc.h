@@ -58,7 +58,7 @@ class MPC : public BASE_CONTROLLER{
             double status,kkt_res, cpu_time;
         };
 
-        ros::Publisher acados_status_pub,kkt_res_pub,cpu_time_pub,yaw_prediction_pub;
+        ros::Publisher debug_pub;
 
         // Acados variables
         SolverInput acados_in;

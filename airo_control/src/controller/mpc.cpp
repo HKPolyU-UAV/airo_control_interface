@@ -13,10 +13,7 @@ MPC::MPC(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/mpc/diag_cost_xn",param.diag_cost_xn);
 
     // Set publishers
-    acados_status_pub = nh.advertise<std_msgs::Float64>("/airo_contr/ol/mpc/acados_status",1);
-    kkt_res_pub = nh.advertise<std_msgs::Float64>("/airo_control/mpc/kkt_res",1);
-    cpu_time_pub = nh.advertise<std_msgs::Float64>("/airo_control/mpc/cpu_time",1);
-    yaw_prediction_pub = nh.advertise<std_msgs::Float64MultiArray>("/airo_control/mpc/yaw_prediction",1);
+    debug_pub = nh.advertise<std_msgs::Float64MultiArray>("/airo_control/mpc/debug",1);
 
     // Initialize MPC
     int create_status = 1;
@@ -174,23 +171,19 @@ bool MPC::set_terminal_weights(const std::vector<double>&diag_weight_xn){
 }
 
 void MPC::pub_debug(){
-    std_msgs::Float64 acados_status_msg,kkt_res_msg,cpu_time_msg;
-    std_msgs::Float64MultiArray yaw_prediction_msg;
-    acados_status_msg.data = acados_out.status;
-    kkt_res_msg.data = acados_out.kkt_res;
-    cpu_time_msg.data = acados_out.cpu_time;
-    yaw_prediction_msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
-    yaw_prediction_msg.layout.dim[0].size = QUADROTOR_N + 1;
-    yaw_prediction_msg.layout.dim[0].stride = 1;
-    yaw_prediction_msg.data.clear();
+    std_msgs::Float64MultiArray debug_msg;
+    debug_msg.layout.dim.push_back(std_msgs::MultiArrayDimension());
+    debug_msg.layout.dim[0].size = QUADROTOR_N + 4;
+    debug_msg.layout.dim[0].stride = 1;
+    debug_msg.data.clear();
+    debug_msg.data.push_back(acados_out.status);
+    debug_msg.data.push_back(acados_out.kkt_res);
+    debug_msg.data.push_back(acados_out.cpu_time);
     for (size_t i = 0; i < QUADROTOR_N + 1; i++){
-        yaw_prediction_msg.data.push_back(acados_param[i][3]);
+        debug_msg.data.push_back(acados_param[i][3]);
     }
 
-    acados_status_pub.publish(acados_status_msg);
-    kkt_res_pub.publish(kkt_res_msg);
-    cpu_time_pub.publish(cpu_time_msg);
-    yaw_prediction_pub.publish(yaw_prediction_msg);    
+    debug_pub.publish(debug_msg);
 }
 
 void MPC::print_debug(){
