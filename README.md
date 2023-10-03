@@ -1,11 +1,11 @@
 # AIRo Control Interface
-This project provides a quadrotor UAV control interfaces based on PX4 that uses customized outter-loop controllers. Currently supported controllers include Model Predictive Control (MPC), Backstepping Control (BS), and Sliding-Mode Control(SMC). By using this package you can have functions such as auto takeoff/land, RC transmitter control, and follow external trajectory commands with customized outter-loop controllers.
+This project provides a quadrotor UAV control interfaces based on PX4 that uses customized outter-loop controllers. Currently supported controllers include Model Predictive Control (MPC), Backstepping Control (BS), and Sliding-Mode Control(SMC). By using this package you can have functions such as auto takeoff/land, RC transmitter control, and follow external trajectory commands with customized outter-loop controllers. The package can be used with both Gazebo simulation and real-world quadrotors with external positioning systems such as Vicon.
 
 ## Installation
 
 It is recommanded to run the package in our docker following instructions ([here](https://github.com/HKPolyU-UAV/docker_practice)). By doing so, you can skip the installation section.
 
-** Prerequisites **
+**Prerequisities** 
 * ROS ([ROS noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) recommended)
 * [QGroundControl](http://qgroundcontrol.com/)
 * [MAVROS](http://wiki.ros.org/mavros)
@@ -58,6 +58,7 @@ echo 'export ACADOS_SOURCE_DIR="<path_to_acados>/acados"' >> ~/.bashrc
 ```
 
 Add source ```setup.bash``` file to ```.bashrc```.
+```
 echo 'source ~/airo_control_interface_ws/devel/setup.bash' >> ~/.bashrc
 ```
 
@@ -74,7 +75,6 @@ Run MAVROS
 roslaunch airo_control mavros_gazebo.launch
 ```
 
-
 Start control interface in new terminal
 ```
 roslaunch airo_control fsm_gazebo.launch
@@ -89,20 +89,27 @@ Or, you can simply run start.sh in the startup folder.
 
 ## Usage with RC Transmitter
 
-You can use this control interface with an RC transmitter for both gazebo simulation and real-world deployment.
+**Preparation**
 
-** Hardware Setup **
-First, launch mavros and QGC and make sure the quadrotor is connected. To use the interface in gazebo simulation, set PX4 parameter COM_RCIN_MODE to "RC and Joystick with fallback", connect RC transmitter via usb serial, calibrate the joysticks in "Joysticks" tab and you should be able to read channel inputs in QGC "Radio" tab. In QGC setup page, you only need to set emergency kill switch channel and flight mode switch channel. Three more RC channel will be used by the control interface, which are referred to as FSM channel (channel 5 by default), command channel (channel 6 by default), and reboot channel (channel 8 by default). The FSM channel controls if the interface is activated, the command channel controls if the interface follows external trajecdtory commands, and the reboot channel will reboot FCU so that it is recommended to be set to the stick that can automatically flip back. If the pwm output of these three switch channesl is greater than the threshold (1750 by default), the channel is enabled.
+First, launch mavros and QGC and make sure the quadrotor is connected. To use the transmitter in gazebo simulation, set PX4 parameter COM_RCIN_MODE to "RC and Joystick with fallback", connect RC transmitter via usb serial, calibrate the joysticks in "Joysticks" tab and you should be able to read channel inputs in QGC "Radio" tab. In QGC setup page, you only need to set emergency kill channel and flight mode channel. Three more RC channel will be used by the control interface, which are referred to as FSM channel (channel 5 by default), command channel (channel 6 by default), and reboot channel (channel 8 by default). The FSM channel controls if the interface is activated, the command channel controls if the interface follows external trajecdtory commands, and the reboot channel will reboot FCU so that it is recommended to be set to the stick that can automatically flip back. The channel is enabled if the pwm output is greater than the threshold (1750 by default).
 
-** Preparation **
-Before using the interface, make sure the vehicle can be used with position flight mode. Then, run the system identification program to determine the hover_thrust, tau_phi, and tau_theta. After this, the FSM should be ready to rock. When vehicle is landed, you can use reboot channel to reboot the FCU. 
-In general, it is recommended to choose to enable or disable command channel before running the FSM based on the application scenarios.  Although switching command channel during mission is supported, it is not required during common applications and could cause confusions. Therefore, we recommend the following two pipelines to work with this FSM. 
+After this you can launch the control interface by
+```
+roslaunch airo_control fsm_gazebo.launch
+```
+or
+```
+roslaunch airo_control fsm_vicon.launch
+```
+For vicon usage, make sure the vehicle can enter position flight mode before the mission.
 
-** Non-command Mode **
+The FSM will be initialized to RC_MANUAL state, where the control interface is not activated in this mode so that you can control the quadrotor with the transmitter as usual. In general, it is recommended to choose to enable or disable command channel before running the mission based on the application scenarios.  Although switching command channel during mission is supported, it is not required during common applications and could cause confusions. Therefore, we recommend the following two pipelines to work with this FSM. For more detailed introduction of the FSM please refer to the ```FSM Introduction``` section.
 
-To use in non-command mode, first disable the command channel and then switch the FSM channel. The FSM will ask the user to center all joysticks to avoid sudden position change when jump to AUTO_HOVER state. Then, the vehicle should arm and accelerate motors for a few seconds and automatically takeoff to desired height. Once takeoff height is reached, the vehicle will follow the joystick commands. If vehicle has been landed, the FSM will disarm it and reinitiate for the next mission. 
+**Non-command Mode**
 
-** Command Mode **
+In this mode, you'll be controlling the vehicle with the transmitter joysticks. To use in non-command mode, first disable the command channel and then flip the FSM channel from disable to enable state (which will be referred to as switch FSM channel in the follow text). The FSM will ask the user to center all joysticks to avoid sudden position change when jump to AUTO_HOVER state. Then, the vehicle should arm and accelerate motors for a few seconds and automatically takeoff to desired height. Once takeoff height is reached, the vehicle will follow the joystick commands. If vehicle has been landed, the FSM will disarm it and reinitiate for the next mission. 
+
+**Command Mode**
 
 To use in command mode, first enable the command channel and then enable the FSM channel. Note that the command mode is capable to be used without RC transmitter by setting parameter ```without_rc``` to true. Then the user can send takeoff trigger ```takeoff_land_trigger = true``` to topic ```/airo_px4/takeoff_land_trigger```. After auto takeoff, the FSM will publish indicator ```is_waiting_for_command = true``` to topic “/airo_px4/fsm_info". By receiving the indicator, the quadrotor will follow commands published to ```/airo_control/setpoint``` (or ```/airo_control/setpoint_preview``` if MPC is used). If you stop sending commands, the fsm will go back to AUTO_HOVER mode. To land and disarm the vehicle, send ```takeoff_land_trigger = false``` to the same topic.
 
@@ -114,7 +121,7 @@ The control interface uses a finite state machine to control the UAV with the de
 
 1. RC_MANUAL 
 
-In this state, the FSM is disabled and the quadrotor operates at manual modes (i.e. position,altitude, and stabilize) using the embedded PID controllers in PX4 firmware. The FSM is initialized with this state and will go back to it every time the vehicle is disarmed. This is the only state that PX4 offboard is disabled and the user have total control over RC transmitter using the embedded controller in FCU. 
+In this state, the FSM is disabled and the quadrotor operates at manual modes (i.e. position,altitude, and stabilize) using the embedded PID controllers in PX4 firmware. The FSM is initialized with this state and will go back to it every time the vehicle is disarmed. This is the only state that PX4 offboard is disabled and the user have total control over RC transmitter using the embedded controller in FCU. When vehicle is landed, you can use reboot channel to reboot the FCU.
 
 2. AUTO_TAKEOFF 
 
