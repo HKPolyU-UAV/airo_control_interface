@@ -210,7 +210,7 @@ The rest of the parameter list should be self-explanatory. Note that the channel
 
 ## Advanced Usage
 
-We've developed another package named by ([airo_trajectory](https://github.com/HKPolyU-UAV/airo_trajectory)) based on this control interface. The package provides a trajectory server to command the vehicle to takeoff/land or follow certain trajectories such as fixed points or polynomial trajectories defined within ```.txt``` file.
+We've developed another package named by [airo_trajectory](https://github.com/HKPolyU-UAV/airo_trajectory) based on this control interface. The package provides a trajectory server to command the vehicle to takeoff/land or follow certain trajectories such as fixed points or polynomial trajectories defined within ```.txt``` file.
 
 ## Generate MPC Solver
 
