@@ -1,15 +1,15 @@
 # AIRo Control Interface
-This project focuses on developing a control interface with customized outer-loop position controller.
+This project provides a control interfaces based on PX4 that uses customized outter-loop controllers. Currently supported customized controllers include Model Predictive Control (MPC), Backstepping Control (BS), and Sliding-Mode Control(SMC). By using this package you can have functions such as auto takeoff/landing, RC transmitter control, and follow external trajectory commands.
+
+## Installation
+
+It is recommanded to run the package in our docker following instructions ([here](https://github.com/HKPolyU-UAV/docker_practice)). By doing so, you can skip the installation section.
 
 ## Prerequisites
 * ROS ([ROS noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) recommended)
 * [QGroundControl](http://qgroundcontrol.com/)
 * [MAVROS](http://wiki.ros.org/mavros)
 * [Acados](https://docs.acados.org/installation/index.html)
-
-## Installation
-
-It is recommanded to run the code in our docker following instructions ([here](https://github.com/HKPolyU-UAV/docker_practice)). By doing so, you can skip the installation section. Just install the Docker image with airo-packages.
 
 First, install Acados at your home directory. If you want to install Acados at other directory, change the acados_include and acados_lib directory written in CMakeLists.txt of airo_control package, and also change ```~/acados``` in the following codes to your customized directory in the following codes.
 ```
@@ -24,10 +24,10 @@ cmake -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=~/
 sudo make install -j4
 ```
 
-Create a catkin workspace and clone this repository to src folder (ex. ~/catkin_ws/src)
+Create a catkin workspace and clone this repository to src folder (ex. ~/airo_control_interface_ws/src)
 ```
-mkdir -p ~/catkin_ws/src
-cd ~/catkin_ws
+mkdir -p ~/airo_control_interface_ws/src
+cd ~/airo_control_interface_ws
 catkin_make
 cd src
 git clone https://github.com/HKPolyU-UAV/airo_control_interface.git
@@ -49,6 +49,16 @@ git submodule sync --recursive
 git submodule update --init --recursive
 bash ./Tools/setup/ubuntu.sh
 sudo apt upgrade libignition-math4 #(libignition-math2 for melodic)
+```
+
+Add acados library path to ```.bashrc```, change ```<path_to_acados>``` to your path, e.g. ```/home/your_username```. Note that do not use ```~``` in ```<path_to_acados>```.
+```
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"<path_to_acados>/acados/lib"' >> ~/.bashrc
+echo 'export ACADOS_SOURCE_DIR="<path_to_acados>/acados"' >> ~/.bashrc
+```
+
+Add source ```setup.bash``` file to ```.bashrc```.
+echo 'source ~/airo_control_interface_ws/devel/setup.bash' >> ~/.bashrc
 ```
 
 ## Hardware Setup
@@ -150,12 +160,6 @@ python3 -m pip install pip
 sudo pip3 install numpy matplotlib scipy future-fstrings casadi>=3.5.1 setuptools
 sudo apt-get install python3.7-tk
 pip install -e ~/acados/interfaces/acados_template
-```
-
-Add the path to ```.bashrc```, change ```<path_to_acados>``` to your path, e.g. ```/home/your_username```.
-```
-echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"<path_to_acados>/acados/lib"' >> ~/.bashrc
-echo 'export ACADOS_SOURCE_DIR="<path_to_acados>/acados"' >> ~/.bashrc
 ```
 
 Generate solver, note that for the first run, you should setup Tera renderer automatically by following the instructions.
