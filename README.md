@@ -1,6 +1,20 @@
 # AIRo Control Interface
 This project provides a PX4 based quadrotor UAV control interfaces that supports customized outter-loop controllers. Currently supported controllers include Model Predictive Control (MPC), Backstepping Control (BS), and Sliding-Mode Control(SMC). By using this package you can achieve functions such as auto takeoff/land, RC transmitter control, and follow external trajectory commands with customized outter-loop controllers. The package can be used with both Gazebo simulation or real-world quadrotors with external positioning systems such as Vicon.
 
+If you use this package in your research, please kindly cite the follow reference:
+```
+@article{jiang2022neural,
+  title={Neural network based model predictive control for a quadrotor UAV},
+  author={Jiang, Bailun and Li, Boyang and Zhou, Weifeng and Lo, Li-Yu and Chen, Chih-Keng and Wen, Chih-Yung},
+  journal={Aerospace},
+  volume={9},
+  number={8},
+  pages={460},
+  year={2022},
+  publisher={MDPI}
+}
+```
+
 ## Installation
 
 It is recommanded to run the package in our docker following instructions ([here](https://github.com/HKPolyU-UAV/docker_practice)). By doing so, you can skip the installation section.
@@ -152,7 +166,7 @@ Note that in all states, the position reference given to the controller is confi
 
 ## Parameters
 
-1. **fsm_gazebo.yaml && fsm_vicon.yaml**
+1. **fsm.yaml**
 
 ```pose_topic```, ```twist_topic```: topics that publish pose & twist messages.
 
@@ -174,9 +188,33 @@ Note that in all states, the position reference given to the controller is confi
 
 The rest of the parameter list should be self-explanatory. Note that the channel number parameter corresponds to the number shown in QGC.
 
+2. **mpc.yaml**
+
+```tau_phi```, ```tau_theta```, ```tau_psi```: estimated inner loop dynamics for roll, pitch, and yaw
+
+```diag_cost_x```, ```diag_cost_u```, ```diag_cost_xn```: diagnoal weight matrix for state, control input, and terminal state
+
+3. **backstepping.yaml**
+
+```k_x1```, ```k_y1```, ```k_z1```: position control gains for corresponding axis
+
+```k_x2```, ```k_y2```, ```k_z2```: velocity control gains for corresponding axis
+
+4. **slidingmode.yaml**
+   
+```k_xe```, ```k_ye```, ```k_ze```: position gains for corresponding axis
+
+```k_xs```, ```k_ys```, ```k_zs```: sliding surface control gains for corresponding axis
+
+```k_xt```, ```k_yt```, ```k_zt```: tanh function parameters for corresponding axis
+
+## Advanced Usage
+
+We've developed another package named by ([airo_trajectory](https://github.com/HKPolyU-UAV/airo_trajectory)) based on this control interface. The package provides a trajectory server to command the vehicle to takeoff/land or follow certain trajectories such as fixed points or polynomial trajectories defined within ```.txt``` file.
+
 ## Generate MPC Solver
 
-The python scripts used to generate MPC solver is included in ```~/catkin_ws/src/airo_control_interface/airo_control/acados_scripts/quadrotor_model.py```. If you want to make modifications and generate MPC solver by your own, follow these instructions.
+The python scripts used to generate MPC solver is included in ```~/airo_control_interface_ws/src/airo_control_interface/airo_control/acados_scripts/quadrotor_model.py```. If you want to make modifications and generate MPC solver by your own, follow these instructions.
 
 Install python 3.7
 ```
@@ -195,7 +233,7 @@ pip install -e ~/acados/interfaces/acados_template
 
 Generate solver, note that for the first run, you should setup Tera renderer automatically by following the instructions.
 ```
-cd ~/catkin_ws/src/airo_control_interface/airo_control/acados_scripts
+cd ~/airo_control_interface_ws/src/airo_control_interface/airo_control/acados_scripts
 python3 generate_c_code.py
 ```
 
