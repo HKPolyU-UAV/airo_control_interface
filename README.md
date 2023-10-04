@@ -17,7 +17,7 @@ If you use this package in your research, please kindly cite the follow referenc
 
 ## Installation
 
-It is recommanded to run the package in our docker following instructions ([here](https://github.com/HKPolyU-UAV/docker_practice)). By doing so, you can skip the installation section.
+It is recommanded to run the package in our docker following instructions [here](https://github.com/HKPolyU-UAV/docker_practice). By doing so, you can skip the installation section.
 
 **Prerequisities** 
 * ROS ([ROS noetic](http://wiki.ros.org/noetic/Installation/Ubuntu) recommended)
