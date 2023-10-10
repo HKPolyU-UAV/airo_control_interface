@@ -83,7 +83,12 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
 
     // Wait for vehicle connection
     while(!current_state.connected || !odom_received(ros::Time::now())){
-        ROS_WARN_STREAM_THROTTLE(5.0,"[AIRo Control] Not yet connected to vehicle!");
+        if (!current_state.connected){
+            ROS_WARN_STREAM_THROTTLE(5.0,"[AIRo Control] Not yet connected to vehicle!");
+        }
+        else {
+            ROS_WARN_STREAM_THROTTLE(5.0,"[AIRo Control] Odom not received!");
+        }
         ros::spinOnce();
         ros::Duration(0.05).sleep();
     }
