@@ -87,7 +87,10 @@ int main(int argc, char **argv)
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose.position.x)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose.position.y)
                          + abs(local_pose.pose.position.z - target_pose_1.ref_pose.position.z) < 0.5){
-                            target_1_reached = true;
+                            //target_1_reached = true;
+                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_1.ref_pose.position.x << std::endl;
+                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_1.ref_pose.position.y << std::endl;
+                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_1.ref_pose.position.z << std::endl;
                         }
                     }
                     else{
