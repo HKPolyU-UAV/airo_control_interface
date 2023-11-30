@@ -18,7 +18,6 @@ struct wrench{
 
 wrench applied_wrench;
 
-
 gazebo_msgs::ApplyBodyWrench wrench; 
 
 void applyDisturbance()
