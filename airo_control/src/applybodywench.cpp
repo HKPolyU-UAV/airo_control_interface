@@ -23,7 +23,6 @@ gazebo_msgs::ApplyBodyWrench wrench;
 
 void applyDisturbance()
 {
-    
     wrench.request.body_name = "iris/base_link";
     wrench.request.reference_frame = "world";
     wrench.request.wrench.force.x = applied_wrench.fx;
@@ -37,15 +36,15 @@ void applyDisturbance()
     body_wrench_client.call(wrench);
     std::cout<<"call client"<<std::endl;
 
-    // // Call the service to apply the body wrench
-    // if (body_wrench_client.call(wrench))
-    // {
-    //     ROS_INFO("Applied disturbance force along x-axis");
-    // }
-    // else
-    // {
-    //     ROS_ERROR("Failed to call service /gazebo/apply_body_wrench");
-    // }
+    // Call the service to apply the body wrench
+    if (body_wrench_client.call(wrench))
+    {
+        ROS_INFO("Applied disturbance force along x-axis");
+    }
+    else
+    {
+        ROS_ERROR("Failed to call service /gazebo/apply_body_wrench");
+    }
 }
 
 int main(int argc, char** argv)
