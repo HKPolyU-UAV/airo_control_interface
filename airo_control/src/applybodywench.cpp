@@ -26,7 +26,7 @@ void applyDisturbance()
     // Call the service to apply the body wrench
     if (body_wrench_client.call(wrench))
     {
-        "ROS_INFO("Applied disturbance force along x-axis");"
+        ROS_INFO("Applied disturbance force along x-axis");
     }
     else
     {
