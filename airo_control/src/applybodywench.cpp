@@ -7,12 +7,26 @@
 
 ros::ServiceClient body_wrench_client;
 
+struct wrench{
+        double fx;
+        double fy;
+        double fz;
+        double tx;
+        double ty;
+        double tz;
+    };
+
+wrench applied_wrench;
+
+
+gazebo_msgs::ApplyBodyWrench wrench; 
+
 void applyDisturbance()
 {
-    gazebo_msgs::ApplyBodyWrench wrench;
-    wrench.request.body_name = "uav::base_link";
+    
+    wrench.request.body_name = "iris/base_link";
     wrench.request.reference_frame = "world";
-    wrench.request.wrench.force.x = 10;
+    wrench.request.wrench.force.x = applied_wrench.fx;
     wrench.request.wrench.force.y = 0.0;
     wrench.request.wrench.force.z = 0.0;
     wrench.request.reference_point.x = 0.0;
@@ -23,16 +37,15 @@ void applyDisturbance()
     body_wrench_client.call(wrench);
     std::cout<<"call client"<<std::endl;
 
-    // Call the service to apply the body wrench
-    if (body_wrench_client.call(wrench))
-    {
-        ROS_INFO("Applied disturbance force along x-axis");
-    }
-    else
-    {
-        ROS_ERROR("Failed to call service /gazebo/apply_body_wrench");
-        return 0;
-    }
+    // // Call the service to apply the body wrench
+    // if (body_wrench_client.call(wrench))
+    // {
+    //     ROS_INFO("Applied disturbance force along x-axis");
+    // }
+    // else
+    // {
+    //     ROS_ERROR("Failed to call service /gazebo/apply_body_wrench");
+    // }
 }
 
 int main(int argc, char** argv)
@@ -47,15 +60,25 @@ int main(int argc, char** argv)
 
     std::cout<<"Initialize the body wrench service client"<<std::endl;
 
-    // Apply disturbance after 1 second
-    ros::Duration(1.0).sleep();
-    std::cout<<"wait 1 second"<<std::endl;
-    applyDisturbance();
-    std::cout<<"apply disturbance"<<std::endl;
-    // Spin the ROS node
-    ros::spin();
+    
+    // Main loop
+    while (ros::ok())
+    {
+        applied_wrench.fx = 10;
+        // Call the applyDisturbance function
+        applyDisturbance();
+
+        // Handle callbacks and process messages
+        ros::spinOnce();
+
+        // Perform any additional processing or logic here
+
+        ros::spinOnce();
+        ros::Duration(rate).sleep();
+    }
 
     return 0;
+
 }
 
 
