@@ -3,9 +3,9 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <string>
+#include "airo_control/airo_control_fsm.h"
 
 ros::ServiceClient body_wrench_client;
-
 
 void applyDisturbance()
 {
@@ -26,11 +26,12 @@ void applyDisturbance()
     // Call the service to apply the body wrench
     if (body_wrench_client.call(wrench))
     {
-        ROS_INFO("Applied disturbance force along x-axis");
+        "ROS_INFO("Applied disturbance force along x-axis");"
     }
     else
     {
         ROS_ERROR("Failed to call service /gazebo/apply_body_wrench");
+        return 0;
     }
 }
 
@@ -38,9 +39,12 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "disturbance");
     ros::NodeHandle nh;
+    ros::Rate rate(20.0);
 
     // Initialize the body wrench service client
     body_wrench_client = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
+    
+
     std::cout<<"Initialize the body wrench service client"<<std::endl;
 
     // Apply disturbance after 1 second
@@ -53,3 +57,5 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
+

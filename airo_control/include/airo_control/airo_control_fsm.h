@@ -21,6 +21,8 @@
 #include "airo_control/controller/mpc.h"
 #include "airo_control/controller/backstepping.h"
 #include "airo_control/controller/slidingmode.h"
+#include <gazebo_msgs/ApplyBodyWrench.h>
+
 
 class AIRO_CONTROL_FSM{
     private:
@@ -81,7 +83,8 @@ class AIRO_CONTROL_FSM{
 	ros::ServiceClient setmode_srv;
 	ros::ServiceClient arm_srv;
 	ros::ServiceClient reboot_srv;
-
+	ros::ServiceClient body_wrench_client;
+	
 	// Messages
 	airo_message::TakeoffLandTrigger takeoff_land_trigger; // 1 for takeoff 0 for landing
 	airo_message::FSMInfo fsm_info;
