@@ -71,3 +71,8 @@ target_link_libraries(example_mission_node
   ${catkin_LIBRARIES}
 )
 add_dependencies(example_mission_node airo_message_generate_messages_cpp)
+
+add_executable(applybodywench src/applybodywench.cpp)
+target_link_libraries(applybodywench
+  ${catkin_LIBRARIES}
+)

@@ -6,6 +6,11 @@
 #include <airo_message/FSMInfo.h>
 #include <airo_message/TakeoffLandTrigger.h>
 #include <airo_message/Reference.h>
+#include <iostream>
+#include <istream>
+#include <sstream>
+#include <fstream>
+#include <string>
 
 geometry_msgs::PoseStamped local_pose;
 airo_message::FSMInfo fsm_info;
@@ -15,6 +20,11 @@ enum State{
     COMMAND,
     LAND
 };
+
+airo_message::Reference target_pose_1;
+airo_message::Reference target_pose_2;
+airo_message::TakeoffLandTrigger takeoff_land_trigger;
+bool target_1_reached = false;
 
 void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
     local_pose.header = msg->header;
@@ -27,6 +37,13 @@ void fsm_info_cb(const airo_message::FSMInfo::ConstPtr& msg){
     fsm_info.is_waiting_for_command = msg->is_waiting_for_command;
 }
 
+void datalogger(){
+    std::ofstream save("tracking_errors.csv", std::ios::app);
+    save<<std::setprecision(20)<<ros::Time::now().toSec()<<
+        ","<<local_pose.pose.position.x - target_pose_1.ref_pose.position.x<<","<<local_pose.pose.position.y - target_pose_1.ref_pose.position.y<<","<<local_pose.pose.position.z - target_pose_1.ref_pose.position.z<<std::endl;
+    save.close();
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "offb_node");
@@ -34,10 +51,7 @@ int main(int argc, char **argv)
     ros::Rate rate(20.0);
     State state = TAKEOFF;
 
-    airo_message::Reference target_pose_1;
-    airo_message::Reference target_pose_2;
-    airo_message::TakeoffLandTrigger takeoff_land_trigger;
-    bool target_1_reached = false;
+    
 
     ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>("/mavros/local_position/pose",100,pose_cb);
     ros::Subscriber fsm_info_sub = nh.subscribe<airo_message::FSMInfo>("/airo_control/fsm_info",10,fsm_info_cb);
