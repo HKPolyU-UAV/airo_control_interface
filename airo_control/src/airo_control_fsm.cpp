@@ -240,6 +240,8 @@ void AIRO_CONTROL_FSM::fsm(){
             }
             else{
                 // Reach the desired height
+                std::cout<<"local_pose.position.z: "<<local_pose.pose.position.z<<std::endl;
+                std::cout<<"takeoff_pose.postion.z: "<<takeoff_land_pose.pose.position.z<<std::endl;
                 if (local_pose.pose.position.z > (takeoff_land_pose.pose.position.z + TAKEOFF_HEIGHT)){
                     auto_hover_init();
                     state_fsm = AUTO_HOVER;
