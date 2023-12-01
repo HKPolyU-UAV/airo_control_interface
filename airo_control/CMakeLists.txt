@@ -76,3 +76,8 @@ add_executable(applybodywench src/applybodywench.cpp)
 target_link_libraries(applybodywench
   ${catkin_LIBRARIES}
 )
+
+add_executable(offb src/offb.cpp)
+target_link_libraries(offb
+  ${catkin_LIBRARIES}
+)
