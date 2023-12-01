@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     ros::Publisher takeoff_land_pub = nh.advertise<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",10);
 
     target_pose_1.ref_pose.position.x = 0;
-    target_pose_1.ref_pose.position.y = -2.5;
+    target_pose_1.ref_pose.position.y = 0;
     target_pose_1.ref_pose.position.z = 1.5;
     target_pose_1.ref_pose.orientation.w = 0.9238;
     target_pose_1.ref_pose.orientation.x = 0.0;

@@ -22,7 +22,7 @@ gazebo_msgs::ApplyBodyWrench wrench;
 
 void applyDisturbance()
 {
-    wrench.request.body_name = "iris/base_link";
+    wrench.request.body_name = "iris::base_link";
     wrench.request.reference_frame = "world";
     wrench.request.wrench.force.x = applied_wrench.fx;
     wrench.request.wrench.force.y = 0.0;
