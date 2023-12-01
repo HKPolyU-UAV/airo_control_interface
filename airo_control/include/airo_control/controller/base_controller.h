@@ -7,6 +7,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/AccelStamped.h>
 #include <mavros_msgs/AttitudeTarget.h>
+#include <sensor_msgs/BatteryState.h>
 #include <airo_message/Reference.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float64MultiArray.h>
@@ -29,7 +30,7 @@ protected:
 public:
     virtual void pub_debug() = 0;
     virtual double get_hover_thrust() = 0;
-    virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&) = 0;
+    virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&, const sensor_msgs::BatteryState&) = 0;
 };
 
 #endif

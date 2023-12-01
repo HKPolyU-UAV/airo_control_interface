@@ -13,6 +13,7 @@
 #include <mavros_msgs/CommandLong.h>
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/SetMode.h>
+#include <sensor_msgs/BatteryState.h>
 #include <airo_message/FSMInfo.h>
 #include <airo_message/Reference.h>
 #include <airo_message/ReferencePreview.h>
@@ -74,6 +75,7 @@ class AIRO_CONTROL_FSM{
 	ros::Subscriber command_sub;
 	ros::Subscriber command_preview_sub;
 	ros::Subscriber takeoff_land_sub;
+	ros::Subscriber battery_state_sub;
 	ros::Publisher setpoint_pub;
 	ros::Publisher fsm_info_pub;
 
@@ -98,6 +100,7 @@ class AIRO_CONTROL_FSM{
 	mavros_msgs::State current_state;
 	mavros_msgs::State previous_state;
 	mavros_msgs::ExtendedState current_extended_state;
+	sensor_msgs::BatteryState battery_state;
 
 	// Controller
 	std::unique_ptr<BASE_CONTROLLER> controller;
@@ -132,12 +135,14 @@ class AIRO_CONTROL_FSM{
 	void external_command_cb(const airo_message::Reference::ConstPtr&);
 	void external_command_preview_cb(const airo_message::ReferencePreview::ConstPtr&);
 	void takeoff_land_cb(const airo_message::TakeoffLandTrigger::ConstPtr&);
+	void battery_state_cb(const sensor_msgs::BatteryState::ConstPtr&);
 	bool state_received(const ros::Time&);
 	bool rc_received(const ros::Time&);
 	bool odom_received(const ros::Time&);
 	bool external_command_received(const ros::Time&);
 	bool external_command_preview_received(const ros::Time&);
 	bool takeoff_land_received(const ros::Time&);
+	bool battery_status_received(const ros::Time&);
 	bool takeoff_trigered(const ros::Time&);
 	bool land_trigered(const ros::Time&);
 	double twist_norm(const geometry_msgs::TwistStamped);

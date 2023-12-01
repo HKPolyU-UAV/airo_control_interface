@@ -31,7 +31,7 @@ MPC::MPC(ros::NodeHandle& nh){
     set_terminal_weights(param.diag_cost_xn);
 }
 
-mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){
+mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref, const sensor_msgs::BatteryState& battery_state){
     // Resize ref to fit prediction horizon
     airo_message::ReferencePreview ref_preview;
     ref_preview.header = ref.header;
@@ -43,10 +43,10 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
         ref_preview.ref_twist[i] = ref.ref_twist;
         ref_preview.ref_accel[i] = ref.ref_accel;
     }
-    return MPC::solve(current_pose,current_twist,current_accel,ref_preview);
+    return MPC::solve(current_pose,current_twist,current_accel,ref_preview,battery_state);
 }
 
-mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferencePreview& ref_preview){
+mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferencePreview& ref_preview, const sensor_msgs::BatteryState& battery_state){
     // Set reference
     ref_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[0].orientation);
     for (int i = 0; i < QUADROTOR_N+1; i++){

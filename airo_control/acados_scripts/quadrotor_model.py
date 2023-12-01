@@ -23,17 +23,16 @@ def export_quadrotor_model() -> AcadosModel:
     sym_x = vertcat(x,y,z,u,v,w,phi,theta)
     
     # controls
-    thrust = SX.sym('thrust')       # thrust command
+    a_z = SX.sym('a_z')             # thrust command
     phi_cmd = SX.sym('phi_cmd')     # roll angle command
     theta_cmd = SX.sym('theta_cmd') # pitch angle command
-    sym_u = vertcat(thrust,phi_cmd,theta_cmd)
+    sym_u = vertcat(a_z,phi_cmd,theta_cmd)
 
     # parameters
-    hover_thrust = SX.sym('hover_thrust')
     tau_phi = SX.sym('tau_phi')
     tau_theta = SX.sym('tau_theta')
     psi = SX.sym('psi')             # yaw angle
-    sym_p = vertcat(hover_thrust,tau_phi,tau_theta,psi)
+    sym_p = vertcat(tau_phi,tau_theta,psi)
 
     # xdot for f_impl
     x_dot = SX.sym('x_dot')
@@ -50,9 +49,9 @@ def export_quadrotor_model() -> AcadosModel:
     dx = u
     dy = v
     dz = w
-    du = (cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi)) * thrust/hover_thrust*g
-    dv = (cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi)) * thrust/hover_thrust*g
-    dw = -g + cos(theta) * cos(phi) * thrust/hover_thrust*g
+    du = (cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi)) * a_z
+    dv = (cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi)) * a_z
+    dw = -g + cos(theta) * cos(phi) * a_z
     dphi = (phi_cmd - phi) / tau_phi
     dtheta = (theta_cmd - theta) / tau_theta
     f_expl = vertcat(dx,dy,dz,du,dv,dw,dphi,dtheta)
@@ -117,8 +116,8 @@ def main():
     ocp.cost.cost_type_e = 'NONLINEAR_LS'
 
     # set constraints
-    u_min = np.array([0, -math.pi/3, -math.pi/3])
-    u_max = np.array([1, math.pi/3, math.pi/3])
+    u_min = np.array([-3, -math.pi/3, -math.pi/3])
+    u_max = np.array([3, math.pi/3, math.pi/3])
     x_min = np.array([-math.pi/3,-math.pi/3])
     x_max = np.array([math.pi/3,math.pi/3])
     ocp.constraints.lbu = u_min

@@ -38,7 +38,7 @@ void SLIDINGMODE::pub_debug(){
     debug_pub.publish(debug_msg);
 }
 
-mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){  
+mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref, const sensor_msgs::BatteryState& battery_state){  
     current_euler = q2rpy(current_pose.pose.orientation);
     ref_euler = q2rpy(ref.ref_pose.orientation);
 

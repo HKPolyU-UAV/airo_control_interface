@@ -45,6 +45,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     command_sub = nh.subscribe<airo_message::Reference>("/airo_control/setpoint",1,&AIRO_CONTROL_FSM::external_command_cb,this);
     command_preview_sub = nh.subscribe<airo_message::ReferencePreview>("/airo_control/setpoint_preview",5,&AIRO_CONTROL_FSM::external_command_preview_cb,this);
     takeoff_land_sub = nh.subscribe<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",1,&AIRO_CONTROL_FSM::takeoff_land_cb,this);
+    battery_state_sub = nh.subscribe<sensor_msgs::BatteryState>("/mavros/battery",1,&AIRO_CONTROL_FSM::battery_state_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",1);
     fsm_info_pub = nh.advertise<airo_message::FSMInfo>("/airo_control/fsm_info",1);
 
@@ -112,11 +113,11 @@ void AIRO_CONTROL_FSM::process(){
     // Step 3: Solve position controller if needed
     if(solve_controller){
         if (!use_preview){
-            attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref);
+            attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref,battery_state);
         }
         else{
             MPC* dummy_mpc = dynamic_cast<MPC*>(controller.get());
-            attitude_target = dummy_mpc->solve(local_pose,local_twist,local_accel,controller_ref_preview);
+            attitude_target = dummy_mpc->solve(local_pose,local_twist,local_accel,controller_ref_preview,battery_state);
         }
     }
 
@@ -755,6 +756,13 @@ void AIRO_CONTROL_FSM::takeoff_land_cb(const airo_message::TakeoffLandTrigger::C
     takeoff_land_trigger.takeoff_land_trigger = msg->takeoff_land_trigger;
 }
 
+void AIRO_CONTROL_FSM::battery_state_cb(const sensor_msgs::BatteryState::ConstPtr& msg){
+    battery_state.current = msg->current;
+    battery_state.header = msg->header;
+    battery_state.percentage = msg->percentage;
+    battery_state.voltage = msg->voltage;
+}
+
 bool AIRO_CONTROL_FSM::state_received(const ros::Time& time){
     bool have_state = (time - current_state.header.stamp).toSec() < STATE_TIMEOUT;
     if (!have_state){
@@ -789,6 +797,10 @@ bool AIRO_CONTROL_FSM::external_command_preview_received(const ros::Time& time){
 
 bool AIRO_CONTROL_FSM::takeoff_land_received(const ros::Time& time){
     return (time - takeoff_land_trigger.header.stamp).toSec() < COMMAND_TIMEOUT;
+}
+
+bool AIRO_CONTROL_FSM::battery_status_received(const ros::Time& time){
+    return (time - battery_state.header.stamp).toSec() < COMMAND_TIMEOUT;
 }
 
 bool AIRO_CONTROL_FSM::takeoff_trigered(const ros::Time& time){
