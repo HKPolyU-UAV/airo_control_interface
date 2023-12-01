@@ -2,15 +2,20 @@
 
 MPC::MPC(ros::NodeHandle& nh){
     // Get MPC parameters
+    nh.getParam("airo_control_node/mpc/pub_debug",param.pub_debug);
+    nh.getParam("airo_control_node/mpc/enable_preview",param.enable_preview);
+    nh.getParam("airo_control_node/mpc/enable_thrust_model",param.enable_thrust_model);
     nh.getParam("airo_control_node/mpc/hover_thrust",param.hover_thrust);
     nh.getParam("airo_control_node/mpc/tau_phi",param.tau_phi);
     nh.getParam("airo_control_node/mpc/tau_theta",param.tau_theta);
     nh.getParam("airo_control_node/mpc/tau_psi",param.tau_psi);
-    nh.getParam("airo_control_node/mpc/pub_debug",param.pub_debug);
-    nh.getParam("airo_control_node/mpc/enable_preview",param.enable_preview);
     nh.getParam("airo_control_node/mpc/diag_cost_x",param.diag_cost_x);
     nh.getParam("airo_control_node/mpc/diag_cost_u",param.diag_cost_u);
     nh.getParam("airo_control_node/mpc/diag_cost_xn",param.diag_cost_xn);
+
+    if (param.enable_thrust_model){
+        nh.getParam("aio_control_nod/thrust_model/mass",thrust_model.mass);
+    }
 
     // Set publishers
     debug_pub = nh.advertise<std_msgs::Float64MultiArray>("/airo_control/mpc/debug",1);
@@ -58,7 +63,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
         acados_in.yref[i][5] = ref_preview.ref_twist[i].linear.z;
         acados_in.yref[i][6] = 0;
         acados_in.yref[i][7] = 0;
-        acados_in.yref[i][8] = param.hover_thrust;
+        acados_in.yref[i][8] = g;
         acados_in.yref[i][9] = 0;
         acados_in.yref[i][10] = 0;
         ocp_nlp_cost_model_set(mpc_capsule->nlp_config, mpc_capsule->nlp_dims, mpc_capsule->nlp_in, i, "yref", acados_in.yref[i]);
@@ -79,13 +84,12 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
 
     // Set parameters
     for (int i = 0; i < QUADROTOR_N+1; i++){
-        acados_param[i][0] = param.hover_thrust;
-        acados_param[i][1] = param.tau_phi;
-        acados_param[i][2] = param.tau_theta;
+        acados_param[i][0] = param.tau_phi;
+        acados_param[i][1] = param.tau_theta;
 
         // For yaw prediction
         if (i == 0){
-            acados_param[i][3] = current_euler.z();
+            acados_param[i][2] = current_euler.z();
         }
         else{
             Eigen::Vector3d dummy_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[i-1].orientation);
@@ -95,7 +99,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
             else if (dummy_euler.z() - acados_param[i-1][3] < -M_PI){
                 dummy_euler.z() = dummy_euler.z() + 2*M_PI;
             }
-            acados_param[i][3] = acados_param[i-1][3] + 1.0/QUADROTOR_N * (dummy_euler.z() - acados_param[i-1][3]) / param.tau_psi;
+            acados_param[i][2] = acados_param[i-1][2] + 1.0/QUADROTOR_N * (dummy_euler.z() - acados_param[i-1][2]) / param.tau_psi;
         }
         quadrotor_acados_update_params(mpc_capsule,i,acados_param[i],QUADROTOR_NP);
     }
@@ -112,7 +116,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
     ocp_nlp_get(mpc_capsule->nlp_config, mpc_capsule->nlp_solver, "time_tot", &acados_out.cpu_time);
     ocp_nlp_out_get(mpc_capsule->nlp_config, mpc_capsule->nlp_dims, mpc_capsule->nlp_out, 0, "u", (void *)acados_out.u0);
 
-    attitude_target.thrust = acados_out.u0[0]; 
+    attitude_target.thrust = inverse_thrust_model(acados_out.u0[0],battery_state.voltage,param,thrust_model);
     target_euler.x() = acados_out.u0[1];
     target_euler.y() = acados_out.u0[2];
     target_euler.z() = ref_euler.z();

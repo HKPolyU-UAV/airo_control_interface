@@ -11,8 +11,7 @@ class BACKSTEPPING : public BASE_CONTROLLER{
             double k_x1,k_x2,k_y1,k_y2,k_z1,k_z2;
         };
 
-        double g = 9.80665;
-        double e_x1,e_x2,e_y1,e_y2,e_z1,e_z2,u_x,u_y;
+        double e_x1,e_x2,e_y1,e_y2,e_z1,e_z2,u_x,u_y,a_z;
         ros::Publisher debug_pub;
 
     public:

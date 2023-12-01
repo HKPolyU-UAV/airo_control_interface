@@ -17,15 +17,23 @@ class BASE_CONTROLLER{
 protected:
     struct Param{
         bool pub_debug;
+        bool enable_thrust_model;
         double hover_thrust;
     };
 
+    struct ThrustModel{
+        double mass;
+    };
+
     Param param;
+    ThrustModel thrust_model;
+    double g = 9.80665;
     Eigen::Vector3d ref_euler,current_euler,target_euler;
     mavros_msgs::AttitudeTarget attitude_target;
 
     Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
     geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
+    float inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model);
 
 public:
     virtual void pub_debug() = 0;

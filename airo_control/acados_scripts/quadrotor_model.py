@@ -96,7 +96,7 @@ def main():
 
     # set cost
     W_x = np.diag([60, 60, 60, 30, 30, 30, 10, 10])    #Q_mat
-    W_u = np.diag([5000, 2000, 2000])                  #R_mat  
+    W_u = np.diag([100, 2000, 2000])                  #R_mat  
     W = block_diag(W_x, W_u)
     ocp.cost.W_e = W_x
     ocp.cost.W = W
@@ -116,8 +116,8 @@ def main():
     ocp.cost.cost_type_e = 'NONLINEAR_LS'
 
     # set constraints
-    u_min = np.array([-3, -math.pi/3, -math.pi/3])
-    u_max = np.array([3, math.pi/3, math.pi/3])
+    u_min = np.array([0, -math.pi/3, -math.pi/3])
+    u_max = np.array([20, math.pi/3, math.pi/3])
     x_min = np.array([-math.pi/3,-math.pi/3])
     x_max = np.array([math.pi/3,math.pi/3])
     ocp.constraints.lbu = u_min

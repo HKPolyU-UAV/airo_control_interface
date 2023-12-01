@@ -11,8 +11,7 @@ class SLIDINGMODE : public BASE_CONTROLLER{
             double k_xe,k_xs,k_xt,k_ye,k_ys,k_yt,k_ze,k_zs,k_zt;
         };
 
-        double g = 9.80665;
-        double e_x,e_dx,s_x,e_y,e_dy,s_y,e_z,e_dz,s_z,u_x,u_y;
+        double e_x,e_dx,s_x,e_y,e_dy,s_y,e_z,e_dz,s_z,u_x,u_y,a_z;
         ros::Publisher debug_pub;
 
     public:
