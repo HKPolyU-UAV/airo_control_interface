@@ -1,8 +1,6 @@
 #include <ros/ros.h>
 #include <gazebo_msgs/ApplyBodyWrench.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <std_msgs/Float64MultiArray.h>
-#include <string>
 #include "airo_control/airo_control_fsm.h"
 
 ros::ServiceClient body_wrench_client;
@@ -33,7 +31,6 @@ void applyDisturbance()
     wrench.request.start_time = ros::Time::now();
     wrench.request.duration = ros::Duration(1000);  // Duration of the disturbance
     body_wrench_client.call(wrench);
-    std::cout<<"call client"<<std::endl;
 
     // Call the service to apply the body wrench
     if (body_wrench_client.call(wrench))
@@ -54,10 +51,6 @@ int main(int argc, char** argv)
 
     // Initialize the body wrench service client
     body_wrench_client = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
-    
-
-    std::cout<<"Initialize the body wrench service client"<<std::endl;
-
     
     // Main loop
     while (ros::ok())
