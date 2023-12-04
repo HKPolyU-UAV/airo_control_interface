@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     // Main loop
     while (ros::ok())
     {
-        applied_wrench.fx = 10;
+        applied_wrench.fx = 10; //unit: Newtons
         // Call the applyDisturbance function
         applyDisturbance();
 
