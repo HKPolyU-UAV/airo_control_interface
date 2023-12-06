@@ -115,7 +115,7 @@ class EKF{
         double tz;
     };
 
-    // ROS message variables
+    //ROS message variables
 
     //Acados variables
 
@@ -128,6 +128,28 @@ class EKF{
     double g = 9.81;
 
     //EKF parameters
+    Matrix<double,6,1> wf_disturbance;          //world frame disturbance
+    Matrix<double,6,1> meas_u;                  //inputs
+    int n = 18;                                 //state dimension
+    int m = 18;                                 //measurement dimension
+    Matrix<double,18,1> meas_y                  //measurement vector
+    MatrixXd P0 = MatrixXd::Identity(m, m);     //initial covariance
+
+    //Acados parameters
+    std::string WRENCH_FX;
+    std::string WRENCH_FY;
+    std::string WRENCH_FZ;
+    std::string WRENCH_TZ;
+    int READ_WRENCH;                  //0: periodic disturbance; 1: random disturbance; 2: read wrench from text
+
+    //other variables
+    tf::Quaternion tf_quaternion;
+    int cout_counter = 0;
+    int rand_counter = 0;
+    int fx_counter = 0;
+    double dis_time = 0;
+    double periodic_counter = 0;
+    double logger_time;
 
     // Times
 	ros::Time current_time;
@@ -146,9 +168,15 @@ class EKF{
     geometry_msgs::Quaternion rpy2q(const Euler&);                //euler angle to quaternion
     void ref_cb (int line_to_read);                               //fill N steps reference points into acados
     void pose_cb (const geometry_msgs::PoseStamped::ConstPtr&)    //get current position
-    //void imu_cb(const sensor_msgs::Imu::ConstPtr&);               //get current orientation
 
     //disturbance observer functions
-    void imu_cb(const sensor_msgs::Imu::ConstPtr&);               //get current orientation
+    void applyBodyWrench();
+    //void imu_cb(const sensor_msgs::Imu::ConstPtr&);               //get current orientation
+    void EKF();
+    MatrixXd RK4(MatrixXd x, MatrixXd u);                         //EKF predict & update
+    MatrixXd f(MatrixXd x, MatrixXd u);                           //system process model
+    MatrixXd h(MatrixXd x);                                       //meansurement model
+    MatrixXd compute_jacobian_F(MatrixXd x, MatrixXd u);          //compute Jacobian of system process model
+    MatrixXd compute_jacobian_H(MatrixXd x);                      //compute Jacobian of measurement model
 
-}
+};
