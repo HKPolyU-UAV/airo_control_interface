@@ -44,6 +44,12 @@ class AIRO_CONTROL_FSM{
         double tz;
     };
 
+	struct Euler{
+        double phi;
+        double theta;
+        double psi;
+    };
+
 	// Parameters
 	std::string CONTROLLER_TYPE;
 	std::string POSE_TOPIC;

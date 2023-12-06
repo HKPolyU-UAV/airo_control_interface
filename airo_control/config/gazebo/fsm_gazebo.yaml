@@ -39,4 +39,4 @@ joystick_deadzone: 0.10
 check_centered_threshold: 0.3
 
 #EKF parameters
-read_wreach: 0
+#read_wreach: 0
