@@ -37,3 +37,6 @@ reverse_roll: false
 switch_threshold: 0.75
 joystick_deadzone: 0.10
 check_centered_threshold: 0.3
+
+#EKF parameters
+read_wreach: 0
