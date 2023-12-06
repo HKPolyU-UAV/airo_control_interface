@@ -9,7 +9,7 @@ def export_quadrotor_model() -> AcadosModel:
     model_name = 'quadrotor'
 
     # constent parameters
-    g = 9.80665                       # gravity constant [m/s^2]
+    g = 9.80665                     # gravity constant [m/s^2]
     
     # states
     x = SX.sym('x')                 # earth position x
