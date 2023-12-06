@@ -117,4 +117,38 @@ class EKF{
 
     // ROS message variables
 
+    //Acados variables
+
+    //dynamics parameters
+    double dt = 0.05;
+    double mass = 0.9;
+    double Ix ;
+    double Iy;
+    double Iz;
+    double g = 9.81;
+
+    //EKF parameters
+
+    // Times
+	ros::Time current_time;
+	
+	// ROS Sub & Pub
+	ros::Subscriber pose_sub;
+	ros::Subscriber twist_sub;
+	ros::Subscriber imu_sub;
+	ros::Subscriber command_sub;
+	ros::Subscriber command_preview_sub;
+	ros::Publisher setpoint_pub;
+
+    public: 
+    EKF(ROS::NodeHandle&);                                        //constructor
+    Euler q2rpy(constant geometry_msgs::Quaternion&);             //quaternion to euler angle
+    geometry_msgs::Quaternion rpy2q(const Euler&);                //euler angle to quaternion
+    void ref_cb (int line_to_read);                               //fill N steps reference points into acados
+    void pose_cb (const geometry_msgs::PoseStamped::ConstPtr&)    //get current position
+    //void imu_cb(const sensor_msgs::Imu::ConstPtr&);               //get current orientation
+
+    //disturbance observer functions
+    void imu_cb(const sensor_msgs::Imu::ConstPtr&);               //get current orientation
+
 }
