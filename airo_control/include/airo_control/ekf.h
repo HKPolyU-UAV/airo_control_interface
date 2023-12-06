@@ -128,19 +128,24 @@ class EKF{
     double g = 9.81;
 
     //EKF parameters
-    Matrix<double,6,1> wf_disturbance;          //world frame disturbance
-    Matrix<double,6,1> meas_u;                  //inputs
-    int n = 18;                                 //state dimension
-    int m = 18;                                 //measurement dimension
-    Matrix<double,18,1> meas_y                  //measurement vector
-    MatrixXd P0 = MatrixXd::Identity(m, m);     //initial covariance
+    Matrix<double,6,1> wf_disturbance;                           //world frame disturbance
+    Matrix<double,6,1> meas_u;                                   //inputs
+    int n = 18;                                                  //state dimension
+    int m = 18;                                                  //measurement dimension
+    Matrix<double,18,1> meas_y                                   //measurement vector
+    MatrixXd P0 = MatrixXd::Identity(m, m);                      //initial covariance
+    Matrix<double,18,1> esti_x;                                  //estimate states
+    Matrix<double,18,18> esti_P;                                 //estimate covariance
+    Matrix<double,1,18> Q_cov;                                   //process noise value
+    Matrix<double,18,18> noise_Q;                                //process noise matrix
+    MatrixXd noise_R = MatrixXd::Identity(m, m)*(pow(dt,4)/4);   //measurement noise matrix
 
     //Acados parameters
     std::string WRENCH_FX;
     std::string WRENCH_FY;
     std::string WRENCH_FZ;
     std::string WRENCH_TZ;
-    int READ_WRENCH;                  //0: periodic disturbance; 1: random disturbance; 2: read wrench from text
+    int READ_WRENCH;            //0: periodic disturbance; 1: random disturbance; 2: read wrench from text
 
     //other variables
     tf::Quaternion tf_quaternion;
