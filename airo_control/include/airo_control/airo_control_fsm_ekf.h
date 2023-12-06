@@ -35,6 +35,15 @@ class AIRO_CONTROL_FSM{
 		POS_COMMAND
 	};
 
+	struct wrench{
+        double fx;
+        double fy;
+        double fz;
+        double tx;
+        double ty;
+        double tz;
+    };
+
 	// Parameters
 	std::string CONTROLLER_TYPE;
 	std::string POSE_TOPIC;
@@ -78,12 +87,15 @@ class AIRO_CONTROL_FSM{
 	ros::Subscriber takeoff_land_sub;
 	ros::Publisher setpoint_pub;
 	ros::Publisher fsm_info_pub;
+	ros::Publisher esti_pose_pub;
+	ros::Publisher esti_disturbance_pub;
+	ros::Publisher applied_disturbance_pub;
 
 	// ROS Services
 	ros::ServiceClient setmode_srv;
 	ros::ServiceClient arm_srv;
 	ros::ServiceClient reboot_srv;
-	ros::ServiceClient body_wrench_client;
+	ros::ServiceClient wrench_srv;
 	
 	// Messages
 	airo_message::TakeoffLandTrigger takeoff_land_trigger; // 1 for takeoff 0 for landing
@@ -95,12 +107,16 @@ class AIRO_CONTROL_FSM{
 	geometry_msgs::PoseStamped local_pose;
 	geometry_msgs::PoseStamped takeoff_land_pose;
 	geometry_msgs::PoseStamped ref_pose;
+	geometry_msgs::PoseStamped esti_pose;
+	geometry_msgs::PoseStamped esti_disturbance;
+	geometry_msgs::PoseStamped applied_disturbance;
 	geometry_msgs::TwistStamped local_twist;
 	geometry_msgs::AccelStamped local_accel;
 	mavros_msgs::AttitudeTarget attitude_target;
 	mavros_msgs::State current_state;
 	mavros_msgs::State previous_state;
 	mavros_msgs::ExtendedState current_extended_state;
+	gazebo_msgs::ApplyBodyWrench body_wrench;
 
 	// Controller
 	std::unique_ptr<BASE_CONTROLLER> controller;
@@ -145,6 +161,21 @@ class AIRO_CONTROL_FSM{
 	bool land_trigered(const ros::Time&);
 	double twist_norm(const geometry_msgs::TwistStamped);
 	void reboot();
+
+	Euler q2rpy(const geometry_msgs::Quaternion&);          // quaternion to euler angle
+    geometry_msgs::Quaternion rpy2q(const Euler&);          // euler angle to quaternion
+	void ref_cb(int line_to_read);                          // fill N steps reference points into acados
+    void pose_cb(const nav_msgs::Odometry::ConstPtr& msg);  // get current position
+
+	//disturbance observer functions
+	void accel_cb(const );
+	void applyDisturbance();
+	void EKF();
+	MatrixXd RK4(MatrixXd x, MatrixXd u);                   // EKF predict and update
+    MatrixXd f(MatrixXd x, MatrixXd u);                     // system process model
+    MatrixXd h(MatrixXd x);                                 // measurement model
+    MatrixXd compute_jacobian_F(MatrixXd x, MatrixXd u);    // compute Jacobian of system process model
+    MatrixXd compute_jacobian_H(MatrixXd x);                // compute Jacobian of measurement model
 };
 
 #endif
