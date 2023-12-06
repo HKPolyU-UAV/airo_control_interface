@@ -42,10 +42,10 @@ class EKF{
         w = 6,
         phi = 7, //Euler anagle in roll axis
         theta = 8, //Euler angle in pitch axis
-        psi = 9, //Euler angle in yaw axis
-        p = 9, //angular velocities
-        q = 10,
-        r = 11,
+        // psi = 9, //Euler angle in yaw axis
+        // p = 9, //angular velocities
+        // q = 10,
+        // r = 11,
     };
 
     enum ControlInputs{
@@ -126,7 +126,19 @@ class EKF{
     double Iy;
     double Iz;
     double g = 9.81;
-
+    Matrix<double,1,6> M_values;    
+    Matrix<double,6,6> M;           // mass matrix
+    Matrix<double,6,6> invM;        // inverse mass matrix
+    Matrix<double,1,6> Dl_values;   
+    Matrix<double,6,6> Dl;          // linear hydrodynamic damping force
+    Matrix<double,6,6> K;           // propulsion matrix
+    Matrix<double,6,1> KAu;         // vehicle's generated forces and moments
+    // Matrix<double,18,1> dx;
+    Matrix<double,3,1> v_linear_body;   // linear velocity in body frame
+    Matrix<double,3,1> v_angular_body;  // angular velocity in body frame
+    Matrix<double,3,3> R_ib;            // rotation matrix for linear from inertial to body frame
+    Matrix<double,3,3> T_ib;            // rotation matrix for angular from inertial to body frame
+   
     //EKF parameters
     Matrix<double,6,1> wf_disturbance;                           //world frame disturbance
     Matrix<double,6,1> meas_u;                                   //inputs
