@@ -35,6 +35,16 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/fsm/joystick_deadzone",rc_param.JOYSTICK_DEADZONE);
     nh.getParam("airo_control_node/fsm/check_centered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
 
+    // Initialize EKF
+    
+    // Initialize body wrench force
+    applied_wrench.fx = 0.0;
+    applied_wrench.fy = 0.0;
+    applied_wrench.fz = 0.0;
+    applied_wrench.tx = 0.0;
+    applied_wrench.ty = 0.0;
+    applied_wrench.tz = 0.0;
+
     // ROS Sub & Pub
     pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,5,&AIRO_CONTROL_FSM::pose_cb,this);
     twist_sub = nh.subscribe<geometry_msgs::TwistStamped>(TWIST_TOPIC,5,&AIRO_CONTROL_FSM::twist_cb,this);
@@ -47,11 +57,15 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     takeoff_land_sub = nh.subscribe<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",1,&AIRO_CONTROL_FSM::takeoff_land_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",1);
     fsm_info_pub = nh.advertise<airo_message::FSMInfo>("/airo_control/fsm_info",1);
+    esti_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/airco_control/ekf/pose",5);
+    esti_disturbance_pub = nh.advertise<geometry_msgs::PoseStamped>("/airo_control/ekf/disturbance",5);
+    applied_disturbance_pub = nh.advertise<geometry_msgs::PoseStamped>("/airo_control/applied_disturbance",5);
 
     // ROS Services
     setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
     arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
     reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
+    wrench_srv = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
 
     // Initialize FSM & Controller 
     state_fsm = RC_MANUAL;
