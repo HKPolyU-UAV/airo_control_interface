@@ -833,7 +833,7 @@ void AIRO_CONTROL_FSM::reboot(){
 
 void AIRO_CONTROL_FSM::applyDisturbance(){
     // Call ros service apply_body_wrench
-    wrench.request.body_name = "iris::base_link";
+    wrench.request.body_name = "iris::base_link";  // Check the UAV's name in Gazebo
     wrench.request.reference_frame = "world";
     wrench.request.reference_point.x = 0.0;
     wrench.request.reference_point.y = 0.0;
@@ -847,16 +847,6 @@ void AIRO_CONTROL_FSM::applyDisturbance(){
     wrench.request.start_time = ros::Time::now();
     wrench.request.duration = ros::Duration(1000);  // Duration of the disturbance
     body_wrench_client.call(wrench);
-
-    // Call the service to apply the body wrench
-    if (body_wrench_client.call(wrench))
-    {
-        ROS_INFO("Applied disturbance force along x-axis");
-    }
-    else
-    {
-        ROS_ERROR("Failed to call service /gazebo/apply_body_wrench");
-    }
 }
 
 // Quaternion to euler angle
