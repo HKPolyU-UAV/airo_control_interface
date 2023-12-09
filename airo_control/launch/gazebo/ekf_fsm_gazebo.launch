@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node pkg="airo_control" type="airo_control_node" name="airo_control_node_ekf" output="screen">
+        <rosparam command="load" file="$(find airo_control)/config/gazebo/fsm_gazebo.yaml" ns="fsm"/>
+		<rosparam command="load" file="$(find airo_control)/config/gazebo/mpc_gazebo.yaml" ns="mpc"/>
+		<rosparam command="load" file="$(find airo_control)/config/gazebo/backstepping_gazebo.yaml" ns="backstepping"/>
+		<rosparam command="load" file="$(find airo_control)/config/gazebo/slidingmode_gazebo.yaml" ns="slidingmode"/>
+	</node>
+
+</launch>
