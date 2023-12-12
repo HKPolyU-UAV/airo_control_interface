@@ -875,7 +875,7 @@ void AIRO_CONTROL_FSM::EKF(){
 
     // Define Jacobian matrices of system dynamics and measurement model
     Matrix<double,18,18> F;                             // Jacobian of system dynamics
-    Matrix<double,18,18? H;                             // Jacobian of measurement model
+    Matrix<double,18,18> H;                             // Jacobian of measurement model
 
     // Define Kalman gain matrix
     Matrix<double,18,18> Kal;
