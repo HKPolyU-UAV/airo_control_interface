@@ -63,6 +63,7 @@ add_executable(airo_control_node
 #   src/controller/slidingmode.cpp
 #   src/rc_input.cpp
 # )
+
 target_link_libraries(airo_control_node
   ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
   ${acados_lib}/libacados.so

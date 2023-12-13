@@ -116,7 +116,8 @@ void AIRO_CONTROL_FSM::process(){
     fsm_info.is_waiting_for_command = false;
     
     //EKF observer
-
+    EKF();
+    
     // Step 2: State machine
     if (check_connection(current_time)){
         fsm();
