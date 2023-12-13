@@ -115,6 +115,8 @@ void AIRO_CONTROL_FSM::process(){
     solve_controller = false;
     fsm_info.is_waiting_for_command = false;
     
+    //EKF observer
+
     // Step 2: State machine
     if (check_connection(current_time)){
         fsm();
@@ -976,7 +978,7 @@ void AIRO_CONTROL_FSM::EKF(){
 }
 
 // 4th order RK for integration
-MatrixXd BLUEROV2_DOB::RK4(MatrixXd x, MatrixXd u)
+MatrixXd AIRO_CONTROL_FSM::RK4(MatrixXd x, MatrixXd u)
 {
     Matrix<double,18,1> k1;
     Matrix<double,18,1> k2;
@@ -991,8 +993,8 @@ MatrixXd BLUEROV2_DOB::RK4(MatrixXd x, MatrixXd u)
     return x + (k1+2*k2+2*k3+k4)/6;
 }
 
-/ Define system dynamics function
-MatrixXd BLUEROV2_DOB::f(MatrixXd x, MatrixXd u)
+// Define system dynamics function
+MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
 {
     // Define system dynamics
     Matrix<double,18,1> xdot;
@@ -1022,7 +1024,7 @@ MatrixXd BLUEROV2_DOB::f(MatrixXd x, MatrixXd u)
 }
 
 // Define measurement model function (Z = Hx, Z: measurement vector [x,xdot,tau]; X: state vector [x,xdot,disturbance])
-MatrixXd BLUEROV2_DOB::h(MatrixXd x)
+MatrixXd AIRO_CONTROL_FSM::h(MatrixXd x)
 {
     // Define measurement model
     Matrix<double,18,1> y;
@@ -1045,7 +1047,7 @@ MatrixXd BLUEROV2_DOB::h(MatrixXd x)
 }
 
 // Define function to compute Jacobian of system dynamics at current state and input
-MatrixXd BLUEROV2_DOB::compute_jacobian_F(MatrixXd x, MatrixXd u)
+MatrixXd AIRO_CONTROL_FSM::compute_jacobian_F(MatrixXd x, MatrixXd u)
 {
     // Define Jacobian of system dynamics
     Matrix<double,18,18> F;
@@ -1061,7 +1063,7 @@ MatrixXd BLUEROV2_DOB::compute_jacobian_F(MatrixXd x, MatrixXd u)
 }
 
 // Define function to compute Jacobian of measurement model at predicted state
-MatrixXd BLUEROV2_DOB::compute_jacobian_H(MatrixXd x)
+MatrixXd AIRO_CONTROL_FSM::compute_jacobian_H(MatrixXd x)
 {
     // Define Jacobian of measurement model
     Matrix<double,18,18> H;

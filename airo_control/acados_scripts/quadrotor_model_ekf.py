@@ -57,9 +57,9 @@ def export_quadrotor_model() -> AcadosModel:
     dx = u
     dy = v
     dz = w
-    du = (cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi)) * thrust/hover_thrust*g
-    dv = (cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi)) * thrust/hover_thrust*g
-    dw = -g + cos(theta) * cos(phi) * thrust/hover_thrust*g
+    du = (cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi)) * thrust/hover_thrust*g + disturbance_x
+    dv = (cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi)) * thrust/hover_thrust*g + disturbance_y
+    dw = -g + cos(theta) * cos(phi) * thrust/hover_thrust*g + disturbance_z
     dphi = (phi_cmd - phi) / tau_phi
     dtheta = (theta_cmd - theta) / tau_theta
     f_expl = vertcat(dx,dy,dz,du,dv,dw,dphi,dtheta)
