@@ -122,6 +122,8 @@ class AIRO_CONTROL_FSM{
 	mavros_msgs::State current_state;
 	mavros_msgs::State previous_state;
 	mavros_msgs::ExtendedState current_extended_state;
+	
+	// Applybodywrench
 	WRENCH applied_wrench;	
 	gazebo_msgs::ApplyBodyWrench body_wrench;
 
