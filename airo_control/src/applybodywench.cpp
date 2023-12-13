@@ -23,8 +23,8 @@ void applyDisturbance()
     wrench.request.body_name = "iris::base_link";
     wrench.request.reference_frame = "world";
     wrench.request.wrench.force.x = applied_wrench.fx;
-    wrench.request.wrench.force.y = 0.0;
-    wrench.request.wrench.force.z = 0.0;
+    wrench.request.wrench.force.y = applied_wrench.fy;
+    wrench.request.wrench.force.z = applied_wrench.fz;
     wrench.request.reference_point.x = 0.0;
     wrench.request.reference_point.y = 0.0;
     wrench.request.reference_point.z = 0.0;
@@ -55,7 +55,10 @@ int main(int argc, char** argv)
     // Main loop
     while (ros::ok())
     {
-        applied_wrench.fx = 10; //unit: Newtons
+        applied_wrench.fx = 0; //unit: Newtons
+        applied_wrench.fy = 0; //unit: Newtons
+        applied_wrench.fz = 2; //unit: Newtons
+
         // Call the applyDisturbance function
         applyDisturbance();
 
