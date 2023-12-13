@@ -114,7 +114,7 @@ void AIRO_CONTROL_FSM::process(){
     current_time = ros::Time::now();
     solve_controller = false;
     fsm_info.is_waiting_for_command = false;
-
+    
     // Step 2: State machine
     if (check_connection(current_time)){
         fsm();
@@ -833,20 +833,14 @@ void AIRO_CONTROL_FSM::reboot(){
 
 void AIRO_CONTROL_FSM::applyDisturbance(){
     // Call ros service apply_body_wrench
-    wrench.request.body_name = "iris::base_link";  // Check the UAV's name in Gazebo
-    wrench.request.reference_frame = "world";
-    wrench.request.reference_point.x = 0.0;
-    wrench.request.reference_point.y = 0.0;
-    wrench.request.reference_point.z = 0.0;
-    wrench.request.wrench.force.x = applied_wrench.fx;
-    wrench.request.wrench.force.y = applied_wrench.fy;
-    wrench.request.wrench.force.z = applied_wrench.fz;
-    wrench.request.wrench.torque.x = applied_wrench.tx;
-    wrench.request.wrench.torque.y = applied_wrench.ty;
-    wrench.request.wrench.torque.z = applied_wrench.tz;
+    body_wrench.request.body_name = "iris::base_link";  // Check the UAV's name in Gazebo
+    body_wrench.request.reference_frame = "world";
+    body_wrench.request.wrench.force.x = applied_wrench.fx;
+    body_wrench.request.wrench.force.y = applied_wrench.fy;
+    body_wrench.request.wrench.force.z = applied_wrench.fz;
     wrench.request.start_time = ros::Time::now();
     wrench.request.duration = ros::Duration(1000);  // Duration of the disturbance
-    body_wrench_client.call(wrench);
+    body_wrench_client.call(body_wrench);
 }
 
 // Quaternion to euler angle

@@ -35,7 +35,7 @@ class AIRO_CONTROL_FSM{
 		POS_COMMAND
 	};
 
-	struct wrench{
+	struct WRENCH{
         double fx;
         double fy;
         double fz;
@@ -122,6 +122,7 @@ class AIRO_CONTROL_FSM{
 	mavros_msgs::State current_state;
 	mavros_msgs::State previous_state;
 	mavros_msgs::ExtendedState current_extended_state;
+	WRENCH applied_wrench;	
 	gazebo_msgs::ApplyBodyWrench body_wrench;
 
 	// Controller

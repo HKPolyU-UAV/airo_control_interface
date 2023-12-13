@@ -5,18 +5,19 @@
 
 ros::ServiceClient body_wrench_client;
 
-struct wrench{
+struct WRENCH{
         double fx;
         double fy;
         double fz;
         double tx;
         double ty;
         double tz;
-    };
+};
 
-wrench applied_wrench;
+WRENCH applied_wrench;
 
 gazebo_msgs::ApplyBodyWrench wrench; 
+
 
 void applyDisturbance()
 {
