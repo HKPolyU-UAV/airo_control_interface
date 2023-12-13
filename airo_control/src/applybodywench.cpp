@@ -21,10 +21,10 @@ gazebo_msgs::ApplyBodyWrench wrench;
 void applyDisturbance()
 {
     wrench.request.body_name = "iris::base_link";
-    wrench.request.reference_frame = "world";
+    wrench.request.reference_frame = "world"; //NED
     wrench.request.wrench.force.x = applied_wrench.fx;
     wrench.request.wrench.force.y = applied_wrench.fy;
-    wrench.request.wrench.force.z = applied_wrench.fz;
+    wrench.request.wrench.force.z = -applied_wrench.fz; //as +ve = Down
     wrench.request.reference_point.x = 0.0;
     wrench.request.reference_point.y = 0.0;
     wrench.request.reference_point.z = 0.0;
@@ -35,7 +35,7 @@ void applyDisturbance()
     // Call the service to apply the body wrench
     if (body_wrench_client.call(wrench))
     {
-        ROS_INFO("Applied disturbance force along x-axis");
+        ROS_INFO("Applied disturbance force");
     }
     else
     {
@@ -56,8 +56,8 @@ int main(int argc, char** argv)
     while (ros::ok())
     {
         applied_wrench.fx = 0; //unit: Newtons
-        applied_wrench.fy = 0; //unit: Newtons
-        applied_wrench.fz = 2; //unit: Newtons
+        applied_wrench.fy = 10; //unit: Newtons
+        applied_wrench.fz = 0; //unit: Newtons
 
         // Call the applyDisturbance function
         applyDisturbance();
