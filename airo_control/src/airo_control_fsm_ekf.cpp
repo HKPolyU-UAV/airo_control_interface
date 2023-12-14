@@ -36,7 +36,20 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/fsm/check_centered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
 
     // Initialize EKF
-    
+    // set initial states
+    // acados_in.x0[x] = local_pos.x;
+    // acados_in.x0[y] = local_pos.y;
+    // acados_in.x0[z] = local_pos.z;
+    acados_in.x0[phi] = local_euler.phi;
+    acados_in.x0[theta] = local_euler.theta;
+    //acados_in.x0[psi] = yaw_sum;
+    // acados_in.x0[u] = v_linear_body[0];
+    // acados_in.x0[v] = v_linear_body[1];
+    // acados_in.x0[w] = v_linear_body[2];
+    // acados_in.x0[p] = v_angular_body[0];
+    // acados_in.x0[q] = v_angular_body[1];
+    // acados_in.x0[r] = v_angular_body[2];
+
     // Initialize body wrench force
     applied_wrench.fx = 10.0;
     applied_wrench.fy = 0.0;
