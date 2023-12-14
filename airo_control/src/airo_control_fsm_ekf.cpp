@@ -117,7 +117,7 @@ void AIRO_CONTROL_FSM::process(){
     
     //EKF observer
     EKF();
-    
+
     // Step 2: State machine
     if (check_connection(current_time)){
         fsm();
@@ -863,9 +863,10 @@ geometry_msgs::Quaternion AIRO_CONTROL_FSM::rpy2q(const Euler& euler){
 
 void AIRO_CONTROL_FSM::EKF(){
     // Get input u and measurement y
-    meas_u << current_t.t0, current_t.t1, current_t.t2, current_t.t3, current_t.t4, current_t.t5;
-    Matrix<double,6,1> tau;
+    Matrix<double, 4, 1> meas_u; // phi, theta, psi, thrust
+    Matrix<double,3,1> esti_x; // State vetor [du, dv, dw]
     tau = K*meas_u;
+    Matrix<double,3,1> meas_y; // Measured acceleration [du, dv, dw]
     meas_y << local_pos.x, local_pos.y, local_pos.z, local_euler.phi, local_euler.theta, local_euler.psi,
             v_linear_body[0], v_linear_body[1], v_linear_body[2], v_angular_body[0], v_angular_body[1], v_angular_body[2],
             tau(0),tau(1),tau(2),tau(3),tau(4),tau(5);
