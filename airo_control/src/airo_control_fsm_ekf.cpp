@@ -992,10 +992,10 @@ void AIRO_CONTROL_FSM::EKF(){
 // 4th order RK for integration
 MatrixXd AIRO_CONTROL_FSM::RK4(MatrixXd x, MatrixXd u)
 {
-    Matrix<double,18,1> k1;
-    Matrix<double,18,1> k2;
-    Matrix<double,18,1> k3;
-    Matrix<double,18,1> k4;
+    Matrix<double,15,1> k1;
+    Matrix<double,15,1> k2;
+    Matrix<double,15,1> k3;
+    Matrix<double,15,1> k4;
 
     k1 = f(x, u) * dt;
     k2 = f(x+k1/2, u) * dt;
