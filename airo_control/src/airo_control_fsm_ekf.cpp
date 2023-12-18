@@ -54,9 +54,6 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     applied_wrench.fx = 10.0;
     applied_wrench.fy = 0.0;
     applied_wrench.fz = 0.0;
-    applied_wrench.tx = 0.0;
-    applied_wrench.ty = 0.0;
-    applied_wrench.tz = 0.0;
 
     // ROS Sub & Pub
     pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,5,&AIRO_CONTROL_FSM::pose_cb,this);
