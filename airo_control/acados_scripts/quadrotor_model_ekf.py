@@ -19,9 +19,12 @@ def export_quadrotor_model() -> AcadosModel:
     v = SX.sym('v')                 # earth velocity y
     w = SX.sym('w')                 # earth velocity z
     phi = SX.sym('phi')             # roll angle phi
-    theta = SX.sym('theta')         # pitch angle
-    psi = SX.sym('psi')             # yaw angle
-    sym_x = vertcat(x,y,z,u,v,w,phi,theta)
+    theta = SX.sym('theta')         # pitch angle theta
+    psi = SX.sym('psi')             # yaw angle psi
+    p = SX.sym('p')                 # roll velocity
+    q = SX.sym('q')                 # pitch velocity
+    r = SX.sym('r')                 # yaw velocity
+    sym_x = vertcat(x,y,z,u,v,w,phi,theta,psi,p,q,r)
     
     # controls
     thrust = SX.sym('thrust')       # thrust command
