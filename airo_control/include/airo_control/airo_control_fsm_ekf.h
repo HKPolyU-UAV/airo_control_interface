@@ -39,9 +39,6 @@ class AIRO_CONTROL_FSM{
         double fx;
         double fy;
         double fz;
-        double tx;
-        double ty;
-        double tz;
     };
 
 	struct Euler{
