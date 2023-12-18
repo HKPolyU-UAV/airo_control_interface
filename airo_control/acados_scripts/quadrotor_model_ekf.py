@@ -8,7 +8,7 @@ def export_quadrotor_model() -> AcadosModel:
 
     model_name = 'quadrotor'
 
-    # constent parameters
+    # constant parameters
     g = 9.80665                     # gravity constant [m/s^2]
     
     # states
@@ -36,15 +36,10 @@ def export_quadrotor_model() -> AcadosModel:
     hover_thrust = SX.sym('hover_thrust')
     tau_phi = SX.sym('tau_phi')
     tau_theta = SX.sym('tau_theta')
-    psi = SX.sym('psi')             # yaw angle
     disturbance_x = SX.sym('disturbance_x')
     disturbance_y = SX.sym('disturbance_y')
     disturbance_z = SX.sym('disturbance_z')
-    # disturbace_phi = SX.sym('disturbance_phi')
-    # disturbace_theta = SX.sym('disturbance_theta')
-    # disturbace_psi = SX.sym('disturbance_psi')
-    sym_p = vertcat(hover_thrust,tau_phi,tau_theta,psi,disturbance_x,disturbance_y,disturbance_z)
-    # sym_p = vertcat(hover_thrust,tau_phi,tau_theta,psi,disturbance_x,disturbance_y,disturbance_z,disturbance_phi,disturbance_theta,disturbance_psi)
+    sym_p = vertcat(hover_thrust,tau_phi,tau_theta,disturbance_x,disturbance_y,disturbance_z)
 
     # xdot for f_impl
     x_dot = SX.sym('x_dot')
@@ -55,7 +50,11 @@ def export_quadrotor_model() -> AcadosModel:
     w_dot = SX.sym('w_dot')
     phi_dot = SX.sym('phi_dot')
     theta_dot = SX.sym('theta_dot')
-    sym_xdot = vertcat(x_dot,y_dot,z_dot,u_dot,v_dot,w_dot,phi_dot,theta_dot)
+    psi_dot = SX.sym('psi_dot')
+    p_dot = SX.sym('p_dot')
+    q_dot = SX.sym('q_dot')
+    r_dot = SX.sym('r_dot')
+    sym_xdot = vertcat(x_dot,y_dot,z_dot,u_dot,v_dot,w_dot,phi_dot,theta_dot,psi_dot,p_dot,q_dot,r_dot)
 
     # dynamics
     dx = u
