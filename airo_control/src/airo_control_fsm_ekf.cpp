@@ -875,24 +875,24 @@ void AIRO_CONTROL_FSM::EKF(){
     // Get input u and measurement y
     Matrix<double, 4, 1> meas_u; // phi, theta, psi, thrust
     Matrix<double,3,1> esti_x; // State vetor [du, dv, dw]
-    tau = K*meas_u;
+    //tau = K*meas_u;
     Matrix<double,3,1> meas_y; // Measured acceleration [du, dv, dw]
     meas_y << local_pose.pose.x, local_pose.pose.y, local_pose.pose.z, local_euler.phi, local_euler.theta, local_euler.psi,
             local_twist.twist.linear.x, local_twist.twist.linear.y, local_twist.twist.linear.z, local_twist.twist.angular.x, local_twist.twist.angular.y, local_twist.twist.angular.z,
             tau(0),tau(1),tau(2),tau(3),tau(4),tau(5);
 
     // Define Jacobian matrices of system dynamics and measurement model
-    Matrix<double,18,18> F;                             // Jacobian of system dynamics
-    Matrix<double,18,18> H;                             // Jacobian of measurement model
+    Matrix<double,15,15> F;                             // Jacobian of system dynamics
+    Matrix<double,15,15> H;                             // Jacobian of measurement model
 
     // Define Kalman gain matrix
-    Matrix<double,18,18> Kal;
+    Matrix<double,15,15> Kal;
 
     // Define prediction and update steps
-    Matrix<double,18,1> x_pred;                         // Predicted state
-    Matrix<double,18,18> P_pred;                        // Predicted covariance
-    Matrix<double,18,1> y_pred;                         // Predicted measurement
-    Matrix<double,18,1> y_err;                          // Measurement error
+    Matrix<double,15,1> x_pred;                         // Predicted state
+    Matrix<double,15,15> P_pred;                        // Predicted covariance
+    Matrix<double,15,1> y_pred;                         // Predicted measurement
+    Matrix<double,15,1> y_err;                          // Measurement error
 
     // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, meas_u);             // compute Jacobian of system dynamics at current state and input
