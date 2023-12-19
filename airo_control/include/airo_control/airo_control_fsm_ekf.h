@@ -98,7 +98,6 @@ class AIRO_CONTROL_FSM{
 	};
 
 	struct THRUST{
-		double thrust;
 		double hover_thrust;
 	}
 
@@ -132,7 +131,7 @@ class AIRO_CONTROL_FSM{
 	POS pre_body_pos;
 	ACC body_acc;
 	THRUST current_thrust;
-	
+
 	// Times
 	ros::Time current_time;
 	ros::Time takeoff_land_time;
