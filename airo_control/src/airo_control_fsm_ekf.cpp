@@ -881,25 +881,26 @@ geometry_msgs::Quaternion AIRO_CONTROL_FSM::rpy2q(const EULER& euler){
 
 void AIRO_CONTROL_FSM::EKF(){
     // Get input u and measurement y
-    meas_u << local_euler.phi, local_euler.theta, local_euler.psi, current_thrust.thrust; // phi, theta, psi, thrust
+    meas_u << local_euler.phi, local_euler.theta, local_euler.psi, current_thrust.thrust; // thrust for du, dv, dw
     Matrix<double,3,1> esti_x; // State vetor [du, dv, dw]
     //tau = K*meas_u;
     Matrix<double,3,1> meas_y; // Measured acceleration [du, dv, dw]
-    meas_y << local_pos.x, local_pos.y, local_pos.z, local_euler.phi, local_euler.theta, local_euler.psi,
-            local_pos.u, local_pos.v, local_pos.w, local_pos.p, local_pos.q, local_pos.r;
+    meas_y << local_pos.x, local_pos.y, local_pos.z, local_pos.u, local_pos.v, local_pos.w,
+              local_euler.phi, local_euler.theta, local_euler.psi,
+             local_pos.p, local_pos.q, local_pos.r;
 
     // Define Jacobian matrices of system dynamics and measurement model
-    Matrix<double,15,15> F;                             // Jacobian of system dynamics
-    Matrix<double,15,15> H;                             // Jacobian of measurement model
+    Matrix<double,11,11> F;                             // Jacobian of system dynamics
+    Matrix<double,11,11> H;                             // Jacobian of measurement model
 
     // Define Kalman gain matrix
-    Matrix<double,15,15> Kal;
+    Matrix<double,11,11> Kal;
 
     // Define prediction and update steps
-    Matrix<double,15,1> x_pred;                         // Predicted state
-    Matrix<double,15,15> P_pred;                        // Predicted covariance
-    Matrix<double,15,1> y_pred;                         // Predicted measurement
-    Matrix<double,15,1> y_err;                          // Measurement error
+    Matrix<double,11,1> x_pred;                         // Predicted state
+    Matrix<double,11,11> P_pred;                        // Predicted covariance
+    Matrix<double,11,1> y_pred;                         // Predicted measurement
+    Matrix<double,11,1> y_err;                          // Measurement error
 
     // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, meas_u);             // compute Jacobian of system dynamics at current state and input
@@ -993,10 +994,10 @@ void AIRO_CONTROL_FSM::EKF(){
 // 4th order RK for integration
 MatrixXd AIRO_CONTROL_FSM::RK4(MatrixXd x, MatrixXd u)
 {
-    Matrix<double,15,1> k1;
-    Matrix<double,15,1> k2;
-    Matrix<double,15,1> k3;
-    Matrix<double,15,1> k4;
+    Matrix<double,11,1> k1;
+    Matrix<double,11,1> k2;
+    Matrix<double,11,1> k3;
+    Matrix<double,11,1> k4;
 
     k1 = f(x, u) * dt;
     k2 = f(x+k1/2, u) * dt;
@@ -1010,7 +1011,7 @@ MatrixXd AIRO_CONTROL_FSM::RK4(MatrixXd x, MatrixXd u)
 MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
 {
     // Define system dynamics
-    Matrix<double,15,1> xdot;
+    Matrix<double,11,1> xdot;
 
     // KAu = K*u;
     xdot << x(3), x(4), x(5),                                                                                   // dx, dy, dz
@@ -1019,10 +1020,6 @@ MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
             -g + cos(x(7)) * cos(x(6)) * thrust/hover_thrust*g,                                                 // dw
             (phi_cmd - x(6)) / tau_phi,                                                                         // dphi
             (theta_cmd - theta) / tau_theta,                                                                    // dtheta
-            invM(2,2)*(KAu(2)+mass*x(10)*x(6)-mass*x(9)*x(7)+bouyancy*cos(x(4))*cos(x(3))+x(14)+Dl(2,2)*x(8)),  // dpsi
-            invM(3,3)*(KAu(3)+(Iy-Iz)*x(10)*x(11)-mass*ZG*g*cos(x(4))*sin(x(3))+x(15)+Dl(3,3)*x(9)),            // dp
-            invM(4,4)*(KAu(4)+(Iz-Ix)*x(9)*x(11)-mass*ZG*g*sin(x(4))+x(16)+Dl(4,4)*x(10)),                      // dq
-            invM(5,5)*(KAu(5)-(Iy-Ix)*x(9)*x(10)+x(17)+Dl(5,5)*x(11)),                                          // dr
             0,0,0;                                                                                              // Disturbance_x, disturbance_y, disturbance_z
             
     return xdot; // dt is the time step
@@ -1032,7 +1029,7 @@ MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
 MatrixXd AIRO_CONTROL_FSM::h(MatrixXd x)
 {
     // Define measurement model
-    Matrix<double,15,1> y;
+    Matrix<double,11,1> y;
     y << x(0),x(1),x(2),x(3),x(4),x(5),
         x(6),x(7),x(8),x(9),x(10),x(11),
         M(0,0)*body_acc.x-mass*x(11)*x(7)+mass*x(10)*x(8)+bouyancy*sin(x(4))-x(12)-Dl(0,0)*x(6),        
