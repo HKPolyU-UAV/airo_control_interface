@@ -943,9 +943,6 @@ void AIRO_CONTROL_FSM::EKF(){
     esti_disturbance.pose.pose.position.x = wf_disturbance(0);
     esti_disturbance.pose.pose.position.y = wf_disturbance(1);
     esti_disturbance.pose.pose.position.z = wf_disturbance(2);
-    esti_disturbance.twist.twist.angular.x = wf_disturbance(3);
-    esti_disturbance.twist.twist.angular.y = wf_disturbance(4);
-    esti_disturbance.twist.twist.angular.z = wf_disturbance(5);
     esti_disturbance.header.stamp = ros::Time::now();
     esti_disturbance.header.frame_id = "odom_frame";
     esti_disturbance.child_frame_id = "base_link";

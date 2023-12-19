@@ -23,6 +23,7 @@
 #include "airo_control/controller/slidingmode.h"
 #include <gazebo_msgs/ApplyBodyWrench.h>
 
+using namespace Eigen;
 
 class AIRO_CONTROL_FSM{
     private:
@@ -35,17 +36,66 @@ class AIRO_CONTROL_FSM{
 		POS_COMMAND
 	};
 
+	enum SYSTEM_STATES{
+		x = 0,
+		y = 1,
+		z = 2,
+		u = 3,
+		v = 4, 
+		w = 5,
+		phi = 6,
+		theta = 7,
+		psi = 8,
+		p = 9,
+		q = 10,
+		r = 11
+	};
+
+	enum CONTROL_INPUTS{
+		u1 = 0,
+		u2 = 1,
+		u3 = 2,
+		u4 = 3
+	};
+
 	struct WRENCH{
         double fx;
         double fy;
         double fz;
     };
 
-	struct Euler{
+	struct EULER{
         double phi;
         double theta;
         double psi;
     };
+
+	struct POS{
+		double x;
+		double y;
+		double z;
+		double u;
+		double v;
+		double w;
+		double p;
+		double q;
+		double r;
+	};
+
+	struct ACC{
+		double x;
+		double y;
+		double z;
+		double phi;
+		double theta;
+		double psi;
+	};
+
+	struct SOLVER_PARAM{
+		double disturbance_x;
+		double disturbance_y;
+		double disturbance_z;
+	};
 
 	// Parameters
 	std::string CONTROLLER_TYPE;
@@ -72,6 +122,10 @@ class AIRO_CONTROL_FSM{
 	bool is_armed;
 	bool enable_preview = false; // Only for MPC
 	bool use_preview = false; // Only for MPC
+	EULER local_euler;
+	POS local_pos;
+	POS pre_body_pos;
+	ACC body_acc;
 
 	// Times
 	ros::Time current_time;
@@ -90,6 +144,10 @@ class AIRO_CONTROL_FSM{
 	ros::Subscriber takeoff_land_sub;
 	ros::Publisher setpoint_pub;
 	ros::Publisher fsm_info_pub;
+
+	ros::Publisher ref_pose_pub;
+	ros::Publisher error_pose_pub;
+
 	ros::Publisher esti_pose_pub;
 	ros::Publisher esti_disturbance_pub;
 	ros::Publisher applied_disturbance_pub;
@@ -127,6 +185,53 @@ class AIRO_CONTROL_FSM{
 	// Controller
 	std::unique_ptr<BASE_CONTROLLER> controller;
 
+	// Acados variables
+
+	// Dynamics parameters
+	double dt = 0.05;
+	double g = 9.81; 
+	Matrix<double,1,6> M_values;
+	Matrix<double,6,6> M;                // Mass matrix
+	Matrix<double,6,6> invM;             // Inverse mass matrix
+	Matrix<double,3,1> v_linear_body;    // Linear velocity in body frame
+	Matrix<double,3,1> v_angular_body;   // Angular velocity in body frame
+	Matrix<double,3,3> R_ib;             // Rotation matrix for linear from inertial to body frame
+	Matrix<double,3,3> T_ib;             // Rotation matrix for angular from inertial to body frame
+
+	// EKF parameters
+	Matrix<double,6,1> wf_disturbance;          // World frame disturbance
+	Matrix<double,4,1> meas_u;                  // Inputs
+	int n = 15;                                 // State dimension
+	int m = 15;                                 // Measurement dimension
+	Matrix<double,15,1> meas_y;                 // Measurement vector
+	MatrixXd P0 = MatrixXd::Identity(m,m);      // Initial covariance
+	Matrix<double,15,1> esti_x;                 // Estimate states
+	Matrix<double,15,15> esti_p;                // Estimate covariance
+	Matrix<double,1,15> Q_cov;                  // Process noise value
+	Matrix<double,15,15> noise_Q;               // Process noise matrix
+	MatrixXd noise_R = MatrixXd::Identity(m,m)*(pow(dt,4)/4);      // Measurement noise matrix
+
+	// Acados parameter
+	std::string REF_TRAJ;
+	std::string WRENCH_FX;
+	std::string WRENCH_FY;
+	std::string WRENCH_FZ;
+
+	// Other variables
+	tf::Quaternion tf_quaternion;
+	int cout_counter = 0;
+	int rand_counter = 0;
+	int fx_counter = 0;
+	double dis_time = 0;
+	double amplitudeScalingFactor_X;
+	double amplitudeScalingFactor_Y;
+	double amplitudeScalingFactor_Z;
+	double amplitudeScalingFactor_N;
+
+	double logger_time;
+
+
+
 	public:
 
 	AIRO_CONTROL_FSM(ros::NodeHandle&);
@@ -148,7 +253,7 @@ class AIRO_CONTROL_FSM{
 	void takeoff_land_init();
 	void auto_hover_init();
 	geometry_msgs::Point check_safety_volumn(const geometry_msgs::Point&);
-	void pose_cb(const geometry_msgs::PoseStamped::ConstPtr&);
+	void pose_cb(const geometry_msgs::PoseStamped::ConstPtr&); // get current position 
 	void twist_cb(const geometry_msgs::TwistStamped::ConstPtr&);
 	void imu_cb(const sensor_msgs::Imu::ConstPtr&);
 	void state_cb(const mavros_msgs::State::ConstPtr&);
@@ -168,13 +273,12 @@ class AIRO_CONTROL_FSM{
 	double twist_norm(const geometry_msgs::TwistStamped);
 	void reboot();
 
-	Euler q2rpy(const geometry_msgs::Quaternion&);          // quaternion to euler angle
-    geometry_msgs::Quaternion rpy2q(const Euler&);          // euler angle to quaternion
-	void ref_cb(int line_to_read);                          // fill N steps reference points into acados
-    void pose_cb(const nav_msgs::Odometry::ConstPtr& msg);  // get current position
+	Euler q2rpy(const geometry_msgs::Quaternion&);                  // quaternion to euler angle
+    geometry_msgs::Quaternion rpy2q(const Euler&);                  // euler angle to quaternion
+	void ref_cb(int line_to_read);                                  // fill N steps reference points into acados
+     
 
 	//disturbance observer functions
-	void accel_cb(const );
 	void applyDisturbance();
 	void EKF();
 	MatrixXd RK4(MatrixXd x, MatrixXd u);                   // EKF predict and update
