@@ -159,7 +159,7 @@ void AIRO_CONTROL_FSM::fsm(){
 
             // To AUTO_TAKEOFF
             else if ((rc_input.enter_fsm && !rc_input.is_command && is_landed)
-                  || (takeoff_trigered(current_time) && rc_input.is_command && is_landed)){
+                  || (takeoff_trigered(current_time) && rc_input.is_fsm && rc_input.is_command && is_landed)){
                 if (!odom_received(current_time)){
                     ROS_ERROR_STREAM_THROTTLE(1.0, "[AIRo Control] Reject AUTO_TAKEOFF. No odom or imu!");
                     break;
