@@ -1015,11 +1015,11 @@ MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
 
     // KAu = K*u;
     xdot << x(3), x(4), x(5),                                                                                   // dx, dy, dz
-            (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * thrust/hover_thrust*g,                      // du
-            (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * thrust/hover_thrust*g,                      // dv
-            -g + cos(x(7)) * cos(x(6)) * thrust/hover_thrust*g,                                                 // dw
-            (phi_cmd - x(6)) / tau_phi,                                                                         // dphi
-            (theta_cmd - theta) / tau_theta,                                                                    // dtheta
+            (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * thrust/param.hover_thrust*g,                      // du
+            (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * thrust/param.hover_thrust*g,                      // dv
+            -g + cos(x(7)) * cos(x(6)) * thrust/param.hover_thrust*g,                                                 // dw
+            (param.phi_cmd - x(6)) / param.tau_phi,                                                                         // dphi
+            (param.theta_cmd - x(7)) / param.tau_theta,                                                                    // dtheta
             0,0,0;                                                                                              // Disturbance_x, disturbance_y, disturbance_z
             
     return xdot; // dt is the time step
