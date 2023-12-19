@@ -877,8 +877,8 @@ void AIRO_CONTROL_FSM::EKF(){
     Matrix<double,3,1> esti_x; // State vetor [du, dv, dw]
     //tau = K*meas_u;
     Matrix<double,3,1> meas_y; // Measured acceleration [du, dv, dw]
-    meas_y << local_pos.pose.x, local_pos.pose.y, local_pos.pose.z, local_euler.phi, local_euler.theta, local_euler.psi,
-            local_twist.twist.linear.x, local_twist.twist.linear.y, local_twist.twist.linear.z, local_twist.twist.angular.x, local_twist.twist.angular.y, local_twist.twist.angular.z;
+    meas_y << local_pos.x, local_pos.y, local_pos.z, local_euler.phi, local_euler.theta, local_euler.psi,
+            local_pos.u, local_pos.v, local_pos.w, local_pos.p, local_pos.q, local_pos.r;
 
     // Define Jacobian matrices of system dynamics and measurement model
     Matrix<double,15,15> F;                             // Jacobian of system dynamics
