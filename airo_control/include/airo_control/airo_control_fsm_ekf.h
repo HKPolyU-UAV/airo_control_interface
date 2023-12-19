@@ -98,7 +98,7 @@ class AIRO_CONTROL_FSM{
 	};
 
 	struct THRUST{
-		double hover_thrust;
+		double thrust;
 	};
 
 	// Parameters

@@ -49,7 +49,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     // acados_in.x0[p] = v_angular_body[0];
     // acados_in.x0[q] = v_angular_body[1];
     // acados_in.x0[r] = v_angular_body[2];
-    
+
     Q_cov << pow(dt,4)/4,pow(dt,4)/4,pow(dt,4)/4,pow(dt,4)/4,pow(dt,4)/4,pow(dt,4)/4,
             pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2),
             pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2);
@@ -942,26 +942,26 @@ void AIRO_CONTROL_FSM::EKF(){
     esti_twist.twist.angular.y = esti_x(10);
     esti_twist.twist.angular.z = esti_x(11);
     esti_pose.header.stamp = ros::Time::now();
-    esti_pose.header.frame_id = "odom_frame";
-    esti_pose.child_frame_id = "base_link";
+    // esti_pose.header.frame_id = "odom_frame";
+    // esti_pose.child_frame_id = "base_link";
     esti_pose_pub.publish(esti_pose);
 
     // publish estimate disturbance
-    esti_disturbance.pose.pose.position.x = wf_disturbance(0);
-    esti_disturbance.pose.pose.position.y = wf_disturbance(1);
-    esti_disturbance.pose.pose.position.z = wf_disturbance(2);
+    esti_disturbance.pose.position.x = wf_disturbance(0);
+    esti_disturbance.pose.position.y = wf_disturbance(1);
+    esti_disturbance.pose.position.z = wf_disturbance(2);
     esti_disturbance.header.stamp = ros::Time::now();
-    esti_disturbance.header.frame_id = "odom_frame";
-    esti_disturbance.child_frame_id = "base_link";
+    // esti_disturbance.header.frame_id = "odom_frame";
+    // esti_disturbance.child_frame_id = "base_link";
     esti_disturbance_pub.publish(esti_disturbance);
 
     // publish estimate disturbance
-    applied_disturbance.pose.pose.position.x = applied_wrench.fx;
-    applied_disturbance.pose.pose.position.y = applied_wrench.fy;
-    applied_disturbance.pose.pose.position.z = applied_wrench.fz;
+    applied_disturbance.pose.position.x = applied_wrench.fx;
+    applied_disturbance.pose.position.y = applied_wrench.fy;
+    applied_disturbance.pose.position.z = applied_wrench.fz;
     applied_disturbance.header.stamp = ros::Time::now();
-    applied_disturbance.header.frame_id = "odom_frame";
-    applied_disturbance.child_frame_id = "base_link";
+    // applied_disturbance.header.frame_id = "odom_frame";
+    // applied_disturbance.child_frame_id = "base_link";
     applied_disturbance_pub.publish(applied_disturbance);
 
     // print estimate disturbance
