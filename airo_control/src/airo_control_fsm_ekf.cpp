@@ -40,8 +40,8 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     // acados_in.x0[x] = local_pos.x;
     // acados_in.x0[y] = local_pos.y;
     // acados_in.x0[z] = local_pos.z;
-    acados_in.x0[phi] = local_euler.phi;
-    acados_in.x0[theta] = local_euler.theta;
+    //acados_in.x0[phi] = local_euler.phi;
+    //acados_in.x0[theta] = local_euler.theta;
     //acados_in.x0[psi] = yaw_sum;
     // acados_in.x0[u] = v_linear_body[0];
     // acados_in.x0[v] = v_linear_body[1];
@@ -1012,7 +1012,7 @@ MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
     // Define system dynamics
     Matrix<double,18,1> xdot;
 
-    KAu = K*u;
+    // KAu = K*u;
     xdot << (cos(x(5))*cos(x(4)))*x(6) + (-sin(x(5))*cos(x(3))+cos(x(5))*sin(x(4))*sin(x(3)))*x(7) + (sin(x(5))*sin(x(3))+cos(x(5))*cos(x(3))*sin(x(4)))*x(8),  //xdot
             (sin(x(5))*cos(x(4)))*x(6) + (cos(x(5))*cos(x(3))+sin(x(3))*sin(x(4))*sin(x(5)))*x(7) + (-cos(x(5))*sin(x(3))+sin(x(4))*sin(x(5))*cos(x(3)))*x(8),
             (-sin(x(4)))*x(6) + (cos(x(4))*sin(x(3)))*x(7) + (cos(x(4))*cos(x(3)))*x(8),
