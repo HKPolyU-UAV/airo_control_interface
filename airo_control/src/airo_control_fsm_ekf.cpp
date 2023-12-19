@@ -1015,9 +1015,9 @@ MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
 
     // KAu = K*u;
     xdot << x(3), x(4), x(5),                                                                                      // dx, dy, dz
-            (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * attitude_target.thrust/param.hover_thrust*g,   // du
-            (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * attitude_target.thrust/param.hover_thrust*g,   // dv
-            -g + cos(x(7)) * cos(x(6)) * attitude_target.thrust/param.hover_thrust*g,                              // dw
+            (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * attitude_target.thrust/param.hover_thrust*g+disturbance_x,   // du
+            (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * attitude_target.thrust/param.hover_thrust*g+disturbance_y,   // dv
+            -g + cos(x(7)) * cos(x(6)) * attitude_target.thrust/param.hover_thrust*g+disturbance_z,                              // dw
             (param.phi_cmd - x(6)) / param.tau_phi,                                                                // dphi
             (param.theta_cmd - x(7)) / param.tau_theta,                                                            // dtheta
             0,0,0;                                                                                                 // Disturbance_x, disturbance_y, disturbance_z
@@ -1032,9 +1032,9 @@ MatrixXd AIRO_CONTROL_FSM::h(MatrixXd x)
     Matrix<double,11,1> y;
     y << x(3),x(4),x(5),  // dx, dy, dz
         x(6),x(7),x(8),x(9),x(10),
-        M(0,0)*body_acc.x-mass*x(11)*x(7)+mass*x(10)*x(8)+bouyancy*sin(x(4))-x(12)-Dl(0,0)*x(6),        
-        M(1,1)*body_acc.y+mass*x(11)*x(6)-mass*x(9)*x(8)-bouyancy*cos(x(4))*sin(x(3))-x(13)-Dl(1,1)*x(7),
-        M(2,2)*body_acc.z-mass*x(10)*x(6)+mass*x(9)*x(7)-bouyancy*cos(x(4))*cos(x(3))-x(14)-Dl(2,2)*x(8);
+        (du-disturance_x)*(hover_thrust)/((g)*(cos(psi)*sin(theta)*cos(psi)+sin(phi)*sin(psi))),   // thrust for du     
+        (dv-disturance_y)*(hover_thrust)/((g)*(cos(psi)*sin(theta)*sin(psi)-sin(phi)*cos(psi))),   // thrust for dv
+        (dw-disturance_z+g)*(hover_thrust)/((g)*(cos(psi)*cos(theta)));                            // thrust for dw
     return y;
 }
 
