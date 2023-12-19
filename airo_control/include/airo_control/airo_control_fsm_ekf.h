@@ -97,6 +97,11 @@ class AIRO_CONTROL_FSM{
 		double disturbance_z;
 	};
 
+	struct THRUST{
+		double thrust;
+		double hover_thrust;
+	}
+
 	// Parameters
 	std::string CONTROLLER_TYPE;
 	std::string POSE_TOPIC;
@@ -126,7 +131,8 @@ class AIRO_CONTROL_FSM{
 	POS local_pos;
 	POS pre_body_pos;
 	ACC body_acc;
-
+	THRUST current_thrust;
+	
 	// Times
 	ros::Time current_time;
 	ros::Time takeoff_land_time;
