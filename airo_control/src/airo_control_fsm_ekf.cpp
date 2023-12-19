@@ -1013,25 +1013,17 @@ MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
     Matrix<double,15,1> xdot;
 
     // KAu = K*u;
-    xdot << x(3),  // dx
-            x(4),  // dy
-            x(5),  // dz
-            (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * thrust/hover_thrust*g,  // du
-            (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * thrust/hover_thrust*g,  // dv
-            -g + cos(x(7)) * cos(x(6)) * thrust/hover_thrust*g,  //dw
-            invM(0,0)*(KAu(0)+mass*x(11)*x(7)-mass*x(10)*x(8)-bouyancy*sin(x(4))+x(12)+Dl(0,0)*x(6)),    // dphi
-            invM(1,1)*(KAu(1)-mass*x(11)*x(6)+mass*x(9)*x(8)+bouyancy*cos(x(4))*sin(x(3))+x(13)+Dl(1,1)*x(7)),  // dtheta
+    xdot << x(3), x(4), x(5),                                                                                   // dx, dy, dz
+            (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * thrust/hover_thrust*g,                      // du
+            (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * thrust/hover_thrust*g,                      // dv
+            -g + cos(x(7)) * cos(x(6)) * thrust/hover_thrust*g,                                                 // dw
+            (phi_cmd - x(6)) / tau_phi,                                                                         // dphi
+            (theta_cmd - theta) / tau_theta,                                                                    // dtheta
             invM(2,2)*(KAu(2)+mass*x(10)*x(6)-mass*x(9)*x(7)+bouyancy*cos(x(4))*cos(x(3))+x(14)+Dl(2,2)*x(8)),  // dpsi
-            invM(3,3)*(KAu(3)+(Iy-Iz)*x(10)*x(11)-mass*ZG*g*cos(x(4))*sin(x(3))+x(15)+Dl(3,3)*x(9)),  // dp
-            invM(4,4)*(KAu(4)+(Iz-Ix)*x(9)*x(11)-mass*ZG*g*sin(x(4))+x(16)+Dl(4,4)*x(10)),  // dq
-            invM(5,5)*(KAu(5)-(Iy-Ix)*x(9)*x(10)+x(17)+Dl(5,5)*x(11)),  //dr
-            // invM(0,0)*(KAu(0)+mass*x(11)*x(7)-mass*x(10)*x(8)-bouyancy*sin(x(4))+x(12)+Dl(0,0)*x(6)+added_mass[2]*x(2)*x(4)),    // xddot: M^-1[tau+w-C-g-D]
-            // invM(1,1)*(KAu(1)-mass*x(11)*x(6)+mass*x(9)*x(8)+bouyancy*cos(x(4))*sin(x(3))+x(13)+Dl(1,1)*x(7)-added_mass[2]*x(2)*x(3)-added_mass[0]*x(0)*x(5)),
-            // invM(2,2)*(KAu(2)+mass*x(10)*x(6)-mass*x(9)*x(7)+bouyancy*cos(x(4))*cos(x(3))+x(14)+Dl(2,2)*x(8)-added_mass[1]*x(1)*x(3)+added_mass[0]*x(0)*x(4)),
-            // invM(3,3)*(KAu(3)+(Iy-Iz)*x(10)*x(11)-mass*ZG*g*cos(x(4))*sin(x(3))+x(15)+Dl(3,3)*x(9)-added_mass[2]*x(2)*x(1)+added_mass[1]*x(1)*x(2)-added_mass[5]*x(5)*x(4)+added_mass[4]*x(4)*x(5)),
-            // invM(4,4)*(KAu(4)+(Iz-Ix)*x(9)*x(11)-mass*ZG*g*sin(x(4))+x(16)+Dl(4,4)*x(10)+added_mass[2]*x(2)*x(0)-added_mass[0]*x(0)*x(2)+added_mass[5]*x(5)*x(3)-added_mass[3]*x(3)*x(5)),
-            // invM(5,5)*(KAu(5)-(Iy-Ix)*x(9)*x(10)+x(17)+Dl(5,5)*x(11)-added_mass[1]*x(1)*x(0)+added_mass[0]*x(0)*x(1)-added_mass[4]*x(4)*x(3)+added_mass[3]*x(3)*x(4)),
-            0,0,0;
+            invM(3,3)*(KAu(3)+(Iy-Iz)*x(10)*x(11)-mass*ZG*g*cos(x(4))*sin(x(3))+x(15)+Dl(3,3)*x(9)),            // dp
+            invM(4,4)*(KAu(4)+(Iz-Ix)*x(9)*x(11)-mass*ZG*g*sin(x(4))+x(16)+Dl(4,4)*x(10)),                      // dq
+            invM(5,5)*(KAu(5)-(Iy-Ix)*x(9)*x(10)+x(17)+Dl(5,5)*x(11)),                                          // dr
+            0,0,0;                                                                                              // Disturbance_x, disturbance_y, disturbance_z
             
     return xdot; // dt is the time step
 }
