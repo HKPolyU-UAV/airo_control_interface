@@ -273,8 +273,8 @@ class AIRO_CONTROL_FSM{
 	double twist_norm(const geometry_msgs::TwistStamped);
 	void reboot();
 
-	Euler q2rpy(const geometry_msgs::Quaternion&);                  // quaternion to euler angle
-    geometry_msgs::Quaternion rpy2q(const Euler&);                  // euler angle to quaternion
+	EULER q2rpy(const geometry_msgs::Quaternion&);                  // quaternion to euler angle
+    geometry_msgs::Quaternion rpy2q(const EULER&);                  // euler angle to quaternion
 	void ref_cb(int line_to_read);                                  // fill N steps reference points into acados
      
 
