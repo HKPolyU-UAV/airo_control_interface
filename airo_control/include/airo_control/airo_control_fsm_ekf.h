@@ -149,6 +149,7 @@ class AIRO_CONTROL_FSM{
 	ros::Publisher error_pose_pub;
 
 	ros::Publisher esti_pose_pub;
+	ros::Publisher esti_twist_pub;
 	ros::Publisher esti_disturbance_pub;
 	ros::Publisher applied_disturbance_pub;
 
@@ -169,6 +170,7 @@ class AIRO_CONTROL_FSM{
 	geometry_msgs::PoseStamped takeoff_land_pose;
 	geometry_msgs::PoseStamped ref_pose;
 	geometry_msgs::PoseStamped esti_pose;
+	geometry_msgs::TwistStamped esti_twist;
 	geometry_msgs::PoseStamped esti_disturbance;
 	geometry_msgs::PoseStamped applied_disturbance;
 	geometry_msgs::TwistStamped local_twist;

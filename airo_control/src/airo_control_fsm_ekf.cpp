@@ -873,7 +873,7 @@ geometry_msgs::Quaternion AIRO_CONTROL_FSM::rpy2q(const EULER& euler){
 
 void AIRO_CONTROL_FSM::EKF(){
     // Get input u and measurement y
-    Matrix<double, 4, 1> meas_u; // phi, theta, psi, thrust
+    meas_u << ; // phi, theta, psi, thrust
     Matrix<double,3,1> esti_x; // State vetor [du, dv, dw]
     //tau = K*meas_u;
     Matrix<double,3,1> meas_y; // Measured acceleration [du, dv, dw]
@@ -897,7 +897,7 @@ void AIRO_CONTROL_FSM::EKF(){
     // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, meas_u);             // compute Jacobian of system dynamics at current state and input
     x_pred = RK4(esti_x, meas_u);                       // predict state at time k+1|k
-    // dx = f(esti_x, meas_u);                             // acceleration
+    dx = f(esti_x, meas_u);                             // acceleration
     P_pred = F * esti_P * F.transpose() + noise_Q;      // predict covariance at time k+1|k
 
     // Update step: correct state and covariance using measurement at time k+1
@@ -921,19 +921,19 @@ void AIRO_CONTROL_FSM::EKF(){
     quat.setRPY(esti_x(3), esti_x(4), esti_x(5));
     geometry_msgs::Quaternion quat_msg;
     tf2::convert(quat, quat_msg);
-    esti_pose.pose.pose.position.x = esti_x(0);
-    esti_pose.pose.pose.position.y = esti_x(1);
-    esti_pose.pose.pose.position.z = esti_x(2);
-    esti_pose.pose.pose.orientation.x = quat_msg.x;
-    esti_pose.pose.pose.orientation.y = quat_msg.y;
-    esti_pose.pose.pose.orientation.z = quat_msg.z;
-    esti_pose.pose.pose.orientation.w = quat_msg.w;
-    esti_pose.twist.twist.linear.x = esti_x(6);
-    esti_pose.twist.twist.linear.y = esti_x(7);
-    esti_pose.twist.twist.linear.z = esti_x(8);
-    esti_pose.twist.twist.angular.x = esti_x(9);
-    esti_pose.twist.twist.angular.y = esti_x(10);
-    esti_pose.twist.twist.angular.z = esti_x(11);
+    esti_pose.pose.position.x = esti_x(0);
+    esti_pose.pose.position.y = esti_x(1);
+    esti_pose.pose.position.z = esti_x(2);
+    esti_pose.pose.orientation.x = quat_msg.x;
+    esti_pose.pose.orientation.y = quat_msg.y;
+    esti_pose.pose.orientation.z = quat_msg.z;
+    esti_pose.pose.orientation.w = quat_msg.w;
+    esti_twist.twist.linear.x = esti_x(6);
+    esti_twist.twist.linear.y = esti_x(7);
+    esti_twist.twist.linear.z = esti_x(8);
+    esti_twist.twist.angular.x = esti_x(9);
+    esti_twist.twist.angular.y = esti_x(10);
+    esti_twist.twist.angular.z = esti_x(11);
     esti_pose.header.stamp = ros::Time::now();
     esti_pose.header.frame_id = "odom_frame";
     esti_pose.child_frame_id = "base_link";
