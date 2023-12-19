@@ -49,6 +49,14 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     // acados_in.x0[p] = v_angular_body[0];
     // acados_in.x0[q] = v_angular_body[1];
     // acados_in.x0[r] = v_angular_body[2];
+    
+    Q_cov << pow(dt,4)/4,pow(dt,4)/4,pow(dt,4)/4,pow(dt,4)/4,pow(dt,4)/4,pow(dt,4)/4,
+            pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2),
+            pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2),pow(dt,2);
+    noise_Q= Q_cov.asDiagonal();
+
+    esti_x << 0,0,-20,0,0,0,0,0,0,0,0,0,6,6,6,0,0,0;
+    esti_P = P0;
 
     // Initialize body wrench force
     applied_wrench.fx = 2.0;
@@ -896,7 +904,7 @@ void AIRO_CONTROL_FSM::EKF(){
     // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, meas_u);             // compute Jacobian of system dynamics at current state and input
     x_pred = RK4(esti_x, meas_u);                       // predict state at time k+1|k
-    dx = f(esti_x, meas_u);                             // acceleration
+    // dx = f(esti_x, meas_u);                             // acceleration
     P_pred = F * esti_P * F.transpose() + noise_Q;      // predict covariance at time k+1|k
 
     // Update step: correct state and covariance using measurement at time k+1

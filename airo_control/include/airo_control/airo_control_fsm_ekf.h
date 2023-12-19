@@ -213,7 +213,7 @@ class AIRO_CONTROL_FSM{
 	Matrix<double,15,1> meas_y;                 // Measurement vector
 	MatrixXd P0 = MatrixXd::Identity(m,m);      // Initial covariance
 	Matrix<double,15,1> esti_x;                 // Estimate states
-	Matrix<double,15,15> esti_p;                // Estimate covariance
+	Matrix<double,15,15> esti_P;                // Estimate covariance
 	Matrix<double,1,15> Q_cov;                  // Process noise value
 	Matrix<double,15,15> noise_Q;               // Process noise matrix
 	MatrixXd noise_R = MatrixXd::Identity(m,m)*(pow(dt,4)/4);      // Measurement noise matrix
