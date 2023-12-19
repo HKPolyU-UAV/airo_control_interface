@@ -851,9 +851,9 @@ void AIRO_CONTROL_FSM::applyDisturbance(){
     body_wrench.request.wrench.force.x = applied_wrench.fx;
     body_wrench.request.wrench.force.y = applied_wrench.fy;
     body_wrench.request.wrench.force.z = applied_wrench.fz;
-    wrench.request.start_time = ros::Time::now();
-    wrench.request.duration = ros::Duration(1000);  // Duration of the disturbance
-    body_wrench_client.call(body_wrench);
+    body_wrench.request.start_time = ros::Time::now();
+    body_wrench.request.duration = ros::Duration(1000);  // Duration of the disturbance
+    wrench_srv.call(body_wrench);
 }
 
 // Quaternion to euler angle
