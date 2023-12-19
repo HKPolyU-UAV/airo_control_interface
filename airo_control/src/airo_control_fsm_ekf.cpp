@@ -1042,7 +1042,7 @@ MatrixXd AIRO_CONTROL_FSM::h(MatrixXd x)
 MatrixXd AIRO_CONTROL_FSM::compute_jacobian_F(MatrixXd x, MatrixXd u)
 {
     // Define Jacobian of system dynamics
-    Matrix<double,15,15> F;
+    Matrix<double,11,11> F;
     double d = 1e-6;                    // finite difference step size
     VectorXd f0 = RK4(x, u);
     for (int i = 0; i < n; i++){
@@ -1058,7 +1058,7 @@ MatrixXd AIRO_CONTROL_FSM::compute_jacobian_F(MatrixXd x, MatrixXd u)
 MatrixXd AIRO_CONTROL_FSM::compute_jacobian_H(MatrixXd x)
 {
     // Define Jacobian of measurement model
-    Matrix<double,15,15> H;
+    Matrix<double,11,11> H;
     double d = 1e-6;                    // finite difference step size
     VectorXd f0 = h(x);
     for (int i = 0; i < n; i++){
