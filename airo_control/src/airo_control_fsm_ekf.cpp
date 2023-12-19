@@ -1010,7 +1010,7 @@ MatrixXd AIRO_CONTROL_FSM::RK4(MatrixXd x, MatrixXd u)
 MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
 {
     // Define system dynamics
-    Matrix<double,18,1> xdot;
+    Matrix<double,15,1> xdot;
 
     // KAu = K*u;
     xdot << (cos(x(5))*cos(x(4)))*x(6) + (-sin(x(5))*cos(x(3))+cos(x(5))*sin(x(4))*sin(x(3)))*x(7) + (sin(x(5))*sin(x(3))+cos(x(5))*cos(x(3))*sin(x(4)))*x(8),  //xdot
