@@ -51,7 +51,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     // acados_in.x0[r] = v_angular_body[2];
 
     // Initialize body wrench force
-    applied_wrench.fx = 10.0;
+    applied_wrench.fx = 2.0;
     applied_wrench.fy = 0.0;
     applied_wrench.fz = 0.0;
 
@@ -857,16 +857,16 @@ void AIRO_CONTROL_FSM::applyDisturbance(){
 }
 
 // Quaternion to euler angle
-AIRO_CONTROL_FSM::Euler AIRO_CONTROL_FSM::q2rpy(const geometry_msgs::Quaternion& quaternion){
+AIRO_CONTROL_FSM::EULER AIRO_CONTROL_FSM::q2rpy(const geometry_msgs::Quaternion& quaternion){
     tf::Quaternion tf_quaternion;
-    Euler euler;
+    EULER euler;
     tf::quaternionMsgToTF(quaternion, tf_quaternion);
     tf::Matrix3x3(tf_quaternion).getRPY(euler.phi, euler.theta, euler.psi);
     return euler;
 }
 
 // Euler angle to quaternion
-geometry_msgs::Quaternion AIRO_CONTROL_FSM::rpy2q(const Euler& euler){
+geometry_msgs::Quaternion AIRO_CONTROL_FSM::rpy2q(const EULER& euler){
     geometry_msgs::Quaternion quaternion = tf::createQuaternionMsgFromRollPitchYaw(euler.phi, euler.theta, euler.psi);
     return quaternion;
 }
@@ -967,7 +967,7 @@ void AIRO_CONTROL_FSM::EKF(){
         std::cout << "tau_x:  " << meas_y(12) << "  tau_y:  " << meas_y(13) << "  tau_z:  " << meas_y(14) << "  tau_psi:  " << meas_y(17) << std::endl;
         std::cout << "acc_x:  " << body_acc.x << "  acc_y:  " << body_acc.y << "  acc_z:  " << body_acc.z << std::endl;
         std::cout << "acc_phi:  " << body_acc.phi << "  acc_theta:  " << body_acc.theta << "  acc_psi:  " << body_acc.psi << std::endl;
-        std::cout << "ref_x:    " << acados_in.yref[0][0] << "\tref_y:   " << acados_in.yref[0][1] << "\tref_z:    " << acados_in.yref[0][2] << "\tref_yaw:    " << yaw_ref << std::endl;
+        //std::cout << "ref_x:    " << acados_in.yref[0][0] << "\tref_y:   " << acados_in.yref[0][1] << "\tref_z:    " << acados_in.yref[0][2] << "\tref_yaw:    " << yaw_ref << std::endl;
         std::cout << "pos_x: " << meas_y(0) << "  pos_y: " << meas_y(1) << "  pos_z: " << meas_y(2) << " phi: " << meas_y(3) << "  theta: " << meas_y(4) << "  psi: " << meas_y(5) <<std::endl;
         std::cout << "esti_x: " << esti_x(0) << "  esti_y: " << esti_x(1) << "  esti_z: " << esti_x(2) << " esti_phi: " << esti_x(3) << "  esti_theta: " << esti_x(4) << "  esti_psi: " << esti_x(5) <<std::endl;
         //std::cout << "error_x:  " << error_pose.pose.pose.position.x << "  error_y:  " << error_pose.pose.pose.position.y << "  error_z:  " << error_pose.pose.pose.position.z << std::endl;
