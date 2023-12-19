@@ -99,7 +99,7 @@ class AIRO_CONTROL_FSM{
 
 	struct THRUST{
 		double hover_thrust;
-	}
+	};
 
 	// Parameters
 	std::string CONTROLLER_TYPE;
