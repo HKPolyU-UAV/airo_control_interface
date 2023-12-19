@@ -36,28 +36,7 @@ class AIRO_CONTROL_FSM{
 		POS_COMMAND
 	};
 
-	enum SYSTEM_STATES{
-		x = 0,
-		y = 1,
-		z = 2,
-		u = 3,
-		v = 4, 
-		w = 5,
-		phi = 6,
-		theta = 7,
-		psi = 8,
-		p = 9,
-		q = 10,
-		r = 11
-	};
-
-	enum CONTROL_INPUTS{
-		u1 = 0,
-		u2 = 1,
-		u3 = 2,
-		u4 = 3
-	};
-
+	
 	struct WRENCH{
         double fx;
         double fy;
