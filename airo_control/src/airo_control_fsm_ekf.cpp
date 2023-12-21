@@ -886,8 +886,8 @@ void AIRO_CONTROL_FSM::EKF(){
     //tau = K*meas_u;
     Matrix<double,3,1> meas_y; // Measured acceleration [du, dv, dw]
     meas_y << local_pos.x, local_pos.y, local_pos.z, local_pos.u, local_pos.v, local_pos.w,
-              local_euler.phi, local_euler.theta, local_euler.psi,
-             local_pos.p, local_pos.q, local_pos.r;
+              local_euler.phi, local_euler.theta, local_euler.psi;
+             
 
     // Define Jacobian matrices of system dynamics and measurement model
     Matrix<double,11,11> F;                             // Jacobian of system dynamics
@@ -917,12 +917,12 @@ void AIRO_CONTROL_FSM::EKF(){
     esti_P = (MatrixXd::Identity(n, n) - Kal * H) * P_pred * (MatrixXd::Identity(n, n) - Kal * H).transpose() + Kal*noise_R*Kal.transpose(); // correct covariance estimate
 
     // body frame disturbance to inertial frame
-    wf_disturbance << (cos(meas_y(5))*cos(meas_y(4)))*esti_x(12) + (-sin(meas_y(5))*cos(meas_y(3))+cos(meas_y(5))*sin(meas_y(4))*sin(meas_y(3)))*esti_x(13) + (sin(meas_y(5))*sin(meas_y(3))+cos(meas_y(5))*cos(meas_y(3))*sin(meas_y(4)))*esti_x(14),
-            (sin(meas_y(5))*cos(meas_y(4)))*esti_x(12) + (cos(meas_y(5))*cos(meas_y(3))+sin(meas_y(3))*sin(meas_y(4))*sin(meas_y(5)))*esti_x(13) + (-cos(meas_y(5))*sin(meas_y(3))+sin(meas_y(4))*sin(meas_y(5))*cos(meas_y(3)))*esti_x(14),
-            (-sin(meas_y(4)))*esti_x(12) + (cos(meas_y(4))*sin(meas_y(3)))*esti_x(13) + (cos(meas_y(4))*cos(meas_y(3)))*esti_x(14),
-            esti_x(15) + (sin(meas_y(5))*sin(meas_y(4))/cos(meas_y(4)))*esti_x(16) + cos(meas_y(3))*sin(meas_y(4))/cos(meas_y(4))*esti_x(17),
-            (cos(meas_y(3)))*esti_x(16) + (sin(meas_y(3)))*esti_x(17),
-            (sin(meas_y(3))/cos(meas_y(4)))*esti_x(16) + (cos(meas_y(3))/cos(meas_y(4)))*esti_x(17);
+    // wf_disturbance << (cos(meas_y(5))*cos(meas_y(4)))*esti_x(12) + (-sin(meas_y(5))*cos(meas_y(3))+cos(meas_y(5))*sin(meas_y(4))*sin(meas_y(3)))*esti_x(13) + (sin(meas_y(5))*sin(meas_y(3))+cos(meas_y(5))*cos(meas_y(3))*sin(meas_y(4)))*esti_x(14),
+    //         (sin(meas_y(5))*cos(meas_y(4)))*esti_x(12) + (cos(meas_y(5))*cos(meas_y(3))+sin(meas_y(3))*sin(meas_y(4))*sin(meas_y(5)))*esti_x(13) + (-cos(meas_y(5))*sin(meas_y(3))+sin(meas_y(4))*sin(meas_y(5))*cos(meas_y(3)))*esti_x(14),
+    //         (-sin(meas_y(4)))*esti_x(12) + (cos(meas_y(4))*sin(meas_y(3)))*esti_x(13) + (cos(meas_y(4))*cos(meas_y(3)))*esti_x(14),
+    //         esti_x(15) + (sin(meas_y(5))*sin(meas_y(4))/cos(meas_y(4)))*esti_x(16) + cos(meas_y(3))*sin(meas_y(4))/cos(meas_y(4))*esti_x(17),
+    //         (cos(meas_y(3)))*esti_x(16) + (sin(meas_y(3)))*esti_x(17),
+    //         (sin(meas_y(3))/cos(meas_y(4)))*esti_x(16) + (cos(meas_y(3))/cos(meas_y(4)))*esti_x(17);
     
     // publish estimate pose
     tf2::Quaternion quat;
@@ -948,9 +948,9 @@ void AIRO_CONTROL_FSM::EKF(){
     esti_pose_pub.publish(esti_pose);
 
     // publish estimate disturbance
-    esti_disturbance.pose.position.x = wf_disturbance(0);
-    esti_disturbance.pose.position.y = wf_disturbance(1);
-    esti_disturbance.pose.position.z = wf_disturbance(2);
+    // esti_disturbance.pose.position.x = wf_disturbance(0);
+    // esti_disturbance.pose.position.y = wf_disturbance(1);
+    // esti_disturbance.pose.position.z = wf_disturbance(2);
     esti_disturbance.header.stamp = ros::Time::now();
     // esti_disturbance.header.frame_id = "odom_frame";
     // esti_disturbance.child_frame_id = "base_link";
