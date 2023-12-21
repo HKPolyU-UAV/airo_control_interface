@@ -883,24 +883,24 @@ void AIRO_CONTROL_FSM::EKF(){
     // Get input u and measurement y
     meas_u << current_thrust.thrust_1, current_thrust.thrust_2, current_thrust.thrust_3; // thrust for du, dv, dw
     Matrix<double,3,1> esti_x; // State vetor [du, dv, dw]
-    //tau = K*meas_u;
-    Matrix<double,3,1> meas_y; // Measured acceleration [du, dv, dw]
+    Matrix<double,3,1> meas_y; // Measured state [x, y, z, u, v, w, phi, theta, psi, dphi, dtheta, disturbance_x, disturbance_y, disturbance_z]
     meas_y << local_pos.x, local_pos.y, local_pos.z, local_pos.u, local_pos.v, local_pos.w,
-              local_euler.phi, local_euler.theta, local_euler.psi;
+              local_euler.phi, local_euler.theta, local_euler.psi, local_pos.p, local_pos.q,
+              disturbance_x, disturbance_y, disturbance_z;
              
 
     // Define Jacobian matrices of system dynamics and measurement model
-    Matrix<double,11,11> F;                             // Jacobian of system dynamics
-    Matrix<double,11,11> H;                             // Jacobian of measurement model
+    Matrix<double,14,14> F;                             // Jacobian of system dynamics
+    Matrix<double,14,14> H;                             // Jacobian of measurement model
 
     // Define Kalman gain matrix
-    Matrix<double,11,11> Kal;
+    Matrix<double,14,14> Kal;
 
     // Define prediction and update steps
-    Matrix<double,11,1> x_pred;                         // Predicted state
-    Matrix<double,11,11> P_pred;                        // Predicted covariance
-    Matrix<double,11,1> y_pred;                         // Predicted measurement
-    Matrix<double,11,1> y_err;                          // Measurement error
+    Matrix<double,14,1> x_pred;                         // Predicted state
+    Matrix<double,14,14> P_pred;                        // Predicted covariance
+    Matrix<double,14,1> y_pred;                         // Predicted measurement
+    Matrix<double,14,1> y_err;                          // Measurement error
 
     // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, meas_u);             // compute Jacobian of system dynamics at current state and input
@@ -994,10 +994,10 @@ void AIRO_CONTROL_FSM::EKF(){
 // 4th order RK for integration
 MatrixXd AIRO_CONTROL_FSM::RK4(MatrixXd x, MatrixXd u)
 {
-    Matrix<double,11,1> k1;
-    Matrix<double,11,1> k2;
-    Matrix<double,11,1> k3;
-    Matrix<double,11,1> k4;
+    Matrix<double,14,1> k1;
+    Matrix<double,14,1> k2;
+    Matrix<double,14,1> k3;
+    Matrix<double,14,1> k4;
 
     k1 = f(x, u) * dt;
     k2 = f(x+k1/2, u) * dt;
@@ -1011,7 +1011,7 @@ MatrixXd AIRO_CONTROL_FSM::RK4(MatrixXd x, MatrixXd u)
 MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
 {
     // Define system dynamics
-    Matrix<double,11,1> xdot;
+    Matrix<double,14,1> xdot;
 
     // KAu = K*u;
     xdot << x(3), x(4), x(5),                                                                                      // dx, dy, dz
@@ -1029,7 +1029,7 @@ MatrixXd AIRO_CONTROL_FSM::f(MatrixXd x, MatrixXd u)
 MatrixXd AIRO_CONTROL_FSM::h(MatrixXd x)
 {
     // Define measurement model
-    Matrix<double,11,1> y;
+    Matrix<double,14,1> y;
     y << x(3),x(4),x(5),  // dx, dy, dz
         x(6),x(7),x(8),x(9),x(10),
         (du-disturance_x)*(hover_thrust)/((g)*(cos(psi)*sin(theta)*cos(psi)+sin(phi)*sin(psi))),   // thrust for du     
@@ -1042,7 +1042,7 @@ MatrixXd AIRO_CONTROL_FSM::h(MatrixXd x)
 MatrixXd AIRO_CONTROL_FSM::compute_jacobian_F(MatrixXd x, MatrixXd u)
 {
     // Define Jacobian of system dynamics
-    Matrix<double,11,11> F;
+    Matrix<double,14,14> F;
     double d = 1e-6;                    // finite difference step size
     VectorXd f0 = RK4(x, u);
     for (int i = 0; i < n; i++){
@@ -1058,7 +1058,7 @@ MatrixXd AIRO_CONTROL_FSM::compute_jacobian_F(MatrixXd x, MatrixXd u)
 MatrixXd AIRO_CONTROL_FSM::compute_jacobian_H(MatrixXd x)
 {
     // Define Jacobian of measurement model
-    Matrix<double,11,11> H;
+    Matrix<double,14,14> H;
     double d = 1e-6;                    // finite difference step size
     VectorXd f0 = h(x);
     for (int i = 0; i < n; i++){
