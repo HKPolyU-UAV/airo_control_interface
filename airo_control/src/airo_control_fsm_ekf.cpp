@@ -881,7 +881,7 @@ geometry_msgs::Quaternion AIRO_CONTROL_FSM::rpy2q(const EULER& euler){
 
 void AIRO_CONTROL_FSM::EKF(){
     // Get input u and measurement y
-    meas_u << local_euler.phi, local_euler.theta, local_euler.psi, current_thrust.thrust; // thrust for du, dv, dw
+    meas_u << current_thrust.thrust_1, current_thrust.thrust_2, current_thrust.thrust_3; // thrust for du, dv, dw
     Matrix<double,3,1> esti_x; // State vetor [du, dv, dw]
     //tau = K*meas_u;
     Matrix<double,3,1> meas_y; // Measured acceleration [du, dv, dw]

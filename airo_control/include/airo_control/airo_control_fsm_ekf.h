@@ -77,7 +77,9 @@ class AIRO_CONTROL_FSM{
 	};
 
 	struct THRUST{
-		double thrust;
+		double thrust_1;
+		double thrust_2;
+		double thrust_3;
 	};
 
 	// Parameters
