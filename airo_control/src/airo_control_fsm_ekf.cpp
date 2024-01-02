@@ -886,7 +886,7 @@ void AIRO_CONTROL_FSM::EKF(){
     Matrix<double,3,1> meas_y; // Measured state [x, y, z, u, v, w, phi, theta, psi, dphi, dtheta, disturbance_x, disturbance_y, disturbance_z]
     meas_y << local_pos.x, local_pos.y, local_pos.z, local_pos.u, local_pos.v, local_pos.w,
               local_euler.phi, local_euler.theta, local_euler.psi, local_pos.p, local_pos.q,
-              disturbance_x, disturbance_y, disturbance_z;
+              solver_param.disturbance_x, solver_param.disturbance_y, solver_param.disturbance_z;
              
 
     // Define Jacobian matrices of system dynamics and measurement model
@@ -1032,9 +1032,9 @@ MatrixXd AIRO_CONTROL_FSM::h(MatrixXd x)
     Matrix<double,14,1> y;
     y << x(3),x(4),x(5),  // dx, dy, dz
         x(6),x(7),x(8),x(9),x(10),
-        (du-disturance_x)*(hover_thrust)/((g)*(cos(psi)*sin(theta)*cos(psi)+sin(phi)*sin(psi))),   // thrust for du     
-        (dv-disturance_y)*(hover_thrust)/((g)*(cos(psi)*sin(theta)*sin(psi)-sin(phi)*cos(psi))),   // thrust for dv
-        (dw-disturance_z+g)*(hover_thrust)/((g)*(cos(psi)*cos(theta)));                            // thrust for dw
+        (du-solver_param.disturance_x)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du     
+        (dv-solver_param.disturance_y)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv
+        (dw-solver_param.disturance_z+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                            // thrust for dw
     return y;
 }
 

@@ -204,6 +204,7 @@ class AIRO_CONTROL_FSM{
 	std::string WRENCH_FX;
 	std::string WRENCH_FY;
 	std::string WRENCH_FZ;
+	SOLVER_PARAM solver_param;
 
 	// Other variables
 	tf::Quaternion tf_quaternion;
