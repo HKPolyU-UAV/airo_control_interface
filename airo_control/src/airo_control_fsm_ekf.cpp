@@ -35,6 +35,9 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/fsm/joystick_deadzone",rc_param.JOYSTICK_DEADZONE);
     nh.getParam("airo_control_node/fsm/check_centered_threshold",rc_param.CHECK_CENTERED_THRESHOLD);
 
+
+    nh.getParam("airo_control_node/mpc/hover_thrust",param.hover_thrust);
+
     // Initialize EKF
     // set initial states
     // acados_in.x0[x] = local_pos.x;
@@ -932,16 +935,16 @@ void AIRO_CONTROL_FSM::EKF(){
     esti_pose.pose.position.x = esti_x(0);
     esti_pose.pose.position.y = esti_x(1);
     esti_pose.pose.position.z = esti_x(2);
+    esti_twist.twist.linear.x = esti_x(3);
+    esti_twist.twist.linear.y = esti_x(4);
+    esti_twist.twist.linear.z = esti_x(5);
     esti_pose.pose.orientation.x = quat_msg.x;
     esti_pose.pose.orientation.y = quat_msg.y;
     esti_pose.pose.orientation.z = quat_msg.z;
     esti_pose.pose.orientation.w = quat_msg.w;
-    esti_twist.twist.linear.x = esti_x(6);
-    esti_twist.twist.linear.y = esti_x(7);
-    esti_twist.twist.linear.z = esti_x(8);
     esti_twist.twist.angular.x = esti_x(9);
     esti_twist.twist.angular.y = esti_x(10);
-    esti_twist.twist.angular.z = esti_x(11);
+    // esti_twist.twist.angular.z = esti_x(11);
     esti_pose.header.stamp = ros::Time::now();
     // esti_pose.header.frame_id = "odom_frame";
     // esti_pose.child_frame_id = "base_link";
@@ -951,10 +954,10 @@ void AIRO_CONTROL_FSM::EKF(){
     // esti_disturbance.pose.position.x = wf_disturbance(0);
     // esti_disturbance.pose.position.y = wf_disturbance(1);
     // esti_disturbance.pose.position.z = wf_disturbance(2);
-    esti_disturbance.header.stamp = ros::Time::now();
+    // esti_disturbance.header.stamp = ros::Time::now();
     // esti_disturbance.header.frame_id = "odom_frame";
     // esti_disturbance.child_frame_id = "base_link";
-    esti_disturbance_pub.publish(esti_disturbance);
+    // esti_disturbance_pub.publish(esti_disturbance);
 
     // publish estimate disturbance
     applied_disturbance.pose.position.x = applied_wrench.fx;
@@ -971,12 +974,12 @@ void AIRO_CONTROL_FSM::EKF(){
         // std::cout << "esti_x12:   " << esti_x(12) << "\t esti_x2:  " << esti_x(2) << std::endl;
         //std::cout << "tau_x:  " << meas_y(12) << "  tau_y:  " << meas_y(13) << "  tau_z:  " << meas_y(14) << "  tau_psi:  " << meas_y(17) << std::endl;
         std::cout << "acc_x:  " << body_acc.x << "  acc_y:  " << body_acc.y << "  acc_z:  " << body_acc.z << std::endl;
-        std::cout << "acc_phi:  " << body_acc.phi << "  acc_theta:  " << body_acc.theta << "  acc_psi:  " << body_acc.psi << std::endl;
+        // std::cout << "acc_phi:  " << body_acc.phi << "  acc_theta:  " << body_acc.theta << "  acc_psi:  " << body_acc.psi << std::endl;
         //std::cout << "ref_x:    " << acados_in.yref[0][0] << "\tref_y:   " << acados_in.yref[0][1] << "\tref_z:    " << acados_in.yref[0][2] << "\tref_yaw:    " << yaw_ref << std::endl;
         std::cout << "pos_x: " << meas_y(0) << "  pos_y: " << meas_y(1) << "  pos_z: " << meas_y(2) << " phi: " << meas_y(3) << "  theta: " << meas_y(4) << "  psi: " << meas_y(5) <<std::endl;
         std::cout << "esti_x: " << esti_x(0) << "  esti_y: " << esti_x(1) << "  esti_z: " << esti_x(2) << " esti_phi: " << esti_x(3) << "  esti_theta: " << esti_x(4) << "  esti_psi: " << esti_x(5) <<std::endl;
         //std::cout << "error_x:  " << error_pose.pose.pose.position.x << "  error_y:  " << error_pose.pose.pose.position.y << "  error_z:  " << error_pose.pose.pose.position.z << std::endl;
-        std::cout << "applied force x:  " << applied_wrench.fx << "\tforce y:  " << applied_wrench.fy << "\tforce_z:  " << applied_wrench.fz << std::endl;
+        // std::cout << "applied force x:  " << applied_wrench.fx << "\tforce y:  " << applied_wrench.fy << "\tforce_z:  " << applied_wrench.fz << std::endl;
         //std::cout << "applied torque x:  " << applied_wrench.tx << "\ttorque y:  " << applied_wrench.ty << "\ttorque_z:  " << applied_wrench.tz << std::endl;
         //std::cout << "(body frame) disturbance x: " << esti_x(12) << "    disturbance y: " << esti_x(13) << "    disturbance z: " << esti_x(14) << std::endl;
         //std::cout << "(world frame) disturbance x: " << wf_disturbance(0) << "    disturbance y: " << wf_disturbance(1) << "    disturbance z: " << wf_disturbance(2) << std::endl;
@@ -1031,10 +1034,10 @@ MatrixXd AIRO_CONTROL_FSM::h(MatrixXd x)
     // Define measurement model
     Matrix<double,14,1> y;
     y << x(3),x(4),x(5),  // dx, dy, dz
-        x(6),x(7),x(8),x(9),x(10),
-        (du-solver_param.disturbance_x)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du     
-        (dv-solver_param.disturbance_y)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv
-        (dw-solver_param.disturbance_z+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                            // thrust for dw
+        x(6),x(7),x(8),x(9),x(10), // du, dv, dw, dphi, dtheta
+        (body_acc.x-solver_param.disturbance_x)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du     
+        (body_acc.y-solver_param.disturbance_y)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv
+        (body_acc.z-solver_param.disturbance_z+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                            // thrust for dw
     return y;
 }
 

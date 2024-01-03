@@ -38,6 +38,8 @@ class MPC : public BASE_CONTROLLER{
             phi = 6,
             theta = 7,
             psi = 8,
+            p = 9,
+            q = 10,
         };
 
         enum ControlInputs{

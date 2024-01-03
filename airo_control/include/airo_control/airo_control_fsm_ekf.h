@@ -53,21 +53,18 @@ class AIRO_CONTROL_FSM{
 		double x;
 		double y;
 		double z;
-		double u;
-		double v;
-		double w;
-		double p;
-		double q;
-		double r;
+		double u;  // dx
+		double v;  // dy
+		double w;  // dz
+		double p;  // dphi
+		double q;  // dtheta
 	};
 
 	struct ACC{
-		double x;
-		double y;
-		double z;
-		double phi;
-		double theta;
-		double psi;
+		double x;  // du
+		double y;  // dv
+		double z;  // dw
+
 	};
 
 	struct SOLVER_PARAM{
