@@ -135,6 +135,14 @@ double MPC::get_hover_thrust(){
     return param.hover_thrust;
 }
 
+double MPC::get_tau_phi(){
+    return param.tau_phi;
+}
+
+double MPC::get_tau_theta(){
+    return param.tau_theta;
+}
+
 bool MPC::set_intermediate_weights(const std::vector<double>&diag_weight_x, const std::vector<double>&diag_weight_u){
     if (diag_weight_x.size() != QUADROTOR_NX || diag_weight_u.size() != QUADROTOR_NU){
         return false;
