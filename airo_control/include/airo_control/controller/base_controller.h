@@ -22,17 +22,18 @@ protected:
     };
 
     Param param;
-    Eigen::Vector3d ref_euler,current_euler,target_euler;
+    // Eigen::Vector3d ref_euler,current_euler,target_euler;
     mavros_msgs::AttitudeTarget attitude_target;
 
     Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
     geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
 
 public:
+    Eigen::Vector3d ref_euler,current_euler,target_euler;
     virtual void pub_debug() = 0;
     virtual double get_hover_thrust() = 0;
-    virtual double get_tau_phi() = 0;
-    virtual double get_tau_theta() = 0;
+    virtual double get_tau_phi();
+    virtual double get_tau_theta();
     virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&) = 0;
     // virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&, 
     //    const disturbance_x, const disturbance_y, const_disturbance_z) = 0;
