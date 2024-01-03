@@ -1032,9 +1032,9 @@ MatrixXd AIRO_CONTROL_FSM::h(MatrixXd x)
     Matrix<double,14,1> y;
     y << x(3),x(4),x(5),  // dx, dy, dz
         x(6),x(7),x(8),x(9),x(10),
-        (du-solver_param.disturance_x)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du     
-        (dv-solver_param.disturance_y)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv
-        (dw-solver_param.disturance_z+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                            // thrust for dw
+        (du-solver_param.disturbance_x)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du     
+        (dv-solver_param.disturbance_y)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv
+        (dw-solver_param.disturbance_z+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                            // thrust for dw
     return y;
 }
 
