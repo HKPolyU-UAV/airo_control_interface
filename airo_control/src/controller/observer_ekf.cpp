@@ -253,9 +253,9 @@ MatrixXd OBSERVER_EKF::h(MatrixXd x)
     Matrix<double,14,1> y;
     y << x(0), x(1), x(2), x(3),x(4),x(5),  // x,y,z,u,v,w
         x(6),x(7),x(8),x(9),x(10), // phi,theta,psi
-        (body_acc.x-x(11))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du     
-        (body_acc.y-x(12))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv
-        (body_acc.z-x(13)+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw
+        (body_acc.x-x(11))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x    
+        (body_acc.y-x(12))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
+        (body_acc.z-x(13)+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
     return y;
 }
 
