@@ -79,6 +79,21 @@ void OBSERVER_EKF::twist_cb(const geometry_msgs::TwistStamped::ConstPtr& pose){
 
 }
 
+// Quaternion to Euler angle
+OBSERVER_EKF::Euler OBSERVER_EKF::q2rpy(const geometry_msgs::Quaternion& quaternion){
+    tf::Quaternion tf_quaternion;
+    Euler euler;
+    tf::quaternionMsgToTF(quaternion, tf_quaternion);
+    tf::Matrix3x3(tf_quaternion).getRPY(euler.phi, euler.theta, euler.psi);
+    return euler;
+}
+
+// Euler angle to Quaternion
+geometry_msgs::Quaternion OBSERVER_EKF::rpy2q(const Euler& euler){
+    geometry_msgs::Quaternion quaternion = tf::createQuaternionMsgFromRollPitchYaw(euler.phi, euler.theta, euler.psi);
+    return quaternion;
+}
+
 // void OBSERVER_EKF::EKF(){
 //     // Get input u and measurement y
 //     meas_u << current_thrust.thrust0, current_thrust.thrust1, current_thrust.thrust2; // thrust for du, dv, dw
