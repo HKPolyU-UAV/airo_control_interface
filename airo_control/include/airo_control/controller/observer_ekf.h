@@ -140,6 +140,10 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
     public:
         Param param;
         OBSERVER_EKF(ros::NodeHandle&);
+        void EKF();
+	    void pose_cb(const geometry_msgs::PoseStamped::ConstPtr&); // get current position 
+        void ref_cb(int line_to_read);                                  // fill N steps reference points into acados
+        
 
 };
 

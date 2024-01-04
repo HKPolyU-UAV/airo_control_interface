@@ -25,8 +25,8 @@ protected:
     // Eigen::Vector3d ref_euler,current_euler,target_euler;
     mavros_msgs::AttitudeTarget attitude_target;
 
-    Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
-    geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
+    Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);  // Quaternion to euler angle
+    geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);  // euler angle to quaternion
 
 public:
     Eigen::Vector3d ref_euler,current_euler,target_euler;
