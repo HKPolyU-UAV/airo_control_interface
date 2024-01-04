@@ -87,10 +87,55 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
         };
 
         struct Thrust{
-            double thrust_1;  // U1 in du
-            double thrust_2;  // U1 in dv
-            double thrust_3;  // U1 in dw
+            double thrust0;  // U1 in du
+            double thrust1;  // U1 in dv
+            double thrust2;  // U1 in dw
         };
+
+        // ROS message variables
+        Euler local_euler;
+        Pos local_pos;
+        Pos pre_body_pos;
+        Acc body_acc;
+        Thrust current_thrust;
+
+        // Dynamics parameters
+        Matrix<double,1,6> M_values;
+        Matrix<double,6,6> M;                // Mass matrix
+        Matrix<double,6,6> invM;             // Inverse mass matrix
+        Matrix<double,3,1> v_linear_body;    // Linear velocity in body frame
+        Matrix<double,3,1> v_angular_body;   // Angular velocity in body frame
+        Matrix<double,3,3> R_ib;             // Rotation matrix for linear from inertial to body frame
+        Matrix<double,3,3> T_ib;             // Rotation matrix for angular from inertial to body frame
+        
+        // EKF parameters
+        Matrix<double,6,1> wf_disturbance;          // World frame disturbance
+        Matrix<double,3,1> meas_u;                  // Inputs
+        int n = 14;                                 // State dimension
+        int m = 14;                                 // Measurement dimension
+        Matrix<double,14,1> meas_y;                 // Measurement vector
+        MatrixXd P0 = MatrixXd::Identity(m,m);      // Initial covariance
+        Matrix<double,14,1> esti_x;                 // Estimate states
+        Matrix<double,14,14> esti_P;                // Estimate covariance
+        Matrix<double,1,14> Q_cov;                  // Process noise value
+        Matrix<double,14,14> noise_Q;               // Process noise matrix
+        MatrixXd noise_R = MatrixXd::Identity(m,m)*(pow(dt,4)/4);      // Measurement noise matrix
+    
+        // Time
+        ros::Time current_time;
+
+        // ROS subscriber & publisher
+        ros::Subscriber pose_sub;
+        ros::Publisher thrust0_pub;
+        ros::Publisher thrust1_pub;
+        ros::Publisher thrust2_pub;
+
+        ros::Publisher ref_pose_pub;
+        ros::Publisher error_pose_pub;
+
+        ros::Publisher esti_pose_pub;
+        ros::Publisher esti_disturbance_pub;
+        ros::Publisher applied_disturbance_pub;
 
     public:
         Param param;
