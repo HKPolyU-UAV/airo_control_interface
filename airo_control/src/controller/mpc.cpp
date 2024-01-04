@@ -75,8 +75,6 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
     acados_in.x0[phi] = current_euler.x();
     acados_in.x0[theta] = current_euler.y();
     acados_in.x0[psi] = current_euler.z();
-    acados_in.x0[p] = current_twist.twist.angular.x;
-    acados_in.x0[q] = current_twist.twist.angular.y;
     // acados_in.x0[r] = current_twist.twist.angular.z;
     ocp_nlp_constraints_model_set(mpc_capsule->nlp_config,mpc_capsule->nlp_dims,mpc_capsule->nlp_in, 0, "lbx", acados_in.x0);
     ocp_nlp_constraints_model_set(mpc_capsule->nlp_config,mpc_capsule->nlp_dims,mpc_capsule->nlp_in, 0, "ubx", acados_in.x0);
@@ -135,13 +133,6 @@ double MPC::get_hover_thrust(){
     return param.hover_thrust;
 }
 
-double MPC::get_tau_phi(){
-    return param.tau_phi;
-}
-
-double MPC::get_tau_theta(){
-    return param.tau_theta;
-}
 
 bool MPC::set_intermediate_weights(const std::vector<double>&diag_weight_x, const std::vector<double>&diag_weight_u){
     if (diag_weight_x.size() != QUADROTOR_NX || diag_weight_u.size() != QUADROTOR_NU){

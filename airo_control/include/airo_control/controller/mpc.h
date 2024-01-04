@@ -38,8 +38,6 @@ class MPC : public BASE_CONTROLLER{
             phi = 6,
             theta = 7,
             psi = 8,
-            p = 9,
-            q = 10,
         };
 
         enum ControlInputs{
@@ -75,8 +73,6 @@ class MPC : public BASE_CONTROLLER{
         void pub_debug();
         void print_debug();
         double get_hover_thrust();
-        double get_tau_phi();
-        double get_tau_theta();
         bool set_intermediate_weights(const std::vector<double>&,const std::vector<double>&);
         bool set_terminal_weights(const std::vector<double>&);
         mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&);
