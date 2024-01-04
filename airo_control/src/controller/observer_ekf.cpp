@@ -15,7 +15,7 @@ OBSERVER_EKF::OBSERVER_EKF(ros::NodeHandle& nh){
             pow(dt,2),pow(dt,2),pow(dt,2);
     noise_Q= Q_cov.asDiagonal();
 
-    esti_x << 0,0,-20,0,0,0,0,0,0,0,0,0,6,6,6;
+    esti_x << 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0;
     esti_P = P0;
 
     // ROS Sub & Pub
@@ -53,14 +53,14 @@ void OBSERVER_EKF::twist_cb(const geometry_msgs::TwistStamped::ConstPtr& pose){
     // Inertial frame velocity to body frame
     Matrix<double,3,1> v_linear_inertial;
 
-    v_linear_inertial << local_vel.u, local_vel.v, local_vel.w;
+    v_linear_body << local_vel.u, local_vel.v, local_vel.w;
     v_angular_body << local_vel.p, local_vel.q, local_vel.r;
 
-    R_ib << 0,1,0,
-            1,0,0,
-            0,0,-1;
+    // R_ib << 0,1,0,
+    //         1,0,0,
+    //         0,0,-1;
 
-    v_linear_body = R_ib.inverse()*v_linear_inertial;
+    // v_linear_body = R_ib.inverse()*v_linear_inertial;
 
     body_acc.x = (v_linear_body[0]-pre_body_vel.u)/dt;  // du
     body_acc.y = (v_linear_body[1]-pre_body_vel.v)/dt;  // dv
@@ -71,12 +71,12 @@ void OBSERVER_EKF::twist_cb(const geometry_msgs::TwistStamped::ConstPtr& pose){
     pre_body_vel.w = v_linear_body[2];
     pre_body_vel.p = v_angular_body[0];
     pre_body_vel.q = v_angular_body[1];
-    pre_body_vel.r = v_angular_body[3];
+    // pre_body_vel.r = v_angular_body[3];
 
-    Matrix<double,3,1> compensate_f_inertial;
-    Matrix<double,3,1> compensate_f_body;
-    compensate_f_inertial << 20,0,0;
-    compensate_f_body = R_ib.inverse()*compensate_f_inertial;
+    // Matrix<double,3,1> compensate_f_inertial;
+    // Matrix<double,3,1> compensate_f_body;
+    // compensate_f_inertial << 20,0,0;
+    // compensate_f_body = R_ib.inverse()*compensate_f_inertial;
 
 }
 
@@ -105,22 +105,22 @@ void OBSERVER_EKF::EKF(){
     
     // Measured state [x, y, z, u, v, w, phi, theta, psi, dphi, dtheta, disturbance_x, disturbance_y, disturbance_z]
     meas_y << local_pos.x, local_pos.y, local_pos.z, local_vel.u, local_vel.v, local_vel.w,
-              local_euler.phi, local_euler.theta, local_euler.psi, local_vel.p, local_vel.q, local_vel.r,
+              local_euler.phi, local_euler.theta, local_euler.psi, local_vel.p, local_vel.q,
               solverparam.disturbance_x, solverparam.disturbance_y, solverparam.disturbance_z;
              
 
     // Define Jacobian matrices of system dynamics and measurement model
-    Matrix<double,15,15> F;                             // Jacobian of system dynamics
-    Matrix<double,15,15> H;                             // Jacobian of measurement model
+    Matrix<double,14,14> F;                             // Jacobian of system dynamics
+    Matrix<double,14,14> H;                             // Jacobian of measurement model
 
     // Define Kalman gain matrix
-    Matrix<double,15,15> Kal;
+    Matrix<double,14,14> Kal;
 
     // Define prediction and update steps
-    Matrix<double,15,1> x_pred;                         // Predicted state
-    Matrix<double,15,15> P_pred;                        // Predicted covariance
-    Matrix<double,15,1> y_pred;                         // Predicted measurement
-    Matrix<double,15,1> y_err;                          // Measurement error
+    Matrix<double,14,1> x_pred;                         // Predicted state
+    Matrix<double,14,14> P_pred;                        // Predicted covariance
+    Matrix<double,14,1> y_pred;                         // Predicted measurement
+    Matrix<double,14,1> y_err;                          // Measurement error
 
     // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, meas_u);             // compute Jacobian of system dynamics at current state and input
@@ -161,20 +161,20 @@ void OBSERVER_EKF::EKF(){
     esti_pose.pose.orientation.w = quat_msg.w;
     esti_twist.twist.angular.x = esti_x(9);     // p
     esti_twist.twist.angular.y = esti_x(10);    // q
-    esti_twist.twist.angular.z = esti_x(11);    // r
+    // esti_twist.twist.angular.z = esti_x(11);    // r
     esti_pose.header.stamp = ros::Time::now();
     // esti_pose.header.frame_id = "odom_frame";
     // esti_pose.child_frame_id = "base_link";
-    //esti_pose_pub.publish(esti_pose);
+    esti_pose_pub.publish(esti_pose);
 
-    // // Publish estimate disturbance
-    // esti_disturbance.pose.position.x = wf_disturbance(0);
-    // esti_disturbance.pose.position.y = wf_disturbance(1);
-    // esti_disturbance.pose.position.z = wf_disturbance(2);
-    // esti_disturbance.header.stamp = ros::Time::now();
+    // Publish estimate disturbance
+    esti_disturbance.pose.position.x = wf_disturbance(0);
+    esti_disturbance.pose.position.y = wf_disturbance(1);
+    esti_disturbance.pose.position.z = wf_disturbance(2);
+    esti_disturbance.header.stamp = ros::Time::now();
     // // esti_disturbance.header.frame_id = "odom_frame";
     // // esti_disturbance.child_frame_id = "base_link";
-    // esti_disturbance_pub.publish(esti_disturbance);
+    esti_disturbance_pub.publish(esti_disturbance);
 
     // // publish estimate disturbance
     // applied_disturbance.pose.position.x = applied_wrench.fx;
@@ -214,10 +214,10 @@ void OBSERVER_EKF::EKF(){
 // 4th order RK for integration
 MatrixXd OBSERVER_EKF::RK4(MatrixXd x, MatrixXd u)
 {
-    Matrix<double,15,1> k1;
-    Matrix<double,15,1> k2;
-    Matrix<double,15,1> k3;
-    Matrix<double,15,1> k4;
+    Matrix<double,14,1> k1;
+    Matrix<double,14,1> k2;
+    Matrix<double,14,1> k3;
+    Matrix<double,14,1> k4;
 
     k1 = f(x, u) * dt;
     k2 = f(x+k1/2, u) * dt;
@@ -231,19 +231,18 @@ MatrixXd OBSERVER_EKF::RK4(MatrixXd x, MatrixXd u)
 MatrixXd OBSERVER_EKF::f(MatrixXd x, MatrixXd u)
 {
     // Define system dynamics
-    Matrix<double,15,1> xdot;
+    Matrix<double,14,1> xdot;
 
     geometry_msgs::Quaternion target_quaternion = BASE_CONTROLLER::rpy2q(target_euler);
     
     // KAu = K*u;
-    xdot << x(3), x(4), x(5),                                                                                      // dx, dy, dz
-            (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_x,   // du
-            (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_y,   // dv
-            -g + cos(x(7)) * cos(x(6)) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_z,                              // dw
-            (target_euler.x() - x(6)) / param.tau_phi,                                                                // dphi
-            (target_euler.y()  - x(7)) / param.tau_theta,                                                            // dtheta
-            (target_euler.z() - x(8)) / param.tau_psi,
-            0,0,0;                                                                                                 // Disturbance_x, disturbance_y, disturbance_z
+    xdot << x(0), x(1), x(2), x(3), x(4), x(5), x(6), x(7), x(8),                                 // x,y,z,u,v,w,phi,theta,psi
+            (target_euler.x() - x(6)) / param.tau_phi,                                            // p = dphi
+            (target_euler.y() - x(7)) / param.tau_theta,                                          // q = dtheta
+            // (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_x,   // du
+            // (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_y,   // dv
+            // -g + cos(x(7)) * cos(x(6)) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_z,                              // dw
+            0,0,0;                                                                                // Disturbance_x, disturbance_y, disturbance_z in du, dv, dw
     return xdot; // dt is the time step
 }
 
@@ -251,12 +250,12 @@ MatrixXd OBSERVER_EKF::f(MatrixXd x, MatrixXd u)
 MatrixXd OBSERVER_EKF::h(MatrixXd x)
 {
     // Define measurement model
-    Matrix<double,15,1> y;
-    y << x(3),x(4),x(5),  // dx, dy, dz
-        x(6),x(7),x(8),x(9),x(10), // du, dv, dw, dphi, dtheta
-        (body_acc.x-solverparam.disturbance_x)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du     
-        (body_acc.y-solverparam.disturbance_y)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv
-        (body_acc.z-solverparam.disturbance_z+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                            // thrust for dw
+    Matrix<double,14,1> y;
+    y << x(0), x(1), x(2), x(3),x(4),x(5),  // x,y,z,u,v,w
+        x(6),x(7),x(8),x(9),x(10), // phi,theta,psi
+        (body_acc.x-x(11))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du     
+        (body_acc.y-x(12))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv
+        (body_acc.z-x(13)+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw
     return y;
 }
 
@@ -264,7 +263,7 @@ MatrixXd OBSERVER_EKF::h(MatrixXd x)
 MatrixXd OBSERVER_EKF::compute_jacobian_F(MatrixXd x, MatrixXd u)
 {
     // Define Jacobian of system dynamics
-    Matrix<double,15,15> F;
+    Matrix<double,14,14> F;
     double d = 1e-6;                    // finite difference step size
     VectorXd f0 = RK4(x, u);
     for (int i = 0; i < n; i++){
@@ -280,7 +279,7 @@ MatrixXd OBSERVER_EKF::compute_jacobian_F(MatrixXd x, MatrixXd u)
 MatrixXd OBSERVER_EKF::compute_jacobian_H(MatrixXd x)
 {
     // Define Jacobian of measurement model
-    Matrix<double,15,15> H;
+    Matrix<double,14,14> H;
     double d = 1e-6;                    // finite difference step size
     VectorXd f0 = h(x);
     for (int i = 0; i < n; i++){

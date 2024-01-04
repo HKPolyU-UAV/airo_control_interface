@@ -5,6 +5,7 @@
 
 #include <ros/ros.h>
 #include <tf/tf.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <eigen3/Eigen/Dense>
 
 #include "acados_solver_quadrotor.h"
@@ -115,21 +116,21 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
         // Matrix<double,6,6> M;                // Mass matrix
         // Matrix<double,6,6> invM;             // Inverse mass matrix
         Matrix<double,3,1> v_linear_body;    // Linear velocity in body frame
-        Matrix<double,3,1> v_angular_body;   // Angular velocity in body frame
-        Matrix<double,3,3> R_ib;             // Rotation matrix for linear from inertial to body frame
+        Matrix<double,2,1> v_angular_body;   // Angular velocity in body frame
+        // Matrix<double,3,3> R_ib;             // Rotation matrix for linear from inertial to body frame
         // Matrix<double,3,3> T_ib;             // Rotation matrix for angular from inertial to body frame
         
         // EKF parameters
         Matrix<double,6,1> wf_disturbance;          // World frame disturbance
         Matrix<double,3,1> meas_u;                  // Inputs
-        int n = 15;                                 // State dimension
-        int m = 15;                                 // Measurement dimension
-        Matrix<double,15,1> meas_y;                 // Measurement vector
+        int n = 14;                                 // State dimension
+        int m = 14;                                 // Measurement dimension
+        Matrix<double,14,1> meas_y;                 // Measurement vector
         MatrixXd P0 = MatrixXd::Identity(m,m);      // Initial covariance
-        Matrix<double,15,1> esti_x;                 // Estimate states
-        Matrix<double,15,15> esti_P;                // Estimate covariance
-        Matrix<double,1,15> Q_cov;                  // Process noise value
-        Matrix<double,15,15> noise_Q;               // Process noise matrix
+        Matrix<double,14,1> esti_x;                 // Estimate states
+        Matrix<double,14,14> esti_P;                // Estimate covariance
+        Matrix<double,1,14> Q_cov;                  // Process noise value
+        Matrix<double,14,14> noise_Q;               // Process noise matrix
         MatrixXd noise_R = MatrixXd::Identity(m,m)*(pow(dt,4)/4);      // Measurement noise matrix
     
         // Time
