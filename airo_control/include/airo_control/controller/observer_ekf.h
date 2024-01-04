@@ -75,6 +75,7 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
             double w;  // dz
             double p;  // dphi
             double q;  // dtheta
+            double r;  // dpsi
         };
 
         struct Acc{
@@ -116,14 +117,14 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
         // EKF parameters
         Matrix<double,6,1> wf_disturbance;          // World frame disturbance
         Matrix<double,3,1> meas_u;                  // Inputs
-        int n = 14;                                 // State dimension
-        int m = 14;                                 // Measurement dimension
-        Matrix<double,14,1> meas_y;                 // Measurement vector
+        int n = 15;                                 // State dimension
+        int m = 15;                                 // Measurement dimension
+        Matrix<double,15,1> meas_y;                 // Measurement vector
         MatrixXd P0 = MatrixXd::Identity(m,m);      // Initial covariance
-        Matrix<double,14,1> esti_x;                 // Estimate states
-        Matrix<double,14,14> esti_P;                // Estimate covariance
-        Matrix<double,1,14> Q_cov;                  // Process noise value
-        Matrix<double,14,14> noise_Q;               // Process noise matrix
+        Matrix<double,15,1> esti_x;                 // Estimate states
+        Matrix<double,15,15> esti_P;                // Estimate covariance
+        Matrix<double,1,15> Q_cov;                  // Process noise value
+        Matrix<double,15,15> noise_Q;               // Process noise matrix
         MatrixXd noise_R = MatrixXd::Identity(m,m)*(pow(dt,4)/4);      // Measurement noise matrix
     
         // Time
