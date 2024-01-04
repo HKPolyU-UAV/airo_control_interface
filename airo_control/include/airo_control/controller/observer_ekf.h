@@ -105,14 +105,19 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
         Acc body_acc;
         Thrust current_thrust;
 
+        // Messages
+        geometry_msgs::PoseStamped esti_pose;
+        geometry_msgs::TwistStamped esti_twist;
+        geometry_msgs::PoseStamped esti_disturbance;
+
         // Dynamics parameters
-        Matrix<double,1,6> M_values;
-        Matrix<double,6,6> M;                // Mass matrix
-        Matrix<double,6,6> invM;             // Inverse mass matrix
+        // Matrix<double,1,6> M_values;
+        // Matrix<double,6,6> M;                // Mass matrix
+        // Matrix<double,6,6> invM;             // Inverse mass matrix
         Matrix<double,3,1> v_linear_body;    // Linear velocity in body frame
         Matrix<double,3,1> v_angular_body;   // Angular velocity in body frame
         Matrix<double,3,3> R_ib;             // Rotation matrix for linear from inertial to body frame
-        Matrix<double,3,3> T_ib;             // Rotation matrix for angular from inertial to body frame
+        // Matrix<double,3,3> T_ib;             // Rotation matrix for angular from inertial to body frame
         
         // EKF parameters
         Matrix<double,6,1> wf_disturbance;          // World frame disturbance

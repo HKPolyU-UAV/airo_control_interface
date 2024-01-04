@@ -128,13 +128,13 @@ void OBSERVER_EKF::EKF(){
     // dx = f(esti_x, meas_u);                             // acceleration
     P_pred = F * esti_P * F.transpose() + noise_Q;      // predict covariance at time k+1|k
 
-    // // Update step: correct state and covariance using measurement at time k+1
-    // H = compute_jacobian_H(x_pred);                     // compute Jacobian of measurement model at predicted state
-    // y_pred = h(x_pred);                                 // predict measurement at time k+1
-    // y_err = meas_y - y_pred;                            // compute measurement error
-    // Kal = P_pred * H.transpose() * (H * P_pred * H.transpose() + noise_R).inverse();    // compute Kalman gain
-    // esti_x = x_pred + Kal * y_err;                      // correct state estimate
-    // esti_P = (MatrixXd::Identity(n, n) - Kal * H) * P_pred * (MatrixXd::Identity(n, n) - Kal * H).transpose() + Kal*noise_R*Kal.transpose(); // correct covariance estimate
+    // Update step: correct state and covariance using measurement at time k+1
+    H = compute_jacobian_H(x_pred);                     // compute Jacobian of measurement model at predicted state
+    y_pred = h(x_pred);                                 // predict measurement at time k+1
+    y_err = meas_y - y_pred;                            // compute measurement error
+    Kal = P_pred * H.transpose() * (H * P_pred * H.transpose() + noise_R).inverse();    // compute Kalman gain
+    esti_x = x_pred + Kal * y_err;                      // correct state estimate
+    esti_P = (MatrixXd::Identity(n, n) - Kal * H) * P_pred * (MatrixXd::Identity(n, n) - Kal * H).transpose() + Kal*noise_R*Kal.transpose(); // correct covariance estimate
 
     // body frame disturbance to inertial frame
     // wf_disturbance << (cos(meas_y(5))*cos(meas_y(4)))*esti_x(12) + (-sin(meas_y(5))*cos(meas_y(3))+cos(meas_y(5))*sin(meas_y(4))*sin(meas_y(3)))*esti_x(13) + (sin(meas_y(5))*sin(meas_y(3))+cos(meas_y(5))*cos(meas_y(3))*sin(meas_y(4)))*esti_x(14),
@@ -144,36 +144,36 @@ void OBSERVER_EKF::EKF(){
     //         (cos(meas_y(3)))*esti_x(16) + (sin(meas_y(3)))*esti_x(17),
     //         (sin(meas_y(3))/cos(meas_y(4)))*esti_x(16) + (cos(meas_y(3))/cos(meas_y(4)))*esti_x(17);
     
-    // // publish estimate pose
-    // tf2::Quaternion quat;
-    // quat.setRPY(esti_x(3), esti_x(4), esti_x(5));
-    // geometry_msgs::Quaternion quat_msg;
-    // tf2::convert(quat, quat_msg);
-    // esti_pose.pose.position.x = esti_x(0);
-    // esti_pose.pose.position.y = esti_x(1);
-    // esti_pose.pose.position.z = esti_x(2);
-    // esti_twist.twist.linear.x = esti_x(3);
-    // esti_twist.twist.linear.y = esti_x(4);
-    // esti_twist.twist.linear.z = esti_x(5);
-    // esti_pose.pose.orientation.x = quat_msg.x;
-    // esti_pose.pose.orientation.y = quat_msg.y;
-    // esti_pose.pose.orientation.z = quat_msg.z;
-    // esti_pose.pose.orientation.w = quat_msg.w;
-    // esti_twist.twist.angular.x = esti_x(9);
-    // esti_twist.twist.angular.y = esti_x(10);
-    // // esti_twist.twist.angular.z = esti_x(11);
-    // esti_pose.header.stamp = ros::Time::now();
-    // // esti_pose.header.frame_id = "odom_frame";
-    // // esti_pose.child_frame_id = "base_link";
-    // esti_pose_pub.publish(esti_pose);
+    // publish estimate pose
+    tf2::Quaternion quat;
+    quat.setRPY(esti_x(6), esti_x(7), esti_x(8));
+    geometry_msgs::Quaternion quat_msg;
+    tf2::convert(quat, quat_msg);
+    esti_pose.pose.position.x = esti_x(0);      // x
+    esti_pose.pose.position.y = esti_x(1);      // y
+    esti_pose.pose.position.z = esti_x(2);      // z
+    esti_twist.twist.linear.x = esti_x(3);      // u
+    esti_twist.twist.linear.y = esti_x(4);      // v
+    esti_twist.twist.linear.z = esti_x(5);      // w
+    esti_pose.pose.orientation.x = quat_msg.x;  
+    esti_pose.pose.orientation.y = quat_msg.y;
+    esti_pose.pose.orientation.z = quat_msg.z;
+    esti_pose.pose.orientation.w = quat_msg.w;
+    esti_twist.twist.angular.x = esti_x(9);     // p
+    esti_twist.twist.angular.y = esti_x(10);    // q
+    esti_twist.twist.angular.z = esti_x(11);    // r
+    esti_pose.header.stamp = ros::Time::now();
+    // esti_pose.header.frame_id = "odom_frame";
+    // esti_pose.child_frame_id = "base_link";
+    //esti_pose_pub.publish(esti_pose);
 
-    // publish estimate disturbance
+    // // Publish estimate disturbance
     // esti_disturbance.pose.position.x = wf_disturbance(0);
     // esti_disturbance.pose.position.y = wf_disturbance(1);
     // esti_disturbance.pose.position.z = wf_disturbance(2);
     // esti_disturbance.header.stamp = ros::Time::now();
-    // esti_disturbance.header.frame_id = "odom_frame";
-    // esti_disturbance.child_frame_id = "base_link";
+    // // esti_disturbance.header.frame_id = "odom_frame";
+    // // esti_disturbance.child_frame_id = "base_link";
     // esti_disturbance_pub.publish(esti_disturbance);
 
     // // publish estimate disturbance
@@ -233,59 +233,61 @@ MatrixXd OBSERVER_EKF::f(MatrixXd x, MatrixXd u)
     // Define system dynamics
     Matrix<double,15,1> xdot;
 
+    geometry_msgs::Quaternion target_quaternion = BASE_CONTROLLER::rpy2q(target_euler);
+    
     // KAu = K*u;
     xdot << x(3), x(4), x(5),                                                                                      // dx, dy, dz
             (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_x,   // du
             (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_y,   // dv
             -g + cos(x(7)) * cos(x(6)) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_z,                              // dw
-            (controller->target_euler.x() - x(6)) / param.tau_phi,                                                                // dphi
-            (controller->target_euler.y()  - x(7)) / param.tau_theta,                                                            // dtheta
-            (controller->target_euler.z() - x(9)) / param.tau_psi,
+            (target_euler.x() - x(6)) / param.tau_phi,                                                                // dphi
+            (target_euler.y()  - x(7)) / param.tau_theta,                                                            // dtheta
+            (target_euler.z() - x(8)) / param.tau_psi,
             0,0,0;                                                                                                 // Disturbance_x, disturbance_y, disturbance_z
     return xdot; // dt is the time step
 }
 
-// // Define measurement model function (Z = Hx, Z: measurement vector [x,xdot,tau]; X: state vector [x,xdot,disturbance])
-// MatrixXd OBSERVER_EKF::h(MatrixXd x)
-// {
-//     // Define measurement model
-//     Matrix<double,15,1> y;
-//     y << x(3),x(4),x(5),  // dx, dy, dz
-//         x(6),x(7),x(8),x(9),x(10), // du, dv, dw, dphi, dtheta
-//         (body_acc.x-solverparam.disturbance_x)*(controller->get_hover_thrust())/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du     
-//         (body_acc.y-solverparam.disturbance_y)*(controller->get_hover_thrust())/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv
-//         (body_acc.z-solverparam.disturbance_z+g)*(controller->get_hover_thrust())/((g)*(cos(x(6))*cos(x(7))));                            // thrust for dw
-//     return y;
-// }
+// Define measurement model function (Z = Hx, Z: measurement vector [x,xdot,tau]; X: state vector [x,xdot,disturbance])
+MatrixXd OBSERVER_EKF::h(MatrixXd x)
+{
+    // Define measurement model
+    Matrix<double,15,1> y;
+    y << x(3),x(4),x(5),  // dx, dy, dz
+        x(6),x(7),x(8),x(9),x(10), // du, dv, dw, dphi, dtheta
+        (body_acc.x-solverparam.disturbance_x)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du     
+        (body_acc.y-solverparam.disturbance_y)*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv
+        (body_acc.z-solverparam.disturbance_z+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                            // thrust for dw
+    return y;
+}
 
-// // Define function to compute Jacobian of system dynamics at current state and input
-// MatrixXd OBSERVER_EKF::compute_jacobian_F(MatrixXd x, MatrixXd u)
-// {
-//     // Define Jacobian of system dynamics
-//     Matrix<double,14,14> F;
-//     double d = 1e-6;                    // finite difference step size
-//     VectorXd f0 = RK4(x, u);
-//     for (int i = 0; i < n; i++){
-//         VectorXd x1 = x;
-//         x1(i) += d;
-//         VectorXd f1 = RK4(x1, u);
-//         F.col(i) = (f1-f0)/d;
-//     }
-//     return F;
-// }
+// Define function to compute Jacobian of system dynamics at current state and input
+MatrixXd OBSERVER_EKF::compute_jacobian_F(MatrixXd x, MatrixXd u)
+{
+    // Define Jacobian of system dynamics
+    Matrix<double,15,15> F;
+    double d = 1e-6;                    // finite difference step size
+    VectorXd f0 = RK4(x, u);
+    for (int i = 0; i < n; i++){
+        VectorXd x1 = x;
+        x1(i) += d;
+        VectorXd f1 = RK4(x1, u);
+        F.col(i) = (f1-f0)/d;
+    }
+    return F;
+}
 
-// // Define function to compute Jacobian of measurement model at predicted state
-// MatrixXd OBSERVER_EKF::compute_jacobian_H(MatrixXd x)
-// {
-//     // Define Jacobian of measurement model
-//     Matrix<double,14,14> H;
-//     double d = 1e-6;                    // finite difference step size
-//     VectorXd f0 = h(x);
-//     for (int i = 0; i < n; i++){
-//         VectorXd x1 = x;
-//         x1(i) += d;
-//         VectorXd f1 = h(x1);
-//         H.col(i) = (f1-f0)/d;
-//     }
-//     return H;
-// }
+// Define function to compute Jacobian of measurement model at predicted state
+MatrixXd OBSERVER_EKF::compute_jacobian_H(MatrixXd x)
+{
+    // Define Jacobian of measurement model
+    Matrix<double,15,15> H;
+    double d = 1e-6;                    // finite difference step size
+    VectorXd f0 = h(x);
+    for (int i = 0; i < n; i++){
+        VectorXd x1 = x;
+        x1(i) += d;
+        VectorXd f1 = h(x1);
+        H.col(i) = (f1-f0)/d;
+    }
+    return H;
+}
