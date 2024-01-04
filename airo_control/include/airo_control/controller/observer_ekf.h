@@ -160,6 +160,8 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
 	    void pose_cb(const geometry_msgs::PoseStamped::ConstPtr&); // get current position 
         void twist_cb(const geometry_msgs::TwistStamped::ConstPtr&); // get current position 
         void ref_cb(int line_to_read);                                  // fill N steps reference points into acados
+        void solve();                                                // solve MPC with EKF
+        
         MatrixXd RK4(MatrixXd x, MatrixXd u);                   // EKF predict and update
         MatrixXd f(MatrixXd x, MatrixXd u);                     // system process model
         MatrixXd h(MatrixXd x);                                 // measurement model
