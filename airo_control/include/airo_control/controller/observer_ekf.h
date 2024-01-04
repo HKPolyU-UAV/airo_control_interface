@@ -100,10 +100,9 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
         // ROS message variables
         Euler local_euler;
         Pos local_pos;
-        Pos pre_body_pos;
         Vel local_vel;
-        Vel pre_body_vel;
-        Acc body_acc;
+        Vel pre_wf_vel;
+        Acc wf_acc;
         Thrust current_thrust;
 
         // Messages
@@ -115,8 +114,8 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
         // Matrix<double,1,6> M_values;
         // Matrix<double,6,6> M;                // Mass matrix
         // Matrix<double,6,6> invM;             // Inverse mass matrix
-        Matrix<double,3,1> v_linear_body;    // Linear velocity in body frame
-        Matrix<double,2,1> v_angular_body;   // Angular velocity in body frame
+        Matrix<double,3,1> v_linear_wf;         // Linear velocity in world frame
+        // Matrix<double,2,1> v_angular_body;        // Angular velocity in body frame
         // Matrix<double,3,3> R_ib;             // Rotation matrix for linear from inertial to body frame
         // Matrix<double,3,3> T_ib;             // Rotation matrix for angular from inertial to body frame
         

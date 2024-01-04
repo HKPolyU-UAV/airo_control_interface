@@ -53,8 +53,8 @@ void OBSERVER_EKF::twist_cb(const geometry_msgs::TwistStamped::ConstPtr& pose){
     // Inertial frame velocity to body frame
     Matrix<double,3,1> v_linear_inertial;
 
-    v_linear_body << local_vel.u, local_vel.v, local_vel.w;
-    v_angular_body << local_vel.p, local_vel.q, local_vel.r;
+    v_linear_wf << local_vel.u, local_vel.v, local_vel.w;
+    // v_angular_body << local_vel.p, local_vel.q, local_vel.r;
 
     // R_ib << 0,1,0,
     //         1,0,0,
@@ -62,15 +62,15 @@ void OBSERVER_EKF::twist_cb(const geometry_msgs::TwistStamped::ConstPtr& pose){
 
     // v_linear_body = R_ib.inverse()*v_linear_inertial;
 
-    body_acc.x = (v_linear_body[0]-pre_body_vel.u)/dt;  // du
-    body_acc.y = (v_linear_body[1]-pre_body_vel.v)/dt;  // dv
-    body_acc.z = (v_linear_body[2]-pre_body_vel.w)/dt;  // dw
+    wf_acc.x = (v_linear_wf[0]-pre_wf_vel.u)/dt;  // du
+    wf_acc.y = (v_linear_wf[1]-pre_wf_vel.v)/dt;  // dv
+    wf_acc.z = (v_linear_wf[2]-pre_wf_vel.w)/dt;  // dw
 
-    pre_body_vel.u = v_linear_body[0];
-    pre_body_vel.v = v_linear_body[1];
-    pre_body_vel.w = v_linear_body[2];
-    pre_body_vel.p = v_angular_body[0];
-    pre_body_vel.q = v_angular_body[1];
+    pre_wf_vel.u = v_linear_wf[0];
+    pre_wf_vel.v = v_linear_wf[1];
+    pre_wf_vel.w = v_linear_wf[2];
+    // pre_wf_vel.p = v_angular_body[0];
+    // pre_wf_vel.q = v_angular_body[1];
     // pre_body_vel.r = v_angular_body[3];
 
     // Matrix<double,3,1> compensate_f_inertial;
@@ -168,6 +168,9 @@ void OBSERVER_EKF::EKF(){
     esti_pose_pub.publish(esti_pose);
 
     // Publish estimate disturbance
+    wf_disturbance(0) = esti_x(11);             // Disturbance_x in du
+    wf_disturbance(1) = esti_x(12);             // Disturbance_y in dv
+    wf_disturbance(2) = esti_x(13);             // Disturbance_z in dw
     esti_disturbance.pose.position.x = wf_disturbance(0);
     esti_disturbance.pose.position.y = wf_disturbance(1);
     esti_disturbance.pose.position.z = wf_disturbance(2);
@@ -176,7 +179,7 @@ void OBSERVER_EKF::EKF(){
     // // esti_disturbance.child_frame_id = "base_link";
     esti_disturbance_pub.publish(esti_disturbance);
 
-    // // publish estimate disturbance
+    // // publish applied disturbance
     // applied_disturbance.pose.position.x = applied_wrench.fx;
     // applied_disturbance.pose.position.y = applied_wrench.fy;
     // applied_disturbance.pose.position.z = applied_wrench.fz;
@@ -185,30 +188,22 @@ void OBSERVER_EKF::EKF(){
     // // applied_disturbance.child_frame_id = "base_link";
     // applied_disturbance_pub.publish(applied_disturbance);
 
-    // // print estimate disturbance
-    // if(cout_counter > 2){
-    //     std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
-    //     // std::cout << "esti_x12:   " << esti_x(12) << "\t esti_x2:  " << esti_x(2) << std::endl;
-    //     //std::cout << "tau_x:  " << meas_y(12) << "  tau_y:  " << meas_y(13) << "  tau_z:  " << meas_y(14) << "  tau_psi:  " << meas_y(17) << std::endl;
-    //     std::cout << "acc_x:  " << body_acc.x << "  acc_y:  " << body_acc.y << "  acc_z:  " << body_acc.z << std::endl;
-    //     // std::cout << "acc_phi:  " << body_acc.phi << "  acc_theta:  " << body_acc.theta << "  acc_psi:  " << body_acc.psi << std::endl;
-    //     //std::cout << "ref_x:    " << acados_in.yref[0][0] << "\tref_y:   " << acados_in.yref[0][1] << "\tref_z:    " << acados_in.yref[0][2] << "\tref_yaw:    " << yaw_ref << std::endl;
-    //     std::cout << "pos_x: " << meas_y(0) << "  pos_y: " << meas_y(1) << "  pos_z: " << meas_y(2) << " phi: " << meas_y(3) << "  theta: " << meas_y(4) << "  psi: " << meas_y(5) <<std::endl;
-    //     std::cout << "esti_x: " << esti_x(0) << "  esti_y: " << esti_x(1) << "  esti_z: " << esti_x(2) << " esti_phi: " << esti_x(3) << "  esti_theta: " << esti_x(4) << "  esti_psi: " << esti_x(5) <<std::endl;
-    //     //std::cout << "error_x:  " << error_pose.pose.pose.position.x << "  error_y:  " << error_pose.pose.pose.position.y << "  error_z:  " << error_pose.pose.pose.position.z << std::endl;
-    //     // std::cout << "applied force x:  " << applied_wrench.fx << "\tforce y:  " << applied_wrench.fy << "\tforce_z:  " << applied_wrench.fz << std::endl;
-    //     //std::cout << "applied torque x:  " << applied_wrench.tx << "\ttorque y:  " << applied_wrench.ty << "\ttorque_z:  " << applied_wrench.tz << std::endl;
-    //     //std::cout << "(body frame) disturbance x: " << esti_x(12) << "    disturbance y: " << esti_x(13) << "    disturbance z: " << esti_x(14) << std::endl;
-    //     //std::cout << "(world frame) disturbance x: " << wf_disturbance(0) << "    disturbance y: " << wf_disturbance(1) << "    disturbance z: " << wf_disturbance(2) << std::endl;
-    //     //std::cout << "(world frame) disturbance phi: " << wf_disturbance(3) << "    disturbance theta: " << wf_disturbance(4) << "    disturbance psi: " << wf_disturbance(5) << std::endl;
-    //     //std::cout << "solve_time: "<< acados_out.cpu_time << "\tkkt_res: " << acados_out.kkt_res << "\tacados_status: " << acados_out.status << std::endl;
-    //     //std::cout << "ros_time:   " << std::fixed << ros::Time::now().toSec() << std::endl;
-    //     std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
-    //     cout_counter = 0;
-    // }
-    // else{
-    //     cout_counter++;
-    // }
+    // print estimate disturbance
+    if(cout_counter > 2){
+        std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
+        std::cout << "disturbance_x:  " << meas_y(11) << "  disturbance_y:  " << meas_y(12) << "  disturbance_z:  " << meas_y(13) << std::endl;
+        std::cout << "acc_x:  " << wf_acc.x << "  acc_y:  " << wf_acc.y << "  acc_z:  " << wf_acc.z << std::endl;
+        std::cout << "pos_x: " << meas_y(0) << "  pos_y: " << meas_y(1) << "  pos_z: " << meas_y(2) << " phi: " << meas_y(6) << "  theta: " << meas_y(7) << "  psi: " << meas_y(8) <<std::endl;
+        std::cout << "esti_x: " << esti_x(0) << "  esti_y: " << esti_x(1) << "  esti_z: " << esti_x(2) << " esti_phi: " << esti_x(6) << "  esti_theta: " << esti_x(7) << "  esti_psi: " << esti_x(8) <<std::endl;
+        std::cout << "(world frame) disturbance x: " << wf_disturbance(0) << "    disturbance y: " << wf_disturbance(1) << "    disturbance z: " << wf_disturbance(2) << std::endl;
+        //std::cout << "solve_time: "<< acados_out.cpu_time << "\tkkt_res: " << acados_out.kkt_res << "\tacados_status: " << acados_out.status << std::endl;
+        //std::cout << "ros_time:   " << std::fixed << ros::Time::now().toSec() << std::endl;
+        std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
+        cout_counter = 0;
+    }
+    else{
+        cout_counter++;
+    }
 }
 
 // 4th order RK for integration
@@ -253,9 +248,9 @@ MatrixXd OBSERVER_EKF::h(MatrixXd x)
     Matrix<double,14,1> y;
     y << x(0), x(1), x(2), x(3),x(4),x(5),  // x,y,z,u,v,w
         x(6),x(7),x(8),x(9),x(10), // phi,theta,psi
-        (body_acc.x-x(11))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x    
-        (body_acc.y-x(12))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
-        (body_acc.z-x(13)+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
+        (wf_acc.x-x(11))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x    
+        (wf_acc.y-x(12))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
+        (wf_acc.z-x(13)+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
     return y;
 }
 
