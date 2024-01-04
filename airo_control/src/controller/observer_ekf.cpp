@@ -235,12 +235,12 @@ MatrixXd OBSERVER_EKF::f(MatrixXd x, MatrixXd u)
 
     // KAu = K*u;
     xdot << x(3), x(4), x(5),                                                                                      // dx, dy, dz
-            (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * attitude_target.thrust/controller->get_hover_thrust()*g+solverparam.disturbance_x,   // du
-            (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * attitude_target.thrust/controller->get_hover_thrust()*g+solverparam.disturbance_y,   // dv
-            -g + cos(x(7)) * cos(x(6)) * attitude_target.thrust/controller->get_hover_thrust()*g+solverparam.disturbance_z,                              // dw
-            (controller->target_euler.x() - x(6)) / controller->get_tau_phi(),                                                                // dphi
-            (controller->target_euler.y()  - x(7)) / controller->get_tau_theta(),                                                            // dtheta
-            (controller->target_euler.z() - x(9)) / controller->get_tau_psi(),
+            (cos(x(6))*sin(x(7))*cos(x(8)) + sin(x(6))*sin(x(8))) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_x,   // du
+            (cos(x(6))*sin(x(7))*sin(x(8)) - sin(x(6))*cos(x(8))) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_y,   // dv
+            -g + cos(x(7)) * cos(x(6)) * attitude_target.thrust/param.hover_thrust*g+solverparam.disturbance_z,                              // dw
+            (controller->target_euler.x() - x(6)) / param.tau_phi,                                                                // dphi
+            (controller->target_euler.y()  - x(7)) / param.tau_theta,                                                            // dtheta
+            (controller->target_euler.z() - x(9)) / param.tau_psi,
             0,0,0;                                                                                                 // Disturbance_x, disturbance_y, disturbance_z
     return xdot; // dt is the time step
 }
