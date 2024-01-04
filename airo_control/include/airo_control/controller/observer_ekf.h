@@ -67,6 +67,9 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
             double x;
             double y;
             double z;
+        };
+
+        struct Vel{
             double u;  // dx
             double v;  // dy
             double w;  // dz
@@ -96,6 +99,8 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
         Euler local_euler;
         Pos local_pos;
         Pos pre_body_pos;
+        Vel local_vel;
+        Vel pre_body_vel;
         Acc body_acc;
         Thrust current_thrust;
 
@@ -136,16 +141,23 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
         ros::Publisher esti_pose_pub;
         ros::Publisher esti_disturbance_pub;
         ros::Publisher applied_disturbance_pub;
+        
+        // Acados parameter
+        SolverParam solverparam;
 
         // Other variables
         int cout_counter = 0;
+        tf::Quaternion tf_quaternion;
+
 
     public:
         Param param;
-        SolverParam solverparam;
+        Euler q2rpy(const geometry_msgs::Quaternion&);          // quaternion to euler angle
+        geometry_msgs::Quaternion rpy2q(const Euler&);          // euler angle to quaternion
         OBSERVER_EKF(ros::NodeHandle&);
         void EKF();
 	    void pose_cb(const geometry_msgs::PoseStamped::ConstPtr&); // get current position 
+        void twist_cb(const geometry_msgs::TwistStamped::ConstPtr&); // get current position 
         void ref_cb(int line_to_read);                                  // fill N steps reference points into acados
         MatrixXd RK4(MatrixXd x, MatrixXd u);                   // EKF predict and update
         MatrixXd f(MatrixXd x, MatrixXd u);                     // system process model

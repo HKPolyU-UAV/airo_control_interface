@@ -24,6 +24,42 @@ OBSERVER_EKF::OBSERVER_EKF(ros::NodeHandle& nh){
 
 }
 
+void OBSERVER_EKF::pose_cb(const geometry_msgs::PoseStamped::ConstPtr& pose){
+    // local_pose.header.stamp = msg->header.stamp;
+    // local_pose.pose = msg->pose;
+
+    // Get linear position x,y,z
+    local_pos.x = pose->pose.position.x;
+    local_pos.y = pose->pose.position.y;
+    local_pos.z = pose->pose.position.z;
+
+    // Get angle phi, theta, psi
+    tf::quaternionMsgToTF(pose->pose.orientation,tf_quaternion);
+    tf::Matrix3x3(tf_quaternion).getRPY(local_euler.phi, local_euler.theta, local_euler.psi);
+}
+
+void OBSERVER_EKF::twist_cb(const geometry_msgs::TwistStamped::ConstPtr& pose){
+    
+    // Get linear velocity u,v,w
+    local_vel.u = pose->twist.linear.x;
+    local_vel.v = pose->twist.linear.y;
+    local_vel.w = pose->twist.linear.z;
+
+    // Get angular velocity p,q
+    local_vel.p = pose->twist.angular.x;
+    local_vel.q = pose->twist.angular.y;
+
+    // Inertial frame velocity to body frame
+    Matrix<double,3,1> v_linear_inertial;
+
+    R_ib << cos(local_euler.psi)*cos(local_euler.theta), -sin(local_euler.psi)*cos(local_euler.phi)+cos(local_euler.psi)*sin(local_euler.theta)*sin(local_euler.phi), sin(local_euler.psi)*sin(local_euler.phi)+cos(local_euler.psi)*cos(local_euler.phi)*sin(local_euler.theta),
+            sin(local_euler.psi)*cos(local_euler.theta), cos(local_euler.psi)*cos(local_euler.phi)+sin(local_euler.phi)*sin(local_euler.theta)*sin(local_euler.psi), -cos(local_euler.psi)*sin(local_euler.phi)+sin(local_euler.theta)*sin(local_euler.psi)*cos(local_euler.phi),
+            -sin(local_euler.theta), cos(local_euler.theta)*sin(local_euler.phi), cos(local_euler.theta)*cos(local_euler.phi);
+
+    v_linear_body = R_ib.inverse()*v_linear_inertial;
+
+}
+
 void OBSERVER_EKF::EKF(){
     // Get input u and measurement y
     meas_u << current_thrust.thrust0, current_thrust.thrust1, current_thrust.thrust2; // thrust for du, dv, dw
