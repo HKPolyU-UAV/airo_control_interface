@@ -72,6 +72,11 @@ void OBSERVER_EKF::twist_cb(const geometry_msgs::TwistStamped::ConstPtr& pose){
     pre_body_vel.q = v_angular_body[1];
     pre_body_vel.r = v_angular_body[3];
 
+    Matrix<double,3,1> compensate_f_inertial;
+    Matrix<double,3,1> compensate_f_body;
+    compensate_f_inertial << 20,0,0;
+    compensate_f_body = R_ib.inverse()*compensate_f_inertial;
+
 }
 
 // void OBSERVER_EKF::EKF(){
