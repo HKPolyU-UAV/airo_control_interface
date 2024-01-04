@@ -137,6 +137,9 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
         ros::Publisher esti_disturbance_pub;
         ros::Publisher applied_disturbance_pub;
 
+        // Other variables
+        int cout_counter = 0;
+
     public:
         Param param;
         SolverParam solverparam;
