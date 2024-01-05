@@ -10,10 +10,15 @@
 
 class DISTURBANCE_OBSERVER{
     private:
+
+    double g = 9.81;
+    double dt = 0.1;
+
     struct MEASUREMENT_STATES{
         double x,y,z,u,v,w,phi,theta,psi,thrust_x,thrust_y,thrust_z;
     };
     MEASUREMENT_STATES measurement_states;
+    
     struct SYSTEM_STATES{
         double x,y,z,u,v,w,phi,theta,psi,disturbance_x,disturbance_y,disturbance_z;
     };
