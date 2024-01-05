@@ -47,13 +47,14 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     takeoff_land_sub = nh.subscribe<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",1,&AIRO_CONTROL_FSM::takeoff_land_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",1);
     fsm_info_pub = nh.advertise<airo_message::FSMInfo>("/airo_control/fsm_info",1);
+    disturbance_pub = nh.
 
     // ROS Services
     setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
     arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
     reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
 
-    // Initialize FSM & Controller 
+    // Initialize FSM, Controller, and Observer
     state_fsm = RC_MANUAL;
     if (CONTROLLER_TYPE == "mpc"){
         controller = std::make_unique<MPC>(nh);
@@ -69,6 +70,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     }
     rc_input.set_rc_param(rc_param);
     controller_ref.header.stamp = ros::Time::now();
+    disturbance_observer = std::make_unique<DISTURBANCE_OBSERVER>(nh,controller->get_hover_thrust());
 
     // For MPC Preview
     if(auto dummy_mpc = dynamic_cast<MPC*>(controller.get())){
@@ -109,8 +111,10 @@ void AIRO_CONTROL_FSM::process(){
         return;
     }
 
-    // Step 3: Solve position controller if needed
+    // Step 3: Run observer and solve position controller if needed
     if(solve_controller){
+        force_disturbance = disturbance_observer->observe(local_pose,local_twist,attitude_target);
+        
         if (!use_preview){
             attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref);
         }
@@ -130,6 +134,7 @@ void AIRO_CONTROL_FSM::process(){
     fsm_info.header.stamp = current_time;
     fsm_info.is_landed = is_landed;
     fsm_info_pub.publish(fsm_info);
+    disturbance_pub.publish(force_disturbance);
 
     // Step 6: Reset all variables
 	rc_input.enter_fsm = false;

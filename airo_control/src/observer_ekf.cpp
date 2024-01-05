@@ -1,4 +1,4 @@
-#include "airo_control/controller/observer_ekf.h"
+#include "airo_control/observer_ekf.h"
 
 OBSERVER_EKF::OBSERVER_EKF(ros::NodeHandle& nh){
     // Get EKF parameters
@@ -22,81 +22,6 @@ OBSERVER_EKF::OBSERVER_EKF(ros::NodeHandle& nh){
     esti_pose_pub = nh.advertise<geometry_msgs::PoseStamped>("/airco_control/ekf/pose",5);
     esti_disturbance_pub = nh.advertise<geometry_msgs::PoseStamped>("/airo_control/ekf/disturbance",5);
     applied_disturbance_pub = nh.advertise<geometry_msgs::PoseStamped>("/airo_control/applied_disturbance",5);
-
-}
-
-void OBSERVER_EKF::pose_cb(const geometry_msgs::PoseStamped::ConstPtr& pose){
-    // local_pose.header.stamp = msg->header.stamp;
-    // local_pose.pose = msg->pose;
-
-    // Get linear position x,y,z
-    local_pos.x = pose->pose.position.x;
-    local_pos.y = pose->pose.position.y;
-    local_pos.z = pose->pose.position.z;
-
-    // Get angle phi, theta, psi
-    tf::quaternionMsgToTF(pose->pose.orientation,tf_quaternion);
-    tf::Matrix3x3(tf_quaternion).getRPY(local_euler.phi, local_euler.theta, local_euler.psi);
-}
-
-void OBSERVER_EKF::twist_cb(const geometry_msgs::TwistStamped::ConstPtr& pose){
-    
-    // Get linear velocity u,v,w
-    local_vel.u = pose->twist.linear.x;
-    local_vel.v = pose->twist.linear.y;
-    local_vel.w = pose->twist.linear.z;
-
-    // Get angular velocity p,q
-    local_vel.p = pose->twist.angular.x;
-    local_vel.q = pose->twist.angular.y;
-
-    // Inertial frame velocity to body frame
-    Matrix<double,3,1> v_linear_inertial;
-
-    v_linear_wf << local_vel.u, local_vel.v, local_vel.w;
-    // v_angular_body << local_vel.p, local_vel.q, local_vel.r;
-
-    // R_ib << 0,1,0,
-    //         1,0,0,
-    //         0,0,-1;
-
-    // v_linear_body = R_ib.inverse()*v_linear_inertial;
-
-    wf_acc.x = (v_linear_wf[0]-pre_wf_vel.u)/dt;  // du
-    wf_acc.y = (v_linear_wf[1]-pre_wf_vel.v)/dt;  // dv
-    wf_acc.z = (v_linear_wf[2]-pre_wf_vel.w)/dt;  // dw
-
-    pre_wf_vel.u = v_linear_wf[0];
-    pre_wf_vel.v = v_linear_wf[1];
-    pre_wf_vel.w = v_linear_wf[2];
-    // pre_wf_vel.p = v_angular_body[0];
-    // pre_wf_vel.q = v_angular_body[1];
-    // pre_body_vel.r = v_angular_body[3];
-
-    // Matrix<double,3,1> compensate_f_inertial;
-    // Matrix<double,3,1> compensate_f_body;
-    // compensate_f_inertial << 20,0,0;
-    // compensate_f_body = R_ib.inverse()*compensate_f_inertial;
-
-}
-
-// Quaternion to Euler angle
-OBSERVER_EKF::Euler OBSERVER_EKF::q2rpy(const geometry_msgs::Quaternion& quaternion){
-    tf::Quaternion tf_quaternion;
-    Euler euler;
-    tf::quaternionMsgToTF(quaternion, tf_quaternion);
-    tf::Matrix3x3(tf_quaternion).getRPY(euler.phi, euler.theta, euler.psi);
-    return euler;
-}
-
-// Euler angle to Quaternion
-geometry_msgs::Quaternion OBSERVER_EKF::rpy2q(const Euler& euler){
-    geometry_msgs::Quaternion quaternion = tf::createQuaternionMsgFromRollPitchYaw(euler.phi, euler.theta, euler.psi);
-    return quaternion;
-}
-
-void OBSERVER_EKF::solve(){
-
 }
 
 void OBSERVER_EKF::EKF(){

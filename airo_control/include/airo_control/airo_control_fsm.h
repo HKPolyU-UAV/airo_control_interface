@@ -18,6 +18,7 @@
 #include <airo_message/ReferencePreview.h>
 #include <airo_message/TakeoffLandTrigger.h>
 #include "airo_control/rc_input.h"
+#include "airo_control/disturbance_observer.h"
 #include "airo_control/controller/mpc.h"
 #include "airo_control/controller/backstepping.h"
 #include "airo_control/controller/slidingmode.h"
@@ -102,8 +103,12 @@ class AIRO_CONTROL_FSM{
 	mavros_msgs::State previous_state;
 	mavros_msgs::ExtendedState current_extended_state;
 
-	// Controller
+	// Controller & Observer
 	std::unique_ptr<BASE_CONTROLLER> controller;
+	std::unique_ptr<DISTURBANCE_OBSERVER> disturbance_observer;
+
+	// Disturbance
+	Eigen::Vector3d force_disturbance;
 
 	public:
 

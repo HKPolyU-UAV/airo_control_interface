@@ -1,0 +1,9 @@
+r_pos: 1.0
+r_vel: 1.0
+r_att: 1.0
+r_control: 1.0
+
+q_pos: 1.0
+q_vel: 1.0
+q_att: 1.0
+q_disturbance: 1.0

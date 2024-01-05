@@ -12,7 +12,7 @@ int main(int argc, char **argv)
     AIRO_CONTROL_FSM fsm(nh);
 
     while(ros::ok()){
-        fsm.process();
+        fsm.process(); 
         ros::spinOnce();
         loop_rate.sleep();
     }

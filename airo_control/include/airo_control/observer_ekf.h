@@ -15,13 +15,8 @@
 
 using namespace Eigen;
 
-class OBSERVER_EKF: public BASE_CONTROLLER{
+class OBSERVER_EKF{
     private:
-        struct Param: public BASE_CONTROLLER::Param{
-            double tau_phi;
-            double tau_theta;
-            double tau_psi;
-        };
 
         double g = 9.81;
         double dt = 0.05;
@@ -157,15 +152,8 @@ class OBSERVER_EKF: public BASE_CONTROLLER{
 
 
     public:
-        Param param;
-        Euler q2rpy(const geometry_msgs::Quaternion&);          // quaternion to euler angle
-        geometry_msgs::Quaternion rpy2q(const Euler&);          // euler angle to quaternion
         OBSERVER_EKF(ros::NodeHandle&);
         void EKF();
-	    void pose_cb(const geometry_msgs::PoseStamped::ConstPtr&); // get current position 
-        void twist_cb(const geometry_msgs::TwistStamped::ConstPtr&); // get current position 
-        void ref_cb(int line_to_read);                                  // fill N steps reference points into acados
-        void solve();                                                // solve MPC with EKF
         
         MatrixXd RK4(MatrixXd x, MatrixXd u);                   // EKF predict and update
         MatrixXd f(MatrixXd x, MatrixXd u);                     // system process model
