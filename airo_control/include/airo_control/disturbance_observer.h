@@ -29,15 +29,15 @@ class DISTURBANCE_OBSERVER{
     double hover_thrust,R_POS,R_VEL,R_ATT,R_CONTROL,Q_POS,Q_VEL,Q_ATT,Q_DISTURBANCE;
 
     // Weights
-    int m = 14;
-    Eigen::Matrix<double,14,14> Q_noise,R_noise,P0,esti_P;       // Process noise matrix, Measurement noise matrix, Initial covariance, Estimate covariance
-    Eigen::Matrix<double,1,14> Q_cov;                            // Process noise value
+    int m = 12;
+    Eigen::Matrix<double,12,12> Q_noise,R_noise,P0,esti_P;       // Process noise matrix, Measurement noise matrix, Initial covariance, Estimate covariance
+    Eigen::Matrix<double,1,12> Q_cov,R_cov;                      // Process noise value, Measurement noise value
 
     // EKF Parameters
     Eigen::Matrix<double,3,1> input_u;                           // Inputs
-    Eigen::Matrix<double,14,1> meas_y;                           // Measurement vector
-    Eigen::Matrix<double,14,14> F,H,Kal,P_pred;                  // Jacobian of system dynamics, Jacobian of measurement model, Kalman gain matrix, Predicted covariance 
-    Eigen::Matrix<double,14,1> esti_x,x_pred,y_pred,y_err;       // Estimate states, Predicted state, Predicted measurement, Measurement error
+    Eigen::Matrix<double,12,1> meas_y;                           // Measurement vector
+    Eigen::Matrix<double,12,12> F,H,Kal,P_pred;                  // Jacobian of system dynamics, Jacobian of measurement model, Kalman gain matrix, Predicted covariance 
+    Eigen::Matrix<double,12,1> esti_x,x_pred,y_pred,y_err;       // Estimate states, Predicted state, Predicted measurement, Measurement error
 
     public:
     DISTURBANCE_OBSERVER(ros::NodeHandle&,const double&);

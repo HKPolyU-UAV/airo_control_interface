@@ -14,8 +14,12 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
 
     // Weights
     // Q_noise, R_noise, P0 init
+    Q_cov << Q_POS,Q_POS,Q_POS,Q_VEL,Q_VEL,Q_VEL,Q_ATT,Q_ATT,Q_ATT,
+                Q_DISTURBANCE,Q_DISTURBANCE,Q_DISTURBANCE;
     Q_noise = Q_cov.asDiagonal();
-    R_noise = Eigen::MatrixXd::Identity(m,m)*(pow(dt,4)/4);
+    R_cov = R_POS,R_POS,R_POS,R_VEL,R_VEL,R_VEL,R_ATT,R_ATT,R_ATT,
+                R_CONTROL,R_CONTROL,R_CONTROL;
+    R_noise = R_cov.asDiagonal();
     P0 = Eigen::MatrixXd::Identity(m,m);
     esti_P = P0;
     
@@ -95,10 +99,10 @@ void DISTURBANCE_OBSERVER::EKF(){
 // 4th order RK for integration
 Eigen::MatrixXd OBSERVER_EKF::RK4(MatrixXd x, MatrixXd u)
 {
-    Eigen::Matrix<double,14,1> k1;
-    Eigen::Matrix<double,14,1> k2;
-    Eigen::Matrix<double,14,1> k3;
-    Eigen::Matrix<double,14,1> k4;
+    Eigen::Matrix<double,12,1> k1;
+    Eigen::Matrix<double,12,1> k2;
+    Eigen::Matrix<double,12,1> k3;
+    Eigen::Matrix<double,12,1> k4;
 
     k1 = f(x, u) * dt;
     k2 = f(x+k1/2, u) * dt;
@@ -112,7 +116,7 @@ Eigen::MatrixXd OBSERVER_EKF::RK4(MatrixXd x, MatrixXd u)
 Eigen::MatrixXd OBSERVER_EKF::f(MatrixXd x, MatrixXd u)
 {
     // Define system dynamics
-    Eigen::Matrix<double,14,1> xdot;    
+    Eigen::Matrix<double,12,1> xdot;    
     xdot << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
             0,0,0;                                         // Disturbance_x, disturbance_y, disturbance_z in du, dv, dw
     return xdot; // dt is the time step
@@ -122,7 +126,7 @@ Eigen::MatrixXd OBSERVER_EKF::f(MatrixXd x, MatrixXd u)
 Eigen::MatrixXd OBSERVER_EKF::h(MatrixXd x)
 {
     // Define measurement model
-    Eigen::Matrix<double,14,1> y;
+    Eigen::Matrix<double,12,1> y;
     y << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
         (measurement_states.thrust_x-x(9))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x    
         (measurement_states.thrust_y-x(10))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
@@ -134,7 +138,7 @@ Eigen::MatrixXd OBSERVER_EKF::h(MatrixXd x)
 Eigen::MatrixXd OBSERVER_EKF::compute_jacobian_F(MatrixXd x, MatrixXd u)
 {
     // Define Jacobian of system dynamics
-    Eigen::Matrix<double,14,14> F;
+    Eigen::Matrix<double,12,12> F;
     double d = 1e-6;                    // finite difference step size
     Eigen::VectorXd f0 = RK4(x, u);
     for (int i = 0; i < n; i++){
@@ -150,7 +154,7 @@ Eigen::MatrixXd OBSERVER_EKF::compute_jacobian_F(MatrixXd x, MatrixXd u)
 Eigen::MatrixXd OBSERVER_EKF::compute_jacobian_H(MatrixXd x)
 {
     // Define Jacobian of measurement model
-    Eigen::Matrix<double,14,14> H;
+    Eigen::Matrix<double,12,12> H;
     double d = 1e-6;                    // finite difference step size
     Eigen::VectorXd f0 = h(x);
     for (int i = 0; i < n; i++){
