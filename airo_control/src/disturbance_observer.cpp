@@ -60,3 +60,17 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& 
 
     return force_disturbance;
 }
+
+void DISTURBANCE_OBSERVER::EKF(){
+    // Get input u and measurment y
+    input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z;
+    
+    meas_y << measurement_states.x, measurement_states.y, measurement_states.z,
+                measurement_states.u, measurement_states.v, measurement_states.w,
+                measurement_states.phi, measurement_states.theta, measurement_states.psi,
+                force_disturbance.x(), force_disturbance.y(), force_disturbance.z();
+    
+    // Define Jacobian matrices of system dynamics and measurement model
+    
+
+}
