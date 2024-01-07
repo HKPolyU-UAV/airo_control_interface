@@ -36,7 +36,7 @@ class DISTURBANCE_OBSERVER{
     Eigen::Matrix<double,3,1> input_u;                           // Inputs
     Eigen::Matrix<double,14,1> meas_y;                           // Measurement vector
     Eigen::Matrix<double,14,14> F,H,Kal,P_pred;                  // Jacobian of system dynamics, Jacobian of measurement model, Kalman gain matrix, Predicted covariance 
-    Eigen::Matrix<double,14,1> x_pred,y_pred,y_err;              // Predicted state, Predicted measurement, Measurement error
+    Eigen::Matrix<double,14,1> esti_x,x_pred,y_pred,y_err;       // Estimate states, Predicted state, Predicted measurement, Measurement error
 
     public:
     DISTURBANCE_OBSERVER(ros::NodeHandle&,const double&);
