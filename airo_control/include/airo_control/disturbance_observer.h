@@ -12,7 +12,7 @@ class DISTURBANCE_OBSERVER{
     private:
 
     double g = 9.81;
-    double dt = 1 / ;
+    double dt = 1 / ; // dt = 0.1
 
     struct MEASUREMENT_STATES{
         double x,y,z,u,v,w,phi,theta,psi,thrust_x,thrust_y,thrust_z;
@@ -28,11 +28,21 @@ class DISTURBANCE_OBSERVER{
     double hover_thrust,R_POS,R_VEL,R_ATT,R_CONTROL,Q_POS,Q_VEL,Q_ATT,Q_DISTURBANCE;
 
     // Weights
-    Eigen::Matrix<double,14,14> Q_noise,R_noise;
+    int m = 14;
+    Eigen::Matrix<double,14,14> Q_noise,R_noise,P0, esti_P;         // Process noise matrix, Measurement noise matrix, Initial covariance, Estimate covariance
+    Eigen::Matrix<double,3,1> meas_u;                               // Inputs
+    Eigen::Matrix<double,14,1> meas_y                               // Measurement vector
+    Eigen::Matrix<double,1,14> Q_cov;                               // Process noise value
 
     public:
     DISTURBANCE_OBSERVER(ros::NodeHandle&,const double&);
     Eigen::Vector3d observe(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&,const mavros_msgs::AttitudeTarget);
+    void EKF();
+    MatrixXd RK4(MatrixXd x, MatrixXd u);                   // EKF predict and update
+    MatrixXd f(MatrixXd x, MatrixXd u);                     // system process model
+    MatrixXd h(MatrixXd x);                                 // measurement model
+    MatrixXd compute_jacobian_F(MatrixXd x, MatrixXd u);    // compute Jacobian of system process model
+    MatrixXd compute_jacobian_H(MatrixXd x);                // compute Jacobian of measurement model
 };
 
 #endif

@@ -13,13 +13,16 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     nh.getParam("airo_control_node/observer/r_pos",Q_DISTURBANCE);
 
     // Weights
-    // Q_noise R_noise init
+    // Q_noise, R_noise, P0 init
+    Q_noise = Q_cov.asDiagonal();
+    R_noise = Eigen::MatrixXd::Identity(m,m)*(pow(dt,4)/4);
+    P0 = Eigen::MatrixXd::Identity(m,m);
+    esti_P = P0;
     
 }
 
 Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist,const mavros_msgs::AttitudeTarget attitude_target){
-    // attitude_target.thrust
-    // x,y,z,u,v,w for measurement and system states
+    // x,y,z,u,v,w in measurement and system states
     measurement_states.x = pose.pose.position.x; 
     measurement_states.y = pose.pose.position.y;
     measurement_states.z = pose.pose.position.z;
@@ -34,6 +37,7 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& 
     system_states.v = twist.twist.linear.y; 
     system_states.w = twist.twist.linear.z;
 
+    // phi,theta,psi in measurement and system states
     current_euler = BASE_CONTROLLER::q2rpy(pose.pose.orientation);
     measurement_states.phi = current_euler.x();
     measurement_states.theta = current_euler.y();
@@ -43,11 +47,13 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& 
     system_states.theta = current_euler.y();
     system_states.psi = current_euler.z();
 
+    // disturbances in system state
     Eigen::Vector3d force_disturbance;
     force_disturbance.x() = system_states.disturbance_x;
     force_disturbance.y() = system_states.disturbance_y;
     force_disturbance.z() = system_states.disturbance_z;
 
+    // U1(thrust) in measurement state
     measurement_states.thrust_x = attitude_target.thrust;
     measurement_states.thrust_y = attitude_target.thrust;
     measurement_states.thrust_z = attitude_target.thrust;
