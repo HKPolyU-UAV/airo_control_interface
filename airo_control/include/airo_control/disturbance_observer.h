@@ -7,6 +7,7 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <mavros_msgs/AttitudeTarget.h>
 #include "airo_control/controller/base_controller.h"
+#include <iostream>
 
 class DISTURBANCE_OBSERVER{
     private:
