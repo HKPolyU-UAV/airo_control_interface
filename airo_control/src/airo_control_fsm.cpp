@@ -47,7 +47,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     takeoff_land_sub = nh.subscribe<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",1,&AIRO_CONTROL_FSM::takeoff_land_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",1);
     fsm_info_pub = nh.advertise<airo_message::FSMInfo>("/airo_control/fsm_info",1);
-    disturbance_pub = nh.
+    disturbance_pub = nh.advertise<>("/",5);
 
     // ROS Services
     setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");

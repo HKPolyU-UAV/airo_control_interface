@@ -45,6 +45,12 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& 
 
     Eigen::Vector3d force_disturbance;
     force_disturbance.x() = system_states.disturbance_x;
+    force_disturbance.y() = system_states.disturbance_y;
+    force_disturbance.z() = system_states.disturbance_z;
+
+    measurement_states.thrust_x = attitude_target.thrust;
+    measurement_states.thrust_y = attitude_target.thrust;
+    measurement_states.thrust_z = attitude_target.thrust;
 
     return force_disturbance;
 }
