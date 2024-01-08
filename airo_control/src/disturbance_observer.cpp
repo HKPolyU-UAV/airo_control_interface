@@ -22,6 +22,7 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     R_cov << R_POS,R_POS,R_POS,R_VEL,R_VEL,R_VEL,R_ATT,R_ATT,R_ATT,
                 R_CONTROL,R_CONTROL,R_CONTROL;
     R_noise = R_cov.asDiagonal();
+    esti_x << 0,0,0,0,0,0,0,0,0,0,0,0;
     P0 = Eigen::MatrixXd::Identity(m,m);
     esti_P = P0;
     dt = 1/FSM_FREQUENCY;
