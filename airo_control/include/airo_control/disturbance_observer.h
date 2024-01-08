@@ -42,7 +42,6 @@ class DISTURBANCE_OBSERVER{
     public:
     DISTURBANCE_OBSERVER(ros::NodeHandle&,const double&);
     Eigen::Vector3d observe(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&,const mavros_msgs::AttitudeTarget);
-    void EKF();
     Eigen::MatrixXd RK4(Eigen::MatrixXd x, Eigen::MatrixXd u);                   // EKF predict and update
     Eigen::MatrixXd f(Eigen::MatrixXd x, Eigen::MatrixXd u);                     // system process model
     Eigen::MatrixXd h(Eigen::MatrixXd x);                                 // measurement model
