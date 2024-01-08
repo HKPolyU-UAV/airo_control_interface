@@ -85,7 +85,7 @@ void DISTURBANCE_OBSERVER::EKF(){
     y_err = meas_y - y_pred;                            // compute measurement error
     Kal = P_pred * H.transpose() * (H * P_pred * H.transpose() + R_noise).inverse();    // compute Kalman gain
     esti_x = x_pred + Kal * y_err;                      // correct state estimate
-    esti_P = (MatrixXd::Identity(m, m) - Kal * H) * P_pred * (MatrixXd::Identity(m, m) - Kal * H).transpose() + Kal*R_noise*Kal.transpose(); // correct covariance estimate
+    esti_P = (Eigen::MatrixXd::Identity(m, m) - Kal * H) * P_pred * (Eigen::MatrixXd::Identity(m, m) - Kal * H).transpose() + Kal*R_noise*Kal.transpose(); // correct covariance estimate
 
     // Update disturbance_x in system state
     force_disturbance.x() = esti_x(9);           
@@ -97,7 +97,7 @@ void DISTURBANCE_OBSERVER::EKF(){
 }
 
 // 4th order RK for integration
-Eigen::MatrixXd OBSERVER_EKF::RK4(MatrixXd x, MatrixXd u)
+Eigen::MatrixXd OBSERVER_EKF::RK4(Eigen::MatrixXd x, Eigen::MatrixXd u)
 {
     Eigen::Matrix<double,12,1> k1;
     Eigen::Matrix<double,12,1> k2;
@@ -113,7 +113,7 @@ Eigen::MatrixXd OBSERVER_EKF::RK4(MatrixXd x, MatrixXd u)
 }
 
 // Define system dynamics function
-Eigen::MatrixXd OBSERVER_EKF::f(MatrixXd x, MatrixXd u)
+Eigen::MatrixXd OBSERVER_EKF::f(Eigen::MatrixXd x, Eigen::MatrixXd u)
 {
     // Define system dynamics
     Eigen::Matrix<double,12,1> xdot;    
@@ -123,7 +123,7 @@ Eigen::MatrixXd OBSERVER_EKF::f(MatrixXd x, MatrixXd u)
 }
 
 // Define measurement model function (Z = Hx, Z: measurement vector [x,xdot,tau]; X: state vector [x,xdot,disturbance])
-Eigen::MatrixXd OBSERVER_EKF::h(MatrixXd x)
+Eigen::MatrixXd OBSERVER_EKF::h(Eigen::MatrixXd x)
 {
     // Define measurement model
     Eigen::Matrix<double,12,1> y;
@@ -135,7 +135,7 @@ Eigen::MatrixXd OBSERVER_EKF::h(MatrixXd x)
 }
 
 // Define function to compute Jacobian of system dynamics at current state and input
-Eigen::MatrixXd OBSERVER_EKF::compute_jacobian_F(MatrixXd x, MatrixXd u)
+Eigen::MatrixXd OBSERVER_EKF::compute_jacobian_F(Eigen::MatrixXd x, Eigen::MatrixXd u)
 {
     // Define Jacobian of system dynamics
     Eigen::Matrix<double,12,12> F;
@@ -151,7 +151,7 @@ Eigen::MatrixXd OBSERVER_EKF::compute_jacobian_F(MatrixXd x, MatrixXd u)
 }
 
 // Define function to compute Jacobian of measurement model at predicted state
-Eigen::MatrixXd OBSERVER_EKF::compute_jacobian_H(MatrixXd x)
+Eigen::MatrixXd OBSERVER_EKF::compute_jacobian_H(Eigen::MatrixXd x)
 {
     // Define Jacobian of measurement model
     Eigen::Matrix<double,12,12> H;
