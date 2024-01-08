@@ -29,6 +29,7 @@ class DISTURBANCE_OBSERVER{
 
     // Weights
     int m = 12;
+    int n = 12;
     Eigen::Matrix<double,12,12> Q_noise,R_noise,P0,esti_P;       // Process noise matrix, Measurement noise matrix, Initial covariance, Estimate covariance
     Eigen::Matrix<double,1,12> Q_cov,R_cov;                      // Process noise value, Measurement noise value
 
