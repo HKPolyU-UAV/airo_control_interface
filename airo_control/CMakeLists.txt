@@ -49,10 +49,10 @@ add_executable(airo_control_node
   src/airo_control_fsm.cpp
   src/controller/base_controller.cpp
   src/controller/mpc.cpp
-  src/controller/observer_ekf.cpp
   src/controller/backstepping.cpp
   src/controller/slidingmode.cpp
   src/rc_input.cpp
+  src/disturbance_observer.cpp
 )
 
 target_link_libraries(airo_control_node

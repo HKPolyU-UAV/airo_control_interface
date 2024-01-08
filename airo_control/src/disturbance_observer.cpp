@@ -77,15 +77,15 @@ void DISTURBANCE_OBSERVER::EKF(){
     // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, input_u);             // compute Jacobian of system dynamics at current state and input
     x_pred = RK4(esti_x, input_u);                       // predict state at time k+1|k
-    P_pred = F * esti_P * F.transpose() + noise_Q;      // predict covariance at time k+1|k
+    P_pred = F * esti_P * F.transpose() + Q_noise;      // predict covariance at time k+1|k
 
     // Update step: correct state and covariance using measurement at time k+1
     H = compute_jacobian_H(x_pred);                     // compute Jacobian of measurement model at predicted state
     y_pred = h(x_pred);                                 // predict measurement at time k+1
     y_err = meas_y - y_pred;                            // compute measurement error
-    Kal = P_pred * H.transpose() * (H * P_pred * H.transpose() + noise_R).inverse();    // compute Kalman gain
+    Kal = P_pred * H.transpose() * (H * P_pred * H.transpose() + R_noise).inverse();    // compute Kalman gain
     esti_x = x_pred + Kal * y_err;                      // correct state estimate
-    esti_P = (MatrixXd::Identity(n, n) - Kal * H) * P_pred * (MatrixXd::Identity(n, n) - Kal * H).transpose() + Kal*noise_R*Kal.transpose(); // correct covariance estimate
+    esti_P = (MatrixXd::Identity(m, m) - Kal * H) * P_pred * (MatrixXd::Identity(m, m) - Kal * H).transpose() + Kal*R_noise*Kal.transpose(); // correct covariance estimate
 
     // Update disturbance_x in system state
     force_disturbance.x() = esti_x(9);           
