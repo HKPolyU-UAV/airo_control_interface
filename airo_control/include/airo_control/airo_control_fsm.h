@@ -79,6 +79,7 @@ class AIRO_CONTROL_FSM{
 	ros::Subscriber takeoff_land_sub;
 	ros::Publisher setpoint_pub;
 	ros::Publisher fsm_info_pub;
+	ross::Publisher disturbance_pub;
 
 	// ROS Services
 	ros::ServiceClient setmode_srv;
