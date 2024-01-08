@@ -12,10 +12,6 @@
 class DISTURBANCE_OBSERVER{
     private:
 
-    double g = 9.81;
-    //double dt = 1 / ; // dt = 0.1
-    double dt = 0.1;
-
     struct MEASUREMENT_STATES{
         double x,y,z,u,v,w,phi,theta,psi,thrust_x,thrust_y,thrust_z;
     };
@@ -27,7 +23,9 @@ class DISTURBANCE_OBSERVER{
     SYSTEM_STATES system_states;
     
     // Parameters
-    double hover_thrust,R_POS,R_VEL,R_ATT,R_CONTROL,Q_POS,Q_VEL,Q_ATT,Q_DISTURBANCE;
+    double FSM_FREQUENCY,hover_thrust,R_POS,R_VEL,R_ATT,R_CONTROL,Q_POS,Q_VEL,Q_ATT,Q_DISTURBANCE;
+    double g = 9.81;
+    double dt = 1 / FSM_FREQUENCY; // dt = 0.1
 
     // Weights
     int m = 12;

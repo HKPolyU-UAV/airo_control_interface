@@ -11,6 +11,8 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     nh.getParam("airo_control_node/observer/r_pos",Q_VEL);
     nh.getParam("airo_control_node/observer/r_pos",Q_ATT);
     nh.getParam("airo_control_node/observer/r_pos",Q_DISTURBANCE);
+    nh.getParam("airo_control_node/fsm/fsm_frequency",FSM_FREQUENCY);
+
 
     // Weights
     // Q_noise, R_noise, P0 init
@@ -128,9 +130,9 @@ Eigen::MatrixXd OBSERVER_EKF::h(Eigen::MatrixXd x)
     // Define measurement model
     Eigen::Matrix<double,12,1> y;
     y << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
-        (measurement_states.thrust_x-x(9))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x    
-        (measurement_states.thrust_y-x(10))*(param.hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
-        (measurement_states.thrust_z-x(11)+g)*(param.hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
+        (measurement_states.thrust_x-x(9))*(HOVER_THRUST)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x    
+        (measurement_states.thrust_y-x(10))*(HOVER_THRUST)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
+        (measurement_states.thrust_z-x(11)+g)*(HOVER_THRUST)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
     return y;
 }
 
