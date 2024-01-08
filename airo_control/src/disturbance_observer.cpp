@@ -56,17 +56,17 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& 
     system_states.psi = current_euler.z();
 
     // disturbances in system state
-    Eigen::Vector3Stamped force_disturbance;
-    force_disturbance.x() = system_states.disturbance_x;
-    force_disturbance.y() = system_states.disturbance_y;
-    force_disturbance.z() = system_states.disturbance_z;
+    geometry_msgs::Vector3Stamped force_disturbance;
+    force_disturbance.vector.x = system_states.disturbance_x;
+    force_disturbance.vector.y = system_states.disturbance_y;
+    force_disturbance.vector.z = system_states.disturbance_z;
 
     // U1(thrust) in measurement state
     measurement_states.thrust_x = attitude_target.thrust;
     measurement_states.thrust_y = attitude_target.thrust;
     measurement_states.thrust_z = attitude_target.thrust;
 
-    return force_disturbance;
+    
 
     // Get input u and measurment y
     input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z;
@@ -90,12 +90,14 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& 
     esti_P = (Eigen::MatrixXd::Identity(m, m) - Kal * H) * P_pred * (Eigen::MatrixXd::Identity(m, m) - Kal * H).transpose() + Kal*R_noise*Kal.transpose(); // correct covariance estimate
 
     // Update disturbance_x in system state
-    force_disturbance.x() = esti_x(9);           
-    force_disturbance.y() = esti_x(10);
-    force_disturbance.z() = esti_x(11);
+    force_disturbance.vector.x = esti_x(9);           
+    force_disturbance.vector.y = esti_x(10);
+    force_disturbance.vector.z = esti_x(11);
 
     std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
-    std::cout << "disturbance_x: "<<force_disturbance.x()<<"disturbance_y: "<<force_disturbance.y()<<"disturbance_z: "<<force_disturbance.z()<<std::endl;
+    std::cout << "disturbance_x: "<<force_disturbance.vector.x<<"disturbance_y: "<<force_disturbance.vector.y<<"disturbance_z: "<<force_disturbance.vector.z<<std::endl;
+    
+    return force_disturbance;
 }
 
 
