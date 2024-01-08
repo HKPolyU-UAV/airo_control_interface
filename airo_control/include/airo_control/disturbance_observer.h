@@ -25,7 +25,7 @@ class DISTURBANCE_OBSERVER{
     // Parameters
     double FSM_FREQUENCY,hover_thrust,current_euler,R_POS,R_VEL,R_ATT,R_CONTROL,Q_POS,Q_VEL,Q_ATT,Q_DISTURBANCE;
     double g = 9.81;
-    double dt = 1 / FSM_FREQUENCY; // dt = 0.1
+    double dt;
 
     // Weights
     int m = 12;
