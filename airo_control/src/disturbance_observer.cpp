@@ -4,13 +4,13 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     // ROS Parameters
     hover_thrust = HOVER_THRUST;
     nh.getParam("airo_control_node/observer/r_pos",R_POS);
-    nh.getParam("airo_control_node/observer/r_pos",R_VEL);
-    nh.getParam("airo_control_node/observer/r_pos",R_ATT);
-    nh.getParam("airo_control_node/observer/r_pos",R_CONTROL);
-    nh.getParam("airo_control_node/observer/r_pos",Q_POS);
-    nh.getParam("airo_control_node/observer/r_pos",Q_VEL);
-    nh.getParam("airo_control_node/observer/r_pos",Q_ATT);
-    nh.getParam("airo_control_node/observer/r_pos",Q_DISTURBANCE);
+    nh.getParam("airo_control_node/observer/r_vel",R_VEL);
+    nh.getParam("airo_control_node/observer/r_att",R_ATT);
+    nh.getParam("airo_control_node/observer/r_control",R_CONTROL);
+    nh.getParam("airo_control_node/observer/q_pos",Q_POS);
+    nh.getParam("airo_control_node/observer/q_vel",Q_VEL);
+    nh.getParam("airo_control_node/observer/q_att",Q_ATT);
+    nh.getParam("airo_control_node/observer/q_disturbance",Q_DISTURBANCE);
     nh.getParam("airo_control_node/fsm/fsm_frequency",FSM_FREQUENCY);
 
 
@@ -19,7 +19,7 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     Q_cov << Q_POS,Q_POS,Q_POS,Q_VEL,Q_VEL,Q_VEL,Q_ATT,Q_ATT,Q_ATT,
                 Q_DISTURBANCE,Q_DISTURBANCE,Q_DISTURBANCE;
     Q_noise = Q_cov.asDiagonal();
-    R_cov = R_POS,R_POS,R_POS,R_VEL,R_VEL,R_VEL,R_ATT,R_ATT,R_ATT,
+    R_cov << R_POS,R_POS,R_POS,R_VEL,R_VEL,R_VEL,R_ATT,R_ATT,R_ATT,
                 R_CONTROL,R_CONTROL,R_CONTROL;
     R_noise = R_cov.asDiagonal();
     P0 = Eigen::MatrixXd::Identity(m,m);
