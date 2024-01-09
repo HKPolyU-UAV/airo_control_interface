@@ -76,7 +76,10 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     measurement_states.thrust_y = attitude_target.thrust;
     measurement_states.thrust_z = attitude_target.thrust;
 
-    esti_x << 0,0,0,0,0,0,0,0,0,0,0,0;
+    esti_x << pose.pose.position.x,pose.pose.position.y,pose.pose.position.z,
+                pose.pose.position.u,pose.pose.position.v,pose.pose.position.w,
+                system_states.phi,system_states.theta,system_states.psi,
+                0,0,0;                                                             
 
     // Get input u and measurment y
     input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z;
@@ -100,13 +103,29 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     esti_P = (Eigen::MatrixXd::Identity(m, m) - Kal * H) * P_pred * (Eigen::MatrixXd::Identity(m, m) - Kal * H).transpose() + Kal*R_noise*Kal.transpose(); // correct covariance estimate
 
     // Update disturbance_x in system state
+    system_states.x = esti_x(0);
+    system_states.y = esti_x(1);
+    system_states.z = esti_x(2);
+    system_states.u = esti_x(3);
+    system_states.v = esti_x(4);
+    system_states.w = esti_x(5);
+    system_states.phi = esti_x(6);
+    system_states.theta = esti_x(7);
+    system_states.psi = esti_x(8);
     force_disturbance.vector.x = esti_x(9);           
     force_disturbance.vector.y = esti_x(10);
     force_disturbance.vector.z = esti_x(11);
 
     std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
-    std::cout << "disturbance_x: "<<force_disturbance.vector.x<<"disturbance_y: "<<force_disturbance.vector.y<<"disturbance_z: "<<force_disturbance.vector.z<<std::endl;
-    
+    std::cout << "state_x: "<<system_states.x<< " state_y: "<<system_states.y<<" state_z: "<<system_states.z<<std::endl;
+    std::cout << "meau_x: "<<measurement_states.x<< " meau_y: "<<measurement_states.y<<" meau_z: "<<measurement_states.z<<std::endl;
+    std::cout << "state_u: "<<system_states.u<< " state_v: "<<system_states.v<<" state_w: "<<system_states.w<<std::endl;
+    std::cout << "meau_u: "<<measurement_states.u<< " meau_v: "<<measurement_states.v<<" meau_w: "<<measurement_states.w<<std::endl;
+    std::cout << "state_phi: "<<system_states.phi<< " state_theta: "<<system_states.theta<<" state_psi: "<<system_states.psi<<std::endl;
+    std::cout << "meau_phi: "<<measurement_states.phi<< " meau_theta: "<<measurement_states.theta<<" meau_psi: "<<measurement_states.psi<<std::endl;
+    std::cout << "disturbance_x: "<<force_disturbance.vector.x<<"disturbance_y: "<<force_disturbance.vector.y<<" disturbance_z: "<<force_disturbance.vector.z<<std::endl;
+    std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
+
     return force_disturbance;
 }
 
