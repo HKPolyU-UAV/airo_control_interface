@@ -99,13 +99,19 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, input_u);             // compute Jacobian of system dynamics at current state and input
     std::cout << "F: "<< F<< std::endl;
+    // std::cout << "esti_x: "<< esti_x<< std::endl;
+    // std::cout << "input_u: "<< input_u<< std::endl;
+
+    x_pred = RK4(esti_x, input_u);                       // predict state at time k+1|k
+    std::cout << "x_pred: "<< x_pred<< std::endl;
     std::cout << "esti_x: "<< esti_x<< std::endl;
     std::cout << "input_u: "<< input_u<< std::endl;
-
-    // x_pred = RK4(esti_x, input_u);                       // predict state at time k+1|k
-    // P_pred = F * esti_P * F.transpose() + Q_noise;       // predict covariance at time k+1|k
-
-    // // Update step: correct state and covariance using measurement at time k+1
+    P_pred = F * esti_P * F.transpose() + Q_noise;       // predict covariance at time k+1|k
+    std::cout << "P_pred: "<< P_pred<< std::endl;
+    std::cout << "esti_P: "<< esti_P<< std::endl;
+    std::cout << "Q_noise: "<< Q_noise<< std::endl;
+    
+    // Update step: correct state and covariance using measurement at time k+1
     // H = compute_jacobian_H(x_pred);                     // compute Jacobian of measurement model at predicted state
     // y_pred = h(x_pred);                                 // predict measurement at time k+1
     // y_err = meas_y - y_pred;                            // compute measurement error
