@@ -9,10 +9,10 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <mavros_msgs/AttitudeTarget.h>
-#include "airo_control/controller/base_controller.h"
 
 class DISTURBANCE_OBSERVER{
     private:
+    Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);  // Quaternion to euler angle
 
     struct MEASUREMENT_STATES{
         double x,y,z,u,v,w,phi,theta,psi,thrust_x,thrust_y,thrust_z;

@@ -29,6 +29,13 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     dt = 1/FSM_FREQUENCY;
     
 }
+Eigen::Vector3d DISTURBANCE_OBSERVER::q2rpy(const geometry_msgs::Quaternion& quaternion){
+    tf::Quaternion tf_quaternion;
+    Eigen::Vector3d euler;
+    tf::quaternionMsgToTF(quaternion,tf_quaternion);
+    tf::Matrix3x3(tf_quaternion).getRPY(euler.x(), euler.y(), euler.z());
+    return euler;
+}
 
 geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist,const mavros_msgs::AttitudeTarget attitude_target){
     // x,y,z,u,v,w in measurement and system states
@@ -48,7 +55,7 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
 
     // phi,theta,psi in measurement and system states
     // BASE_CONTROLLER base_controller;
-    Eigen::Vector3d current_euler = BASE_CONTROLLER::q2rpy(pose.pose.orientation);
+    Eigen::Vector3d current_euler = q2rpy(pose.pose.orientation);
     // Eigen::Vector3d current_euler = base_controller.q2rpy(pose.pose.orientation);
     measurement_states.phi = current_euler.x();
     measurement_states.theta = current_euler.y();
