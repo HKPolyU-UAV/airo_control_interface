@@ -76,9 +76,9 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     measurement_states.thrust_y = attitude_target.thrust;
     measurement_states.thrust_z = attitude_target.thrust;
 
-    esti_x << pose.pose.position.x,pose.pose.position.y,pose.pose.position.z,
-                pose.pose.position.u,pose.pose.position.v,pose.pose.position.w,
-                system_states.phi,system_states.theta,system_states.psi,
+    esti_x << measurement_states.x, measurement_states.y, measurement_states.z,
+                measurement_states.u, measurement_states.v, measurement_states.w,
+                measurement_states.phi, measurement_states.theta, measurement_states.psi,
                 0,0,0;                                                             
 
     // Get input u and measurment y
