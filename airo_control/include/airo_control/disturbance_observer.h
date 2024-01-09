@@ -2,13 +2,15 @@
 #define DISTURBANCE_OBSERVER_H
 
 #include <iostream>
-
+#include <fstream>
 #include <ros/ros.h>
 #include <eigen3/Eigen/Dense>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <mavros_msgs/AttitudeTarget.h>
+#include <tf/tf.h>
+
 
 class DISTURBANCE_OBSERVER{
     private:
@@ -38,8 +40,7 @@ class DISTURBANCE_OBSERVER{
     // EKF Parameters
     Eigen::Matrix<double,3,1> input_u;                           // Inputs
     Eigen::Matrix<double,12,1> meas_y;                           // Measurement vector
-    Eigen::Matrix<double,12,12> F,H,Kal,P_pred;                  // Jacobian of system dynamics, Jacobian of measurement model, Kalman gain matrix, Predicted covariance 
-    Eigen::Matrix<double,12,1> esti_x,x_pred,y_pred,y_err;       // Estimate states, Predicted state, Predicted measurement, Measurement error
+    Eigen::Matrix<double,12,1> esti_x;                           // Estimate states
 
     public:
     DISTURBANCE_OBSERVER(ros::NodeHandle&,const double&);

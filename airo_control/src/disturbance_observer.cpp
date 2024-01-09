@@ -1,5 +1,4 @@
 #include "airo_control/disturbance_observer.h"
-#include "airo_control/controller/base_controller.h"
 
 DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOVER_THRUST){
     // ROS Parameters
@@ -14,12 +13,12 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     nh.getParam("airo_control_node/observer/q_disturbance",Q_DISTURBANCE);
     nh.getParam("airo_control_node/fsm/fsm_frequency",FSM_FREQUENCY);
 
-
     // Weights
     // Q_noise, R_noise, P0 init
     Q_cov << Q_POS,Q_POS,Q_POS,Q_VEL,Q_VEL,Q_VEL,Q_ATT,Q_ATT,Q_ATT,
                 Q_DISTURBANCE,Q_DISTURBANCE,Q_DISTURBANCE;
     Q_noise = Q_cov.asDiagonal();
+
     R_cov << R_POS,R_POS,R_POS,R_VEL,R_VEL,R_VEL,R_ATT,R_ATT,R_ATT,
                 R_CONTROL,R_CONTROL,R_CONTROL;
     R_noise = R_cov.asDiagonal();
@@ -28,8 +27,9 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     esti_P = P0;
     dt = 1/FSM_FREQUENCY;
     esti_x << 0,0,0,0,0,0,0,0,0,0,0,0;
-    
+    // std::cout <<"esti_x b4 function starts: "<<esti_x<<std::endl;
 }
+
 Eigen::Vector3d DISTURBANCE_OBSERVER::q2rpy(const geometry_msgs::Quaternion& quaternion){
     tf::Quaternion tf_quaternion;
     Eigen::Vector3d euler;
@@ -55,9 +55,7 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     system_states.w = twist.twist.linear.z;
 
     // phi,theta,psi in measurement and system states
-    // BASE_CONTROLLER base_controller;
     Eigen::Vector3d current_euler = q2rpy(pose.pose.orientation);
-    // Eigen::Vector3d current_euler = base_controller.q2rpy(pose.pose.orientation);
     measurement_states.phi = current_euler.x();
     measurement_states.theta = current_euler.y();
     measurement_states.psi = current_euler.z();
@@ -77,36 +75,43 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     measurement_states.thrust_y = attitude_target.thrust;
     measurement_states.thrust_z = attitude_target.thrust;
 
-                                                                 
-
     // Get input u and measurment y
     input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z;
-    
+   
     meas_y << measurement_states.x, measurement_states.y, measurement_states.z,
                 measurement_states.u, measurement_states.v, measurement_states.w,
                 measurement_states.phi, measurement_states.theta, measurement_states.psi,
                 input_u[0], input_u[1], input_u[2];
-    
-     // Prediction step: estimate state and covariance at time k+1|k
+
+    // Define Jacobian matrices of system dynamics and measurement model
+    Eigen::Matrix<double,12,12> F;     // Jacobian of system dynamics
+    Eigen::Matrix<double,12,12> H;     // Jacobian of measurement model
+
+    // Define Kalman gain matrix
+    Eigen::Matrix<double,12,12> Kal;
+
+    // Define prediction and update steps
+    Eigen::Matrix<double,12,1> x_pred;     // predicted state
+    Eigen::Matrix<double,12,12> P_pred;    // predicted covariance
+    Eigen::Matrix<double,12,1> y_pred;     // predicted measurement
+    Eigen::Matrix<double,12,1> y_err;      // measurement error
+
+    // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, input_u);             // compute Jacobian of system dynamics at current state and input
     std::cout << "F: "<< F<< std::endl;
-    x_pred = RK4(esti_x, input_u);                       // predict state at time k+1|k
-    std::cout<< "x_pred: "<< x_pred<<std::endl;
-    P_pred = F * esti_P * F.transpose() + Q_noise;       // predict covariance at time k+1|k
-    std::cout <<"P_pred: "<<P_pred<<std::endl;
-    // Update step: correct state and covariance using measurement at time k+1
-    H = compute_jacobian_H(x_pred);                     // compute Jacobian of measurement model at predicted state
-    std::cout << "H: "<< H<< std::endl;
-    y_pred = h(x_pred);                                 // predict measurement at time k+1
-    std::cout << "y_pred: "<< y_pred<< std::endl;
-    y_err = meas_y - y_pred;                            // compute measurement error
-    std::cout << "y_err: "<< y_err<< std::endl;
-    Kal = P_pred * H.transpose() * (H * P_pred * H.transpose() + R_noise).inverse();    // compute Kalman gain
-    std::cout << "Kal: "<< Kal<< std::endl;
-    esti_x = x_pred + Kal * y_err;                      // correct state estimate
     std::cout << "esti_x: "<< esti_x<< std::endl;
-    esti_P = (Eigen::MatrixXd::Identity(m, m) - Kal * H) * P_pred * (Eigen::MatrixXd::Identity(m, m) - Kal * H).transpose() + Kal*R_noise*Kal.transpose(); // correct covariance estimate
-    std::cout << "esti_P: "<< esti_P<< std::endl;
+    std::cout << "input_u: "<< input_u<< std::endl;
+
+    // x_pred = RK4(esti_x, input_u);                       // predict state at time k+1|k
+    // P_pred = F * esti_P * F.transpose() + Q_noise;       // predict covariance at time k+1|k
+
+    // // Update step: correct state and covariance using measurement at time k+1
+    // H = compute_jacobian_H(x_pred);                     // compute Jacobian of measurement model at predicted state
+    // y_pred = h(x_pred);                                 // predict measurement at time k+1
+    // y_err = meas_y - y_pred;                            // compute measurement error
+    // Kal = P_pred * H.transpose() * (H * P_pred * H.transpose() + R_noise).inverse();    // compute Kalman gain
+    // esti_x = x_pred + Kal * y_err;                      // correct state estimate
+    // esti_P = (Eigen::MatrixXd::Identity(m, m) - Kal * H) * P_pred * (Eigen::MatrixXd::Identity(m, m) - Kal * H).transpose() + Kal*R_noise*Kal.transpose(); // correct covariance estimate
 
     // Update disturbance_x in system state
     system_states.x = esti_x(0);
@@ -122,20 +127,21 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     force_disturbance.vector.y = esti_x(10);
     force_disturbance.vector.z = esti_x(11);
 
-    std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
-    std::cout << "state_x: "<<system_states.x<< " state_y: "<<system_states.y<<" state_z: "<<system_states.z<<std::endl;
-    std::cout << "meau_x: "<<measurement_states.x<< " meau_y: "<<measurement_states.y<<" meau_z: "<<measurement_states.z<<std::endl;
-    std::cout << "state_u: "<<system_states.u<< " state_v: "<<system_states.v<<" state_w: "<<system_states.w<<std::endl;
-    std::cout << "meau_u: "<<measurement_states.u<< " meau_v: "<<measurement_states.v<<" meau_w: "<<measurement_states.w<<std::endl;
-    std::cout << "state_phi: "<<system_states.phi<< " state_theta: "<<system_states.theta<<" state_psi: "<<system_states.psi<<std::endl;
-    std::cout << "meau_phi: "<<measurement_states.phi<< " meau_theta: "<<measurement_states.theta<<" meau_psi: "<<measurement_states.psi<<std::endl;
-    std::cout << "disturbance_x: "<<force_disturbance.vector.x<<"disturbance_y: "<<force_disturbance.vector.y<<" disturbance_z: "<<force_disturbance.vector.z<<std::endl;
-    std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
+    std::cout <<"esti_x during function: "<<esti_x<<std::endl;
+
+    // std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
+    // std::cout << "state_x: "<<system_states.x<< " state_y: "<<system_states.y<<" state_z: "<<system_states.z<<std::endl;
+    // std::cout << "meau_x: "<<measurement_states.x<< " meau_y: "<<measurement_states.y<<" meau_z: "<<measurement_states.z<<std::endl;
+    // std::cout << "state_u: "<<system_states.u<< " state_v: "<<system_states.v<<" state_w: "<<system_states.w<<std::endl;
+    // std::cout << "meau_u: "<<measurement_states.u<< " meau_v: "<<measurement_states.v<<" meau_w: "<<measurement_states.w<<std::endl;
+    // std::cout << "state_phi: "<<system_states.phi<< " state_theta: "<<system_states.theta<<" state_psi: "<<system_states.psi<<std::endl;
+    // std::cout << "meau_phi: "<<measurement_states.phi<< " meau_theta: "<<measurement_states.theta<<" meau_psi: "<<measurement_states.psi<<std::endl;
+    // std::cout << "disturbance_x: "<<force_disturbance.vector.x<<"disturbance_y: "<<force_disturbance.vector.y<<" disturbance_z: "<<force_disturbance.vector.z<<std::endl;
+    // std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
+    // std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
 
     return force_disturbance;
 }
-
-
 
 // 4th order RK for integration
 Eigen::MatrixXd DISTURBANCE_OBSERVER::RK4(Eigen::MatrixXd x, Eigen::MatrixXd u)
