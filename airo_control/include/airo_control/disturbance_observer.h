@@ -1,13 +1,15 @@
 #ifndef DISTURBANCE_OBSERVER_H
 #define DISTURBANCE_OBSERVER_H
 
+#include <iostream>
+
 #include <ros/ros.h>
 #include <eigen3/Eigen/Dense>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Vector3Stamped.h>
 #include <mavros_msgs/AttitudeTarget.h>
 #include "airo_control/controller/base_controller.h"
-#include <iostream>
 
 class DISTURBANCE_OBSERVER{
     private:
@@ -41,7 +43,7 @@ class DISTURBANCE_OBSERVER{
 
     public:
     DISTURBANCE_OBSERVER(ros::NodeHandle&,const double&);
-    Eigen::Vector3d observe(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&,const mavros_msgs::AttitudeTarget);
+    geometry_msgs::Vector3Stamped observe(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&,const mavros_msgs::AttitudeTarget);
     Eigen::MatrixXd RK4(Eigen::MatrixXd x, Eigen::MatrixXd u);                   // EKF predict and update
     Eigen::MatrixXd f(Eigen::MatrixXd x, Eigen::MatrixXd u);                     // system process model
     Eigen::MatrixXd h(Eigen::MatrixXd x);                                 // measurement model

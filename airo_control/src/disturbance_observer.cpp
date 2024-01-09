@@ -1,4 +1,5 @@
 #include "airo_control/disturbance_observer.h"
+#include "airo_control/controller/base_controller.h"
 
 DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOVER_THRUST){
     // ROS Parameters
@@ -22,14 +23,14 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     R_cov << R_POS,R_POS,R_POS,R_VEL,R_VEL,R_VEL,R_ATT,R_ATT,R_ATT,
                 R_CONTROL,R_CONTROL,R_CONTROL;
     R_noise = R_cov.asDiagonal();
-    esti_x << 0,0,0,0,0,0,0,0,0,0,0,0;
+    
     P0 = Eigen::MatrixXd::Identity(m,m);
     esti_P = P0;
     dt = 1/FSM_FREQUENCY;
     
 }
 
-Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist,const mavros_msgs::AttitudeTarget attitude_target){
+geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist,const mavros_msgs::AttitudeTarget attitude_target){
     // x,y,z,u,v,w in measurement and system states
     measurement_states.x = pose.pose.position.x; 
     measurement_states.y = pose.pose.position.y;
@@ -46,7 +47,7 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& 
     system_states.w = twist.twist.linear.z;
 
     // phi,theta,psi in measurement and system states
-    current_euler = BASE_CONTROLLER::q2rpy(pose.pose.orientation);
+    Eigen::Vector3d current_euler = BASE_CONTROLLER::q2rpy(pose.pose.orientation);
     measurement_states.phi = current_euler.x();
     measurement_states.theta = current_euler.y();
     measurement_states.psi = current_euler.z();
@@ -66,7 +67,7 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& 
     measurement_states.thrust_y = attitude_target.thrust;
     measurement_states.thrust_z = attitude_target.thrust;
 
-    
+    esti_x << 0,0,0,0,0,0,0,0,0,0,0,0;
 
     // Get input u and measurment y
     input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z;
@@ -79,7 +80,7 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& 
      // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, input_u);             // compute Jacobian of system dynamics at current state and input
     x_pred = RK4(esti_x, input_u);                       // predict state at time k+1|k
-    P_pred = F * esti_P * F.transpose() + Q_noise;      // predict covariance at time k+1|k
+    P_pred = F * esti_P * F.transpose() + Q_noise;       // predict covariance at time k+1|k
 
     // Update step: correct state and covariance using measurement at time k+1
     H = compute_jacobian_H(x_pred);                     // compute Jacobian of measurement model at predicted state

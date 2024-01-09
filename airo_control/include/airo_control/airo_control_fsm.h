@@ -109,7 +109,7 @@ class AIRO_CONTROL_FSM{
 	std::unique_ptr<DISTURBANCE_OBSERVER> disturbance_observer;
 
 	// Disturbance
-	Eigen::Vector3d force_disturbance;
+	geometry_msgs::Vector3Stamped force_disturbance;
 
 	public:
 
