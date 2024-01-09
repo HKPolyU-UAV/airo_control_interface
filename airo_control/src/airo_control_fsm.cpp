@@ -134,6 +134,8 @@ void AIRO_CONTROL_FSM::process(){
     fsm_info.header.stamp = current_time;
     fsm_info.is_landed = is_landed;
     fsm_info_pub.publish(fsm_info);
+    
+    force_disturbance.header.stamp = current_time;
     disturbance_pub.publish(force_disturbance);
 
     // Step 6: Reset all variables
