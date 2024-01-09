@@ -27,6 +27,7 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     P0 = Eigen::MatrixXd::Identity(m,m);
     esti_P = P0;
     dt = 1/FSM_FREQUENCY;
+    esti_x << 0,0,0,0,0,0,0,0,0,0,0,0;
     
 }
 Eigen::Vector3d DISTURBANCE_OBSERVER::q2rpy(const geometry_msgs::Quaternion& quaternion){
@@ -76,10 +77,7 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     measurement_states.thrust_y = attitude_target.thrust;
     measurement_states.thrust_z = attitude_target.thrust;
 
-    esti_x << measurement_states.x, measurement_states.y, measurement_states.z,
-                measurement_states.u, measurement_states.v, measurement_states.w,
-                measurement_states.phi, measurement_states.theta, measurement_states.psi,
-                0,0,0;                                                             
+                                                                 
 
     // Get input u and measurment y
     input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z;
@@ -91,16 +89,24 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     
      // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, input_u);             // compute Jacobian of system dynamics at current state and input
+    std::cout << "F: "<< F<< std::endl;
     x_pred = RK4(esti_x, input_u);                       // predict state at time k+1|k
+    std::cout<< "x_pred: "<< x_pred<<std::endl;
     P_pred = F * esti_P * F.transpose() + Q_noise;       // predict covariance at time k+1|k
-
+    std::cout <<"P_pred: "<<P_pred<<std::endl;
     // Update step: correct state and covariance using measurement at time k+1
     H = compute_jacobian_H(x_pred);                     // compute Jacobian of measurement model at predicted state
+    std::cout << "H: "<< H<< std::endl;
     y_pred = h(x_pred);                                 // predict measurement at time k+1
+    std::cout << "y_pred: "<< y_pred<< std::endl;
     y_err = meas_y - y_pred;                            // compute measurement error
+    std::cout << "y_err: "<< y_err<< std::endl;
     Kal = P_pred * H.transpose() * (H * P_pred * H.transpose() + R_noise).inverse();    // compute Kalman gain
+    std::cout << "Kal: "<< Kal<< std::endl;
     esti_x = x_pred + Kal * y_err;                      // correct state estimate
+    std::cout << "esti_x: "<< esti_x<< std::endl;
     esti_P = (Eigen::MatrixXd::Identity(m, m) - Kal * H) * P_pred * (Eigen::MatrixXd::Identity(m, m) - Kal * H).transpose() + Kal*R_noise*Kal.transpose(); // correct covariance estimate
+    std::cout << "esti_P: "<< esti_P<< std::endl;
 
     // Update disturbance_x in system state
     system_states.x = esti_x(0);
