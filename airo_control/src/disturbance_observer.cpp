@@ -47,7 +47,9 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     system_states.w = twist.twist.linear.z;
 
     // phi,theta,psi in measurement and system states
+    // BASE_CONTROLLER base_controller;
     Eigen::Vector3d current_euler = BASE_CONTROLLER::q2rpy(pose.pose.orientation);
+    // Eigen::Vector3d current_euler = base_controller.q2rpy(pose.pose.orientation);
     measurement_states.phi = current_euler.x();
     measurement_states.theta = current_euler.y();
     measurement_states.psi = current_euler.z();
