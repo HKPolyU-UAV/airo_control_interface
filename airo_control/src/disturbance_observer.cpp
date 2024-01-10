@@ -137,7 +137,7 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     //         "psi"<<","<<system_states.psi<<","<<measurement_states.psi<<","<<std::endl;
     // save.close();
 
-    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/disturbance_tracking.csv", std::ios::app);
+    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/log/disturbance_tracking.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<"disturbance_x"<<","<<force_disturbance.vector.x<<","<<
             "disturbance_y"<<","<<force_disturbance.vector.y<<","<<
