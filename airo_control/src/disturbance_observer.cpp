@@ -28,7 +28,6 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     dt = 1/FSM_FREQUENCY;
  
     esti_x << 0,0,0,0,0,0,0.001,0.001,0.001,0,0,0; // phi & theta CAN'T be 0
-    std::cout <<"esti_x b4 function starts: "<<esti_x<<std::endl;
 }
 
 Eigen::Vector3d DISTURBANCE_OBSERVER::q2rpy(const geometry_msgs::Quaternion& quaternion){
@@ -99,24 +98,12 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
 
     // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, input_u);             // compute Jacobian of system dynamics at current state and input
-    std::cout << "F: "<< F<< std::endl;
-    // std::cout << "esti_x: "<< esti_x<< std::endl;
-    // std::cout << "input_u: "<< input_u<< std::endl;
-
     x_pred = RK4(esti_x, input_u);                       // predict state at time k+1|k
-    std::cout << "x_pred: "<< x_pred<< std::endl;
-    std::cout << "esti_x: "<< esti_x<< std::endl;
-    std::cout << "input_u: "<< input_u<< std::endl;
     P_pred = F * esti_P * F.transpose() + Q_noise;       // predict covariance at time k+1|k
-    std::cout << "P_pred: "<< P_pred<< std::endl;
-    std::cout << "esti_P: "<< esti_P<< std::endl;
-    std::cout << "Q_noise: "<< Q_noise<< std::endl;
+
     
     // Update step: correct state and covariance using measurement at time k+1
-    H = compute_jacobian_H(x_pred);                     // compute Jacobian of measurement model at predicted state
-    std::cout << "x_pred: "<< x_pred<< std::endl;
-    std::cout << "H: "<< H<< std::endl;
-    
+    H = compute_jacobian_H(x_pred);                     // compute Jacobian of measurement model at predicted state    
     y_pred = h(x_pred);                                 // predict measurement at time k+1
     y_err = meas_y - y_pred;                            // compute measurement error
     Kal = P_pred * H.transpose() * (H * P_pred * H.transpose() + R_noise).inverse();    // compute Kalman gain
@@ -137,18 +124,15 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     force_disturbance.vector.y = esti_x(10);
     force_disturbance.vector.z = esti_x(11);
 
-    std::cout <<"esti_x during function: "<<esti_x<<std::endl;
-
-    // std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
-    // std::cout << "state_x: "<<system_states.x<< " state_y: "<<system_states.y<<" state_z: "<<system_states.z<<std::endl;
-    // std::cout << "meau_x: "<<measurement_states.x<< " meau_y: "<<measurement_states.y<<" meau_z: "<<measurement_states.z<<std::endl;
-    // std::cout << "state_u: "<<system_states.u<< " state_v: "<<system_states.v<<" state_w: "<<system_states.w<<std::endl;
-    // std::cout << "meau_u: "<<measurement_states.u<< " meau_v: "<<measurement_states.v<<" meau_w: "<<measurement_states.w<<std::endl;
-    // std::cout << "state_phi: "<<system_states.phi<< " state_theta: "<<system_states.theta<<" state_psi: "<<system_states.psi<<std::endl;
-    // std::cout << "meau_phi: "<<measurement_states.phi<< " meau_theta: "<<measurement_states.theta<<" meau_psi: "<<measurement_states.psi<<std::endl;
-    // std::cout << "disturbance_x: "<<force_disturbance.vector.x<<"disturbance_y: "<<force_disturbance.vector.y<<" disturbance_z: "<<force_disturbance.vector.z<<std::endl;
-    // std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
-    // std::cout << "---------------------------------------------------------------------------------------------------------------------" << std::endl;
+    std::cout << "--------------------- System and Measurement states in EKF ------------------------" << std::endl;
+    std::cout << "state_x: "<<system_states.x<< " state_y: "<<system_states.y<<" state_z: "<<system_states.z<<std::endl;
+    std::cout << "meau_x: "<<measurement_states.x<< " meau_y: "<<measurement_states.y<<" meau_z: "<<measurement_states.z<<std::endl;
+    std::cout << "state_u: "<<system_states.u<< " state_v: "<<system_states.v<<" state_w: "<<system_states.w<<std::endl;
+    std::cout << "meau_u: "<<measurement_states.u<< " meau_v: "<<measurement_states.v<<" meau_w: "<<measurement_states.w<<std::endl;
+    std::cout << "state_phi: "<<system_states.phi<< " state_theta: "<<system_states.theta<<" state_psi: "<<system_states.psi<<std::endl;
+    std::cout << "meau_phi: "<<measurement_states.phi<< " meau_theta: "<<measurement_states.theta<<" meau_psi: "<<measurement_states.psi<<std::endl;
+    std::cout << "disturbance_x: "<<force_disturbance.vector.x<<"disturbance_y: "<<force_disturbance.vector.y<<" disturbance_z: "<<force_disturbance.vector.z<<std::endl;
+    std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
 
     return force_disturbance;
 }
@@ -189,12 +173,6 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
         (measurement_states.thrust_y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
         (measurement_states.thrust_z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
     return y;
-    std::cout<<"------------- y in h function -------------"<<std::endl;
-    std::cout<<"x: "<<x(0)<<" y: "<<x(1)<<" z: "<<x(2)<<std::endl;
-    std::cout<<"u: "<<x(3)<<" v: "<<x(4)<<" w: "<<x(5)<<std::endl;
-    std::cout<<"phi: "<<x(6)<<" theta: "<<x(7)<<" psi: "<<x(8)<<std::endl;
-    std::cout<<"U1_x: "<<x(9)<<" U1_y: "<<x(10)<<" U1_z: "<<x(11)<<std::endl;
-    std::cout<<"------------- y in h function -------------"<<std::endl;
 }
 
 // Define function to compute Jacobian of system dynamics at current state and input
@@ -220,7 +198,6 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::compute_jacobian_H(Eigen::MatrixXd x)
     Eigen::Matrix<double,12,12> H;
     double d = 1e-6;                    // finite difference step size
     Eigen::VectorXd f0 = h(x);
-    std::cout<<"f0: "<<f0<<std::endl;
     for (int i = 0; i < n; i++){
         Eigen::VectorXd x1 = x;
         x1(i) += d;

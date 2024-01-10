@@ -33,15 +33,10 @@ void applyDisturbance()
     wrench.request.duration = ros::Duration(1000);  // Duration of the disturbance
     body_wrench_client.call(wrench);
 
-    // Call the service to apply the body wrench
-    if (body_wrench_client.call(wrench))
-    {
-        ROS_INFO("Applied disturbance force");
-    }
-    else
-    {
-        ROS_ERROR("Failed to call service /gazebo/apply_body_wrench");
-    }
+    std::cout<<"------------------ applied disturbances xyz ------------------";
+    std::cout<<"applied_wrench_fx: "<<wrench.request.wrench.force.x<<" N"<<std::endl;
+    std::cout<<"applied_wrench_fy: "<<wrench.request.wrench.force.y <<" N"<<std::endl;
+    std::cout<<"applied_wrench_fz: "<<wrench.request.wrench.force.z<<" N"<<std::endl;
 }
 
 int main(int argc, char** argv)
@@ -57,8 +52,8 @@ int main(int argc, char** argv)
     while (ros::ok())
     {
         applied_wrench.fx = 0; //unit: Newtons
-        applied_wrench.fy = 10; //unit: Newtons
-        applied_wrench.fz = 0; //unit: Newtons
+        applied_wrench.fy = 0; //unit: Newtons
+        applied_wrench.fz = 2; //unit: Newtons
 
         // Call the applyDisturbance function
         applyDisturbance();

@@ -11,6 +11,7 @@
 #include <std_msgs/Float64.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <eigen3/Eigen/Dense>
+#include <airo_control/disturbance_observer.h>
 
 class BASE_CONTROLLER{
 protected:
@@ -34,7 +35,7 @@ public:
     virtual double get_hover_thrust() = 0;
     virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&) = 0;
     // virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&, 
-    //    const disturbance_x, const disturbance_y, const_disturbance_z) = 0;
+    //    const geometry_msgs::Vector3Stamped& ) = 0;
 };
 
 #endif
