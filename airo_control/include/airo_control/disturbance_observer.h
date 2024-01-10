@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <istream>
+#include <sstream>
 #include <ros/ros.h>
 #include <eigen3/Eigen/Dense>
 #include <geometry_msgs/PoseStamped.h>
