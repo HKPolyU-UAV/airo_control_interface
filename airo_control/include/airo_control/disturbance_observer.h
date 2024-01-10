@@ -28,10 +28,16 @@ class DISTURBANCE_OBSERVER{
     };
     SYSTEM_STATES system_states;
     
+    struct ACCEL{
+        double x,y,z;
+    };
+    ACCEL accel;
+
     // Parameters
     double FSM_FREQUENCY,hover_thrust,current_euler,R_POS,R_VEL,R_ATT,R_CONTROL,Q_POS,Q_VEL,Q_ATT,Q_DISTURBANCE;
     double g = 9.80665;
     double dt;
+    
 
     // Weights
     int m = 12;
@@ -40,7 +46,7 @@ class DISTURBANCE_OBSERVER{
     Eigen::Matrix<double,1,12> Q_cov,R_cov;                      // Process noise value, Measurement noise value
 
     // EKF Parameters
-    Eigen::Matrix<double,3,1> input_u;                           // Inputs
+    Eigen::Matrix<double,3,1> input_u,pre_linear_v;                  // Inputs, Previous linear velocity
     Eigen::Matrix<double,12,1> meas_y;                           // Measurement vector
     Eigen::Matrix<double,12,1> esti_x;                           // Estimate states
 
