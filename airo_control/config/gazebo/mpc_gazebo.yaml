@@ -1,9 +1,9 @@
-hover_thrust: 0.5657713663578033
+hover_thrust: 0.5666059845685959
 pub_debug: true
 enable_preview: true
-tau_phi: 0.1825188199998993
-tau_theta: 0.1823278585637531
-tau_psi: 0.7821561328612798
+tau_phi: 0.1761658667861484
+tau_theta: 0.1752273229524925
+tau_psi: 0.7444030734906616
 diag_cost_x:
   - 60.0
   - 60.0

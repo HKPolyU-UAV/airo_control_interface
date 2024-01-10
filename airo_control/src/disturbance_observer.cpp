@@ -27,7 +27,7 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     esti_P = P0;
     dt = 1/FSM_FREQUENCY;
  
-    esti_x << 0,0,0,0,0,0,0.001,0.001,0.001,0,0,0; // phi & theta CAN'T be 0
+    esti_x << 0,0,0,0,0,0,1e-6,1e-6,1e-6,0,0,0; // phi & theta CAN'T be 0
 }
 
 Eigen::Vector3d DISTURBANCE_OBSERVER::q2rpy(const geometry_msgs::Quaternion& quaternion){
