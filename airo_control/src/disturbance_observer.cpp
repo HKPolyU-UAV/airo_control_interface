@@ -26,6 +26,7 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     P0 = Eigen::MatrixXd::Identity(m,m);
     esti_P = P0;
     dt = 1/FSM_FREQUENCY;
+    pre_linear_v << 0, 0, 0; //init
  
     esti_x << 0,0,0,0,0,0,1e-6,1e-6,1e-6,0,0,0; // phi & theta CAN'T be 0
 }
@@ -76,14 +77,15 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     measurement_states.thrust_z = attitude_target.thrust;
 
     // Linear acceleration
-    pre_linear_v << twist.twist.linear.x, twist.twist.linear.y, twist.twist.linear.z;
+    
+    std::cout<<"u b4 acc eqt: "<<pre_linear_v[0]<<" v b4 acc eqt: "<<pre_linear_v[1]<<" w b4 acc eqt: "<<pre_linear_v[2]<<std::endl;
+    
     accel.x = (twist.twist.linear.x-pre_linear_v[0])/dt;        // du                       
     accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
     accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw
+    std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
 
-    pre_linear_v[0] = twist.twist.linear.x;
-    pre_linear_v[1] = twist.twist.linear.y;
-    pre_linear_v[2] = twist.twist.linear.z;
+    
 
     // Get input u and measurment y
     input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z;
@@ -133,6 +135,13 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     force_disturbance.vector.x = esti_x(9);           
     force_disturbance.vector.y = esti_x(10);
     force_disturbance.vector.z = esti_x(11);
+
+    //Update u,v,w
+    pre_linear_v[0] = twist.twist.linear.x;
+    pre_linear_v[1] = twist.twist.linear.y;
+    pre_linear_v[2] = twist.twist.linear.z;
+
+    std::cout<<"u after acc eqt:"<<pre_linear_v[0]<<"v after acc eqt: "<<pre_linear_v[1]<<"w after acc eqt: "<<pre_linear_v[2]<<std::endl;
 
     // std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking.csv", std::ios::app);
     // save<<std::setprecision(20)<<ros::Time::now().toSec()<<
