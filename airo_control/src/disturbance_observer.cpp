@@ -124,17 +124,24 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     force_disturbance.vector.y = esti_x(10);
     force_disturbance.vector.z = esti_x(11);
 
-    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking.csv", std::ios::app);
+    // std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking.csv", std::ios::app);
+    // save<<std::setprecision(20)<<ros::Time::now().toSec()<<
+    //     ","<<"x"<<","<<system_states.x<<","<<measurement_states.x<<","<<
+    //         "y"<<","<<system_states.y<<","<<measurement_states.y<<","<<
+    //         "z"<<","<<system_states.z<<","<<measurement_states.z<<","<<
+    //         "u"<<","<<system_states.u<<","<<measurement_states.u<<","<<
+    //         "v"<<","<<system_states.v<<","<<measurement_states.v<<","<<
+    //         "w"<<","<<system_states.w<<","<<measurement_states.w<<","<<
+    //         "phi"<<","<<system_states.phi<<","<<measurement_states.phi<<","<<
+    //         "theta"<<","<<system_states.theta<<","<<measurement_states.theta<<","<<
+    //         "psi"<<","<<system_states.psi<<","<<measurement_states.psi<<","<<std::endl;
+    // save.close();
+
+    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/disturbance_tracking.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
-        ","<<"x"<<","<<system_states.x<<","<<measurement_states.x<<","<<
-            "y"<<","<<system_states.y<<","<<measurement_states.y<<","<<
-            "z"<<","<<system_states.z<<","<<measurement_states.z<<","<<
-            "u"<<","<<system_states.u<<","<<measurement_states.u<<","<<
-            "v"<<","<<system_states.v<<","<<measurement_states.v<<","<<
-            "w"<<","<<system_states.w<<","<<measurement_states.w<<","<<
-            "phi"<<","<<system_states.phi<<","<<measurement_states.phi<<","<<
-            "theta"<<","<<system_states.theta<<","<<measurement_states.theta<<","<<
-            "psi"<<","<<system_states.psi<<","<<measurement_states.psi<<","<<std::endl;
+        ","<<"disturbance_x"<<","<<force_disturbance.vector.x<<","<<
+            "disturbance_y"<<","<<force_disturbance.vector.y<<","<<
+            "disturbance_z"<<","<<force_disturbance.vector.z<<","<<std::endl;
     save.close();
 
     std::cout << "--------------------- System and Measurement states in EKF ------------------------" << std::endl;
