@@ -4,8 +4,8 @@ twist_topic: /mavros/local_position/velocity_local
 
 # FSM Parameters
 controller_type: mpc
-# controller_type: backstepping
-# controller_type: slidingmode
+#controller_type: backstepping
+#controller_type: slidingmode
 fsm_frequency: 100
 state_timeout: 1.5
 rc_timeout: 0.25
@@ -38,5 +38,3 @@ switch_threshold: 0.75
 joystick_deadzone: 0.10
 check_centered_threshold: 0.3
 
-#EKF parameters
-#read_wreach: 0
