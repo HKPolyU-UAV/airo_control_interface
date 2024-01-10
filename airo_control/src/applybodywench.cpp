@@ -33,7 +33,7 @@ void applyDisturbance()
     wrench.request.duration = ros::Duration(1000);  // Duration of the disturbance
     body_wrench_client.call(wrench);
 
-    std::cout<<"------------------ applied disturbances xyz ------------------";
+    std::cout<<"------------------ applied disturbances xyz ------------------"<<std::endl;
     std::cout<<"applied_wrench_fx: "<<wrench.request.wrench.force.x<<" N"<<std::endl;
     std::cout<<"applied_wrench_fy: "<<wrench.request.wrench.force.y <<" N"<<std::endl;
     std::cout<<"applied_wrench_fz: "<<wrench.request.wrench.force.z<<" N"<<std::endl;
