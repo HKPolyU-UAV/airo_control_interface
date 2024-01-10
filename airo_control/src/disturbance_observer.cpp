@@ -79,7 +79,7 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     pre_linear_v << twist.twist.linear.x, twist.twist.linear.y, twist.twist.linear.z;
     accel.x = (twist.twist.linear.x-pre_linear_v[0])/dt;        // du                       
     accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
-    accel.z = (twist.twist.linear.x-pre_linear_v[2])/dt;        // dw
+    accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw
 
     pre_linear_v[0] = twist.twist.linear.x;
     pre_linear_v[1] = twist.twist.linear.y;
