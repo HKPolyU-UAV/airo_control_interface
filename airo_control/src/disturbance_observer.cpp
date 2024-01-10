@@ -26,7 +26,7 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     P0 = Eigen::MatrixXd::Identity(m,m);
     esti_P = P0;
     dt = 1/FSM_FREQUENCY;
-    pre_linear_v << 0, 0, 0; //init
+    pre_linear_v << 0, 0, 0; //initial u,v,w
  
     esti_x << 0,0,0,0,0,0,1e-6,1e-6,1e-6,0,0,0; // phi & theta CAN'T be 0
 }
