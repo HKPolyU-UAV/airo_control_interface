@@ -7,9 +7,6 @@ struct WRENCH{
         double fx;
         double fy;
         double fz;
-        double tx;
-        double ty;
-        double tz;
 };
 
 WRENCH applied_wrench;
@@ -50,8 +47,8 @@ int main(int argc, char** argv)
     while (ros::ok())
     {
         applied_wrench.fx = 0; //unit: Newtons
-        applied_wrench.fy = 0; //unit: Newtons
-        applied_wrench.fz = 3; //unit: Newtons
+        applied_wrench.fy = 2; //unit: Newtons
+        applied_wrench.fz = 0; //unit: Newtons
 
         // Call the applyDisturbance function
         applyDisturbance();

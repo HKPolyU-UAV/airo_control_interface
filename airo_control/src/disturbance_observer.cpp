@@ -163,7 +163,8 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
             "disturbance_z"<<","<<force_disturbance.vector.z<<","<<std::endl;
     save.close();
 
-    std::cout << "--------------------- System and Measurement states in EKF ------------------------" << std::endl;
+    if (cout_counter > 2){
+        std::cout << "--------------------- System and Measurement states in EKF ------------------------" << std::endl;
     std::cout << "state_x: "<<system_states.x<< " state_y: "<<system_states.y<<" state_z: "<<system_states.z<<std::endl;
     std::cout << "meau_x: "<<measurement_states.x<< " meau_y: "<<measurement_states.y<<" meau_z: "<<measurement_states.z<<std::endl;
     std::cout << "state_u: "<<system_states.u<< " state_v: "<<system_states.v<<" state_w: "<<system_states.w<<std::endl;
@@ -172,6 +173,11 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     std::cout << "meau_phi: "<<measurement_states.phi<< " meau_theta: "<<measurement_states.theta<<" meau_psi: "<<measurement_states.psi<<std::endl;
     std::cout << "disturbance_x: "<<force_disturbance.vector.x<<" disturbance_y: "<<force_disturbance.vector.y<<" disturbance_z: "<<force_disturbance.vector.z<<std::endl;
     std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
+    cout_counter = 0;
+    }
+    else{
+        cout_counter++;
+    }
 
     return force_disturbance;
 }
@@ -198,7 +204,9 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::f(Eigen::MatrixXd x, Eigen::MatrixXd u)
     // Define system dynamics
     Eigen::Matrix<double,12,1> xdot;    
     xdot << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
-            0,0,0;                                         // Disturbance_x, disturbance_y, disturbance_z in du, dv, dw
+            0,
+            0,
+            0;                                         // Disturbance_x, disturbance_y, disturbance_z in du, dv, dw
     return xdot; // dt is the time step
 }
 
@@ -208,9 +216,12 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
     // Define measurement model
     Eigen::Matrix<double,12,1> y;
     y << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
-        (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x    
-        (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
-        (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
+        // (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x  
+        ((accel.x-x(9))*mass)/-(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8)))), 
+        // (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
+        ((accel.y-x(10))*mass)/-(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8))),
+        // (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
+        ((accel.z-x(11)-g)*mass)/-(cos(x(6))*cos(x(7)));
     return y;
 }
 
