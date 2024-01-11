@@ -76,10 +76,7 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     measurement_states.thrust_y = attitude_target.thrust;
     measurement_states.thrust_z = attitude_target.thrust;
 
-    // Linear acceleration
-    
-    // std::cout<<"u b4 acc eqt: "<<pre_linear_v[0]<<" v b4 acc eqt: "<<pre_linear_v[1]<<" w b4 acc eqt: "<<pre_linear_v[2]<<std::endl;
-    
+    // Linear acceleration  
     accel.x = (twist.twist.linear.x-pre_linear_v[0])/dt;        // du                       
     accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
     accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw
@@ -136,12 +133,10 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     force_disturbance.vector.y = esti_x(10);
     force_disturbance.vector.z = esti_x(11);
 
-    //Update u,v,w
+    //Update previous u,v,w
     pre_linear_v[0] = twist.twist.linear.x;
     pre_linear_v[1] = twist.twist.linear.y;
     pre_linear_v[2] = twist.twist.linear.z;
-
-    // std::cout<<"u after acc eqt:"<<pre_linear_v[0]<<"v after acc eqt: "<<pre_linear_v[1]<<"w after acc eqt: "<<pre_linear_v[2]<<std::endl;
 
     // std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking.csv", std::ios::app);
     // save<<std::setprecision(20)<<ros::Time::now().toSec()<<
@@ -173,6 +168,8 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     std::cout << "meau_phi: "<<measurement_states.phi<< " meau_theta: "<<measurement_states.theta<<" meau_psi: "<<measurement_states.psi<<std::endl;
     std::cout << "disturbance_x: "<<force_disturbance.vector.x<<" disturbance_y: "<<force_disturbance.vector.y<<" disturbance_z: "<<force_disturbance.vector.z<<std::endl;
     std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
+    std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
+
     cout_counter = 0;
     }
     else{
@@ -220,8 +217,8 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
         ((accel.x-x(9))*mass)/-(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8)))), 
         // (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
         ((accel.y-x(10))*mass)/-(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8))),
-        // (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
-        ((accel.z-x(11)-g)*mass)/-(cos(x(6))*cos(x(7)));
+        (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
+        // ((accel.z-x(11)-g)*mass)/-(cos(x(6))*cos(x(7)));
     return y;
 }
 

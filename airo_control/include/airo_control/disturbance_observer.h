@@ -57,9 +57,9 @@ class DISTURBANCE_OBSERVER{
     geometry_msgs::Vector3Stamped observe(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&,const mavros_msgs::AttitudeTarget);
     Eigen::MatrixXd RK4(Eigen::MatrixXd x, Eigen::MatrixXd u);                   // EKF predict and update
     Eigen::MatrixXd f(Eigen::MatrixXd x, Eigen::MatrixXd u);                     // system process model
-    Eigen::MatrixXd h(Eigen::MatrixXd x);                                 // measurement model
+    Eigen::MatrixXd h(Eigen::MatrixXd x);                                        // measurement model
     Eigen::MatrixXd compute_jacobian_F(Eigen::MatrixXd x, Eigen::MatrixXd u);    // compute Jacobian of system process model
-    Eigen::MatrixXd compute_jacobian_H(Eigen::MatrixXd x);                // compute Jacobian of measurement model
+    Eigen::MatrixXd compute_jacobian_H(Eigen::MatrixXd x);                       // compute Jacobian of measurement model
 };
 
 #endif
