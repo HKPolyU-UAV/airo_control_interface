@@ -78,12 +78,12 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
 
     // Linear acceleration
     
-    std::cout<<"u b4 acc eqt: "<<pre_linear_v[0]<<" v b4 acc eqt: "<<pre_linear_v[1]<<" w b4 acc eqt: "<<pre_linear_v[2]<<std::endl;
+    // std::cout<<"u b4 acc eqt: "<<pre_linear_v[0]<<" v b4 acc eqt: "<<pre_linear_v[1]<<" w b4 acc eqt: "<<pre_linear_v[2]<<std::endl;
     
     accel.x = (twist.twist.linear.x-pre_linear_v[0])/dt;        // du                       
     accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
     accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw
-    std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
+    // std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
 
     
 
@@ -141,7 +141,7 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     pre_linear_v[1] = twist.twist.linear.y;
     pre_linear_v[2] = twist.twist.linear.z;
 
-    std::cout<<"u after acc eqt:"<<pre_linear_v[0]<<"v after acc eqt: "<<pre_linear_v[1]<<"w after acc eqt: "<<pre_linear_v[2]<<std::endl;
+    // std::cout<<"u after acc eqt:"<<pre_linear_v[0]<<"v after acc eqt: "<<pre_linear_v[1]<<"w after acc eqt: "<<pre_linear_v[2]<<std::endl;
 
     // std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking.csv", std::ios::app);
     // save<<std::setprecision(20)<<ros::Time::now().toSec()<<

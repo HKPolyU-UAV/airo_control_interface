@@ -75,10 +75,16 @@ target_link_libraries(example_mission_node
 )
 add_dependencies(example_mission_node airo_message_generate_messages_cpp)
 
-add_executable(applybodywench src/applybodywench.cpp)
-target_link_libraries(applybodywench
+add_executable(applybodywrench src/applybodywrench.cpp)
+target_link_libraries(applybodywrench
   ${catkin_LIBRARIES}
 )
+
+add_executable(init_applybodywrench src/init_applybodywrench.cpp)
+target_link_libraries(init_applybodywrench
+  ${catkin_LIBRARIES}
+)
+
 
 add_executable(offb src/offb.cpp)
 target_link_libraries(offb

@@ -1,7 +1,5 @@
 #include <ros/ros.h>
 #include <gazebo_msgs/ApplyBodyWrench.h>
-#include <geometry_msgs/PoseStamped.h>
-#include "airo_control/airo_control_fsm.h"
 
 ros::ServiceClient body_wrench_client;
 
@@ -51,9 +49,9 @@ int main(int argc, char** argv)
     // Main loop
     while (ros::ok())
     {
-        applied_wrench.fx = 1.5; //unit: Newtons
-        applied_wrench.fy = 2; //unit: Newtons
-        applied_wrench.fz = 1; //unit: Newtons
+        applied_wrench.fx = 0; //unit: Newtons
+        applied_wrench.fy = 0; //unit: Newtons
+        applied_wrench.fz = 3; //unit: Newtons
 
         // Call the applyDisturbance function
         applyDisturbance();
