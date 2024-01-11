@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     {
         applied_wrench.fx = 0; //unit: Newtons
         applied_wrench.fy = 2; //unit: Newtons
-        applied_wrench.fz = 0; //unit: Newtons
+        applied_wrench.fz = 2; //unit: Newtons
 
         // Call the applyDisturbance function
         applyDisturbance();

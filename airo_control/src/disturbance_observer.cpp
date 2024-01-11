@@ -158,7 +158,7 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
             "disturbance_z"<<","<<force_disturbance.vector.z<<","<<std::endl;
     save.close();
 
-    if (cout_counter > 2){
+    if (cout_counter > 20){
         std::cout << "--------------------- System and Measurement states in EKF ------------------------" << std::endl;
     std::cout << "state_x: "<<system_states.x<< " state_y: "<<system_states.y<<" state_z: "<<system_states.z<<std::endl;
     std::cout << "meau_x: "<<measurement_states.x<< " meau_y: "<<measurement_states.y<<" meau_z: "<<measurement_states.z<<std::endl;
