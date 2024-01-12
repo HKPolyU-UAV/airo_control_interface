@@ -170,6 +170,9 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     std::cout << "disturbance_x: "<<force_disturbance.vector.x<<" disturbance_y: "<<force_disturbance.vector.y<<" disturbance_z: "<<force_disturbance.vector.z<<std::endl;
     std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
     std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
+    std::cout<<"thrust/hover_thrust*g = "<<attitude_target.thrust/hover_thrust*g<<std::endl;
+    std::cout<<"thrust/(hover_thrust*g)"<<attitude_target.thrust/(hover_thrust*g)<<std::endl;
+    std::cout<<"(thrust/hover_thrust)*g)"<<(attitude_target.thrust/hover_thrust)*g<<std::endl;
 
     cout_counter = 0;
     }

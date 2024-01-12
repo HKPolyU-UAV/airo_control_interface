@@ -91,3 +91,8 @@ target_link_libraries(offb
   ${catkin_LIBRARIES}
 )
 
+add_executable(mass src/mass.cpp)
+target_link_libraries(mass
+  ${catkin_LIBRARIES}
+)
+
