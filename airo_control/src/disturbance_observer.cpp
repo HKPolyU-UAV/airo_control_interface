@@ -67,9 +67,9 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
 
     // disturbances in system state
     geometry_msgs::Vector3Stamped force_disturbance;
-    force_disturbance.vector.x = system_states.disturbance_x*(hover_thrust/g);
-    force_disturbance.vector.y = system_states.disturbance_y*(hover_thrust/g);
-    force_disturbance.vector.z = system_states.disturbance_z*(hover_thrust/g);
+    force_disturbance.vector.x = system_states.disturbance_x;
+    force_disturbance.vector.y = system_states.disturbance_y;
+    force_disturbance.vector.z = system_states.disturbance_z;
 
     // U1(thrust) in measurement state
     measurement_states.thrust_x = attitude_target.thrust;
@@ -130,9 +130,9 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     system_states.phi = esti_x(6);
     system_states.theta = esti_x(7);
     system_states.psi = esti_x(8);
-    force_disturbance.vector.x = esti_x(9);    // N = accel*mass = accel*(hover_thrust/g)       
-    force_disturbance.vector.y = esti_x(10);
-    force_disturbance.vector.z = esti_x(11);
+    force_disturbance.vector.x = esti_x(9)*(hover_thrust/g);    // N = accel*mass = accel*(hover_thrust/g)       
+    force_disturbance.vector.y = esti_x(10)*(hover_thrust/g);
+    force_disturbance.vector.z = esti_x(11)*(hover_thrust/g);
 
     //Update previous u,v,w
     pre_linear_v[0] = twist.twist.linear.x;
