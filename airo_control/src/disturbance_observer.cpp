@@ -76,10 +76,11 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     measurement_states.thrust_y = attitude_target.thrust;
     measurement_states.thrust_z = attitude_target.thrust;
 
-    // Linear acceleration  
+    // Linear acceleration 
     accel.x = (twist.twist.linear.x-pre_linear_v[0])/dt;        // du                       
     accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
     accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw
+ 
     // std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
 
     
@@ -213,10 +214,10 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
     // Define measurement model
     Eigen::Matrix<double,12,1> y;
     y << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
-        // (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x  
-        ((accel.x-x(9))*mass)/-(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8)))), 
-        // (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
-        ((accel.y-x(10))*mass)/-(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8))),
+        (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x  
+        // ((accel.x-x(9))*mass)/-(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8)))), 
+        (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
+        // ((accel.y-x(10))*mass)/-(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8))),
         (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
         // ((accel.z-x(11)-g)*mass)/-(cos(x(6))*cos(x(7)));
     return y;
