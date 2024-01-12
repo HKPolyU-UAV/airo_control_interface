@@ -159,14 +159,14 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
             "disturbance_z"<<","<<force_disturbance.vector.z<<","<<std::endl;
     save.close();
 
-    if (cout_counter > 20){
+    if (cout_counter > 100){
         std::cout << "--------------------- System and Measurement states in EKF ------------------------" << std::endl;
     std::cout << "state_x: "<<system_states.x<< " state_y: "<<system_states.y<<" state_z: "<<system_states.z<<std::endl;
-    std::cout << "meau_x: "<<measurement_states.x<< " meau_y: "<<measurement_states.y<<" meau_z: "<<measurement_states.z<<std::endl;
+    std::cout << "meas_x: "<<measurement_states.x<< " meas_y: "<<measurement_states.y<<" meas_z: "<<measurement_states.z<<std::endl;
     std::cout << "state_u: "<<system_states.u<< " state_v: "<<system_states.v<<" state_w: "<<system_states.w<<std::endl;
-    std::cout << "meau_u: "<<measurement_states.u<< " meau_v: "<<measurement_states.v<<" meau_w: "<<measurement_states.w<<std::endl;
+    std::cout << "meas_u: "<<measurement_states.u<< " meas_v: "<<measurement_states.v<<" meas_w: "<<measurement_states.w<<std::endl;
     std::cout << "state_phi: "<<system_states.phi<< " state_theta: "<<system_states.theta<<" state_psi: "<<system_states.psi<<std::endl;
-    std::cout << "meau_phi: "<<measurement_states.phi<< " meau_theta: "<<measurement_states.theta<<" meau_psi: "<<measurement_states.psi<<std::endl;
+    std::cout << "meas_phi: "<<measurement_states.phi<< " meas_theta: "<<measurement_states.theta<<" meas_psi: "<<measurement_states.psi<<std::endl;
     std::cout << "disturbance_x: "<<force_disturbance.vector.x<<" disturbance_y: "<<force_disturbance.vector.y<<" disturbance_z: "<<force_disturbance.vector.z<<std::endl;
     std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
     std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
@@ -202,9 +202,7 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::f(Eigen::MatrixXd x, Eigen::MatrixXd u)
     // Define system dynamics
     Eigen::Matrix<double,12,1> xdot;    
     xdot << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
-            0,
-            0,
-            0;                                         // Disturbance_x, disturbance_y, disturbance_z in du, dv, dw
+            0,0,0;                                         // Disturbance_x, disturbance_y, disturbance_z in du, dv, dw
     return xdot; // dt is the time step
 }
 
