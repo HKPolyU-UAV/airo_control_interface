@@ -13,7 +13,6 @@
 #include <mavros_msgs/AttitudeTarget.h>
 #include <tf/tf.h>
 
-
 class DISTURBANCE_OBSERVER{
     private:
     Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);  // Quaternion to euler angle
@@ -39,7 +38,6 @@ class DISTURBANCE_OBSERVER{
     double dt;
     int cout_counter = 0;
     double mass = 1.5;
-    
 
     // Weights
     int m = 12;
@@ -48,7 +46,7 @@ class DISTURBANCE_OBSERVER{
     Eigen::Matrix<double,1,12> Q_cov,R_cov;                      // Process noise value, Measurement noise value
 
     // EKF Parameters
-    Eigen::Matrix<double,3,1> input_u,pre_linear_v;                  // Inputs, Previous linear velocity
+    Eigen::Matrix<double,3,1> input_u,pre_linear_v;              // Inputs, Previous linear velocity
     Eigen::Matrix<double,12,1> meas_y;                           // Measurement vector
     Eigen::Matrix<double,12,1> esti_x;                           // Estimate states
 

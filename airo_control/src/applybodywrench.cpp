@@ -10,6 +10,7 @@ struct WRENCH{
 };
 
 WRENCH applied_wrench;
+double mass = 1.5;     // Unit: kg
 
 gazebo_msgs::ApplyBodyWrench wrench; 
 
@@ -29,9 +30,10 @@ void applyDisturbance()
     body_wrench_client.call(wrench);
 
     std::cout<<"------------------ applied disturbances xyz ------------------"<<std::endl;
-    std::cout<<"applied_wrench_fx: "<<wrench.request.wrench.force.x<<" N"<<std::endl;
-    std::cout<<"applied_wrench_fy: "<<wrench.request.wrench.force.y <<" N"<<std::endl;
-    std::cout<<"applied_wrench_fz: "<<wrench.request.wrench.force.z<<" N"<<std::endl;
+    std::cout<<"mass: "<<mass<<std::endl;
+    std::cout<<"applied_wrench_fx: "<<wrench.request.wrench.force.x<<" N"<<" = "<<wrench.request.wrench.force.x/mass<<" ms^-2"<<std::endl;
+    std::cout<<"applied_wrench_fy: "<<wrench.request.wrench.force.y <<" N"<<" = "<<wrench.request.wrench.force.y/mass<<" ms^-2"<<std::endl;
+    std::cout<<"applied_wrench_fz: "<<wrench.request.wrench.force.z<<" N"<<" = "<<wrench.request.wrench.force.z/mass<<" ms^-2"<<std::endl;
 }
 
 int main(int argc, char** argv)
@@ -47,7 +49,7 @@ int main(int argc, char** argv)
     while (ros::ok())
     {
         applied_wrench.fx = 0; //unit: Newtons
-        applied_wrench.fy = 10; //unit: Newtons
+        applied_wrench.fy = 2; //unit: Newtons
         applied_wrench.fz = 10; //unit: Newtons
 
         // Call the applyDisturbance function

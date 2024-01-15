@@ -130,9 +130,9 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     system_states.phi = esti_x(6);
     system_states.theta = esti_x(7);
     system_states.psi = esti_x(8);
-    force_disturbance.vector.x = esti_x(9)*mass;    // N = accel*mass 
-    force_disturbance.vector.y = esti_x(10)*mass;
-    force_disturbance.vector.z = esti_x(11)*mass;
+    force_disturbance.vector.x = esti_x(9);    // N = accel*mass 
+    force_disturbance.vector.y = esti_x(10);
+    force_disturbance.vector.z = esti_x(11);
 
     //Update previous u,v,w
     pre_linear_v[0] = twist.twist.linear.x;
@@ -167,7 +167,8 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     std::cout << "meas_u: "<<measurement_states.u<< " meas_v: "<<measurement_states.v<<" meas_w: "<<measurement_states.w<<std::endl;
     std::cout << "state_phi: "<<system_states.phi<< " state_theta: "<<system_states.theta<<" state_psi: "<<system_states.psi<<std::endl;
     std::cout << "meas_phi: "<<measurement_states.phi<< " meas_theta: "<<measurement_states.theta<<" meas_psi: "<<measurement_states.psi<<std::endl;
-    std::cout << "disturbance_x: "<<force_disturbance.vector.x<<" disturbance_y: "<<force_disturbance.vector.y<<" disturbance_z: "<<force_disturbance.vector.z<<std::endl;
+    std::cout << "disturbance_x(ms^-2): "<<force_disturbance.vector.x*2<<" disturbance_y(ms^-2): "<<force_disturbance.vector.y*2<<" disturbance_z(ms^-2): "<<force_disturbance.vector.z*2<<std::endl;
+    std::cout << "disturbance_x(N): "<<force_disturbance.vector.x*2*mass<<" disturbance_y(N): "<<force_disturbance.vector.y*2*mass<<" disturbance_z(N): "<<force_disturbance.vector.z*2*mass<<std::endl;
     std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
     std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
     std::cout<<"mass = hover_thrust/g = "<<hover_thrust/g<<std::endl;
