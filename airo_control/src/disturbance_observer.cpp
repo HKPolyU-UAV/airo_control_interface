@@ -130,7 +130,7 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     system_states.phi = esti_x(6);
     system_states.theta = esti_x(7);
     system_states.psi = esti_x(8);
-    force_disturbance.vector.x = esti_x(9);    // N = accel*mass 
+    force_disturbance.vector.x = esti_x(9);    // Unit: ms^-2
     force_disturbance.vector.y = esti_x(10);
     force_disturbance.vector.z = esti_x(11);
 
@@ -209,17 +209,17 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::f(Eigen::MatrixXd x, Eigen::MatrixXd u)
 }
 
 // Define measurement model function (Z = Hx, Z: measurement vector [x,xdot,tau]; X: state vector [x,xdot,disturbance])
-Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
+// Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
 {
     // Define measurement model
     Eigen::Matrix<double,12,1> y;
     y << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
         (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x  
-        // ((accel.x-x(9))*mass)/-(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8)))), 
+        // ((accel.x-x(9))*mass)/(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8)))), 
         (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
-        // ((accel.y-x(10))*mass)/-(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8))),
+        // ((accel.y-x(10))*mass)/(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8))),
         (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                               // thrust for dw, x(13) = disturbance_z
-        // ((accel.z-x(11)-g)*mass)/-(cos(x(6))*cos(x(7)));
+        // ((accel.z-x(11)+g)*mass)/(cos(x(6))*cos(x(7)));
     return y;
 }
 
