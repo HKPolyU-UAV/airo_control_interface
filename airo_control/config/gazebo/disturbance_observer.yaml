@@ -1,9 +1,9 @@
-r_pos: 0.0025
-r_vel: 0.0025
+r_pos: 0.00000625
+r_vel: 0.00000625
 r_att: 0.00000625
-r_control: 0.0025
+r_control: 0.00000625
 
-q_pos: 0.0025
-q_vel: 0.0025
-q_att: 0.0025
-q_disturbance: 0.0025
+q_pos: 0.00000625
+q_vel: 0.00000625
+q_att: 0.00000625
+q_disturbance: 0.00000625

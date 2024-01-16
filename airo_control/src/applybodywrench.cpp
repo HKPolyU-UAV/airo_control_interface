@@ -48,18 +48,14 @@ int main(int argc, char** argv)
     // Main loop
     while (ros::ok())
     {
-        applied_wrench.fx = 2; //unit: Newtons
-        applied_wrench.fy = 2; //unit: Newtons
-        applied_wrench.fz = 2; //unit: Newtons
+        applied_wrench.fx = 1; //unit: Newtons
+        applied_wrench.fy = 1; //unit: Newtons
+        applied_wrench.fz = 0.5; //unit: Newtons
 
         // Call the applyDisturbance function
         applyDisturbance();
 
-        // Handle callbacks and process messages
-        ros::spinOnce();
-
         // Perform any additional processing or logic here
-
         ros::spinOnce();
         ros::Duration(rate).sleep();
     }
@@ -67,5 +63,3 @@ int main(int argc, char** argv)
     return 0;
 
 }
-
-
