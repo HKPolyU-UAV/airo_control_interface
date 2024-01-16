@@ -26,7 +26,7 @@ void applyDisturbance()
     wrench.request.reference_point.y = 0.0;
     wrench.request.reference_point.z = 0.0;
     wrench.request.start_time = ros::Time::now();
-    wrench.request.duration = ros::Duration(1000);  // Duration of the disturbance
+    wrench.request.duration = ros::Duration(10);  // Duration of the disturbance
     body_wrench_client.call(wrench);
 
     std::cout<<"------------------ applied disturbances xyz ------------------"<<std::endl;
@@ -48,9 +48,9 @@ int main(int argc, char** argv)
     // Main loop
     while (ros::ok())
     {
-        applied_wrench.fx = 0; //unit: Newtons
+        applied_wrench.fx = 2; //unit: Newtons
         applied_wrench.fy = 2; //unit: Newtons
-        applied_wrench.fz = 10; //unit: Newtons
+        applied_wrench.fz = 2; //unit: Newtons
 
         // Call the applyDisturbance function
         applyDisturbance();
