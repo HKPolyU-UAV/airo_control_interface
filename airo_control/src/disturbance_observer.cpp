@@ -85,8 +85,8 @@ const geometry_msgs::AccelStamped & imu){
     accel.x = imu.accel.linear.x;
     // accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
     accel.y = imu.accel.linear.y;
-    // accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw
-    accel.z = imu.accel.linear.z;
+    // accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw excluing gravity
+    accel.z = imu.accel.linear.z-g;                          
  
     // std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
 
@@ -141,10 +141,10 @@ const geometry_msgs::AccelStamped & imu){
     force_disturbance.vector.y = esti_x(10);
     force_disturbance.vector.z = esti_x(11);
 
-    //Update previous u,v,w
-    pre_linear_v[0] = twist.twist.linear.x;
-    pre_linear_v[1] = twist.twist.linear.y;
-    pre_linear_v[2] = twist.twist.linear.z;
+    // //Update previous u,v,w
+    // pre_linear_v[0] = twist.twist.linear.x;
+    // pre_linear_v[1] = twist.twist.linear.y;
+    // pre_linear_v[2] = twist.twist.linear.z;
 
     // std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking.csv", std::ios::app);
     // save<<std::setprecision(20)<<ros::Time::now().toSec()<<
@@ -174,10 +174,10 @@ const geometry_msgs::AccelStamped & imu){
     // std::cout << "meas_u: "<<measurement_states.u<< " meas_v: "<<measurement_states.v<<" meas_w: "<<measurement_states.w<<std::endl;
     // std::cout << "state_phi: "<<system_states.phi<< " state_theta: "<<system_states.theta<<" state_psi: "<<system_states.psi<<std::endl;
     // std::cout << "meas_phi: "<<measurement_states.phi<< " meas_theta: "<<measurement_states.theta<<" meas_psi: "<<measurement_states.psi<<std::endl;
-    std::cout << "disturbance_x(ms^-2): "<<force_disturbance.vector.x<<" disturbance_y(ms^-2): "<<force_disturbance.vector.y<<" disturbance_z(ms^-2): "<<force_disturbance.vector.z<<std::endl;
-    std::cout << "disturbance_x(N): "<<force_disturbance.vector.x*mass<<" disturbance_y(N): "<<force_disturbance.vector.y*mass<<" disturbance_z(N): "<<force_disturbance.vector.z*mass<<std::endl;
+    std::cout << "disturbance_x(ms^-2): "<<force_disturbance.vector.x<<" |disturbance_y(ms^-2): "<<force_disturbance.vector.y<<" |disturbance_z(ms^-2): "<<force_disturbance.vector.z<<std::endl;
+    std::cout << "disturbance_x(N): "<<force_disturbance.vector.x*mass<<" |disturbance_y(N): "<<force_disturbance.vector.y*mass<<" |disturbance_z(N): "<<force_disturbance.vector.z*mass<<std::endl;
     // std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
-    std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
+    std::cout<<"acc_x:"<<accel.x<<" |acc_y: "<<accel.y<<" |acc_z: "<<accel.z<<std::endl;
     // std::cout<<"mass = hover_thrust/g = "<<hover_thrust/g<<std::endl;
 
     cout_counter = 0;

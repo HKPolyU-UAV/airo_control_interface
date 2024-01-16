@@ -26,7 +26,7 @@ void applyDisturbance()
     wrench.request.reference_point.y = 0.0;
     wrench.request.reference_point.z = 0.0;
     wrench.request.start_time = ros::Time::now();
-    wrench.request.duration = ros::Duration(10);  // Duration of the disturbance
+    wrench.request.duration = ros::Duration(0.05);  // Duration of the disturbance
     body_wrench_client.call(wrench);
 
     std::cout<<"------------------ applied disturbances xyz ------------------"<<std::endl;
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "disturbance");
     ros::NodeHandle nh;
-    ros::Rate rate(20.0);
+    ros::Rate rate(100.0);
 
     // Initialize the body wrench service client
     body_wrench_client = nh.serviceClient<gazebo_msgs::ApplyBodyWrench>("/gazebo/apply_body_wrench");
