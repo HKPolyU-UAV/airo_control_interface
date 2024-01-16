@@ -26,6 +26,7 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     P0 = Eigen::MatrixXd::Identity(m,m);
     esti_P = P0;
     dt = 1/FSM_FREQUENCY;
+    // dt = 0.05;
     pre_linear_v << 0, 0, 0; //initial u,v,w
  
     esti_x << 0,0,0,0,0,0,1e-6,1e-6,1e-6,0,0,0; // phi & theta CAN'T be 0
@@ -39,7 +40,10 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::q2rpy(const geometry_msgs::Quaternion& qua
     return euler;
 }
 
-geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& pose, const geometry_msgs::TwistStamped& twist,const mavros_msgs::AttitudeTarget attitude_target){
+geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& pose, 
+const geometry_msgs::TwistStamped& twist,
+const mavros_msgs::AttitudeTarget attitude_target, 
+const geometry_msgs::AccelStamped & imu){
     // x,y,z,u,v,w in measurement and system states
     measurement_states.x = pose.pose.position.x; 
     measurement_states.y = pose.pose.position.y;
@@ -77,9 +81,12 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
     measurement_states.thrust_z = attitude_target.thrust;
 
     // Linear acceleration 
-    accel.x = (twist.twist.linear.x-pre_linear_v[0])/dt;        // du                       
-    accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
-    accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw
+    // accel.x = (twist.twist.linear.x-pre_linear_v[0])/dt;        // du                       
+    accel.x = imu.accel.linear.x;
+    // accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
+    accel.y = imu.accel.linear.y;
+    // accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw
+    accel.z = imu.accel.linear.z;
  
     // std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
 
