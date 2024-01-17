@@ -85,12 +85,6 @@ target_link_libraries(init_applybodywrench
   ${catkin_LIBRARIES}
 )
 
-
-add_executable(offb src/offb.cpp)
-target_link_libraries(offb
-  ${catkin_LIBRARIES}
-)
-
 add_executable(mass src/mass.cpp)
 target_link_libraries(mass
   ${catkin_LIBRARIES}
