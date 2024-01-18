@@ -85,8 +85,8 @@ const geometry_msgs::AccelStamped & imu){
     accel.x = imu.accel.linear.x;
     // accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
     accel.y = imu.accel.linear.y;
-    // accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw 
-    accel.z = imu.accel.linear.z;                          
+    // accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw excluding gravity 
+    accel.z = imu.accel.linear.z-g;                          
  
     // std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
 
