@@ -47,7 +47,7 @@ class DISTURBANCE_OBSERVER{
     Eigen::Matrix<double,1,12> Q_cov,R_cov;                      // Process noise value, Measurement noise value
 
     // EKF Parameters
-    Eigen::Matrix<double,3,1> input_u,pre_linear_v;              // Inputs, Previous linear velocity
+    Eigen::Matrix<double,3,1> input_u;              // Inputs, Previous linear velocity
     Eigen::Matrix<double,12,1> meas_y;                           // Measurement vector
     Eigen::Matrix<double,12,1> esti_x;                           // Estimate states
 
