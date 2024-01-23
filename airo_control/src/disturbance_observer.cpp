@@ -80,12 +80,14 @@ const geometry_msgs::AccelStamped & imu){
 
     // Linear acceleration 
     // accel.x = (twist.twist.linear.x-pre_linear_v[0])/dt;        // du                       
-    accel.x = imu.accel.linear.x;
+    accel.x = (cos(current_euler.x())*sin(current_euler.y())*cos(current_euler.z())+sin(current_euler.x())*sin(current_euler.z()))*imu.accel.linear.x;
+    // accel.x = imu.accel.linear.x;
     // accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
-    accel.y = imu.accel.linear.y;
+    accel.y = (cos(current_euler.x())*sin(current_euler.y())*sin(current_euler.z())-sin(current_euler.x())*cos(current_euler.z()))*imu.accel.linear.y;
+    // accel.y = imu.accel.linear.y;
     // accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw = 0 when hovering, imu always includes gravity
-    accel.z = imu.accel.linear.z-g;                          
- 
+    accel.z = (cos(current_euler.y())*cos(current_euler.x()))*(imu.accel.linear.z-g);                          
+    // accel.z = imu.accel.linear.z-g;
     // std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
 
     
