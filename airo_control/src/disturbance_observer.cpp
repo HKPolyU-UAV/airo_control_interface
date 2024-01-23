@@ -83,8 +83,8 @@ const geometry_msgs::AccelStamped & imu){
     accel.x = imu.accel.linear.x;
     // accel.y = (twist.twist.linear.y-pre_linear_v[1])/dt;        // dv
     accel.y = imu.accel.linear.y;
-    // accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw excluding gravity 
-    accel.z = imu.accel.linear.z;                          
+    // accel.z = (twist.twist.linear.z-pre_linear_v[2])/dt;        // dw = 0 when hovering, imu always includes gravity
+    accel.z = imu.accel.linear.z-g;                          
  
     // std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
 
@@ -220,8 +220,8 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
     Eigen::Matrix<double,12,1> y;
     y << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
         (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x  
-        (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),   // thrust for dv, x(12) = disturbance_y
-        (accel.z-x(11))*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));    //excluding gravity                           // thrust for dw, x(13) = disturbance_z
+        (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),  // thrust for dv, x(12) = disturbance_y
+        (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                                // thrust for dw, x(13) = disturbance_z excluding gravity 
     return y;
 }
 
