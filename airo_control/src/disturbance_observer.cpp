@@ -78,29 +78,28 @@ const geometry_msgs::AccelStamped & imu){
     measurement_states.thrust_y = attitude_target.thrust;
     measurement_states.thrust_z = attitude_target.thrust;
 
+    // Rotation matrix
+    R_z << cos(current_euler.z()), sin(current_euler.z()), 0,
+        -sin(current_euler.z()), cos(current_euler.z()), 0,
+        0, 0, 1;
+  
+    R_y << cos(current_euler.y()), 0, -sin(current_euler.y()),
+        0, 1, 0,
+        sin(current_euler.y()), 0, cos(current_euler.y());
+  
+    R_x << 1, 0, 0,
+        0, cos(current_euler.x()), sin(current_euler.x()),
+        0, -sin(current_euler.x()), cos(current_euler.x());  
+
+    R_b2w = R_z * R_y * R_x;
+    
     // Linear acceleration 
-    // du = (cos(theta) * cos(psi) * x_imu)
-    // + (sin(phi) * sin(theta) * cos(psi) - cos(phi) * sin(psi)) * y_imu
-    // + (cos(phi) * sin(theta) * cos(psi) + sin(phi) * sin(psi)) * z_imu            
-    accel.x = (cos(current_euler.y()) * cos(current_euler.z()) * imu.accel.linear.x)
-             + (sin(current_euler.x()) * sin(current_euler.y()) * cos(current_euler.z()) - cos(current_euler.x()) * sin(current_euler.z())) * imu.accel.linear.y
-             + (cos(current_euler.x()) * sin(current_euler.y()) * cos(current_euler.z()) + sin(current_euler.x()) * sin(current_euler.z())) * (imu.accel.linear.z-g);
-    
-    // dv = (cos(theta) * sin(psi) * x_imu)
-    //  + (sin(phi) * sin(theta) * sin(psi) + cos(phi) * cos(psi)) * y_imu
-    //  + (cos(phi) * sin(theta) * sin(psi) - sin(phi) * cos(psi)) * z_imu
-    accel.y = (cos(current_euler.y()) * sin(current_euler.z()) * imu.accel.linear.x)
-             + (sin(current_euler.x()) * sin(current_euler.y()) * sin(current_euler.z()) + cos(current_euler.x()) * cos(current_euler.z())) * imu.accel.linear.y
-             + (cos(current_euler.x()) * sin(current_euler.y()) * sin(current_euler.z()) - sin(current_euler.x()) * cos(current_euler.z())) * (imu.accel.linear.z-g);
-    
-    // dw = 0 when hovering, imu always includes gravity
-    // dw = (-sin(theta) * x_imu)
-    //  + (sin(phi) * cos(theta) * y_imu)
-    //  + (cos(theta) * cos(phi) * z_imu)
-    accel.z = (-sin(current_euler.y()) * imu.accel.linear.x)
-             + (sin(current_euler.x()) * cos(current_euler.y()) * imu.accel.linear.y)
-             + (cos(current_euler.y()) * cos(current_euler.x()) * (imu.accel.linear.z-g));                          
-    // std::cout<<"acc_x:"<<accel.x<<" acc_y: "<<accel.y<<" acc_z: "<<accel.z<<std::endl;
+    accel_body << imu.accel.linear.x, imu.accel.linear.y, imu.accel.linear.z-g;
+    accel_world = R_b2w * accel_body;
+
+    accel.x = accel_world(0,0);
+    accel.y = accel_world(1,0);
+    accel.z = accel_world(2,0);
 
     // Get input u and measurment y
     input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z;
