@@ -132,16 +132,16 @@ const geometry_msgs::AccelStamped & imu){
     // U1(thrust) in measurement state
     thrust_body << attitude_target.thrust, attitude_target.thrust, attitude_target.thrust;
     thrust_world = R_b2w * thrust_body;
-    
+
     // Thrust from MPC output in in world frame
-    // measurement_states.thrust_x = thrust_world(0,0);
-    // measurement_states.thrust_y = thrust_world(1,0);
-    // measurement_states.thrust_z = thrust_world(2,0);
+    measurement_states.thrust_x = thrust_world(0,0)*(cos(current_euler.x())*sin(current_euler.y()*cos(current_euler.z())+sin(current_euler.x())*sin(current_euler.z())));
+    measurement_states.thrust_y = thrust_world(1,0)*(cos(current_euler.x())*sin(current_euler.y()*sin(current_euler.z())-sin(current_euler.x())*cos(current_euler.z())));
+    measurement_states.thrust_z = thrust_world(2,0)*(cos(current_euler.x())*cos(current_euler.y()));
 
     // Thrust from MPC output in in body frame
-    measurement_states.thrust_x = thrust_body(0,0); 
-    measurement_states.thrust_y = thrust_body(1,0);
-    measurement_states.thrust_z = thrust_body(2,0);
+    // measurement_states.thrust_x = thrust_body(0,0); 
+    // measurement_states.thrust_y = thrust_body(1,0);
+    // measurement_states.thrust_z = thrust_body(2,0);
 
     // Get input u and measurment y
     input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z; 
@@ -276,9 +276,12 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
     // Define measurement model
     Eigen::Matrix<double,12,1> y;
     y << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
-        (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(9) = disturbance_x in body frame 
-        (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),  // thrust for dv, x(10) = disturbance_y in body frame
-        (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                              // thrust for dw, x(11) = disturbance_z excluding gravity in body frame
+        // (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(9) = disturbance_x in body frame 
+        // (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*sin(x(8))-sin(x(6))*cos(x(8))))),  // thrust for dv, x(10) = disturbance_y in body frame
+        // (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                              // thrust for dw, x(11) = disturbance_z excluding gravity in body frame
+        (accel.x-x(9))*(hover_thrust)/((g)),   // thrust for du, x(9) = disturbance_x in world frame 
+        (accel.y-x(10))*(hover_thrust)/((g)),  // thrust for dv, x(10) = disturbance_y in world frame
+        (accel.z-x(11)+g)*(hover_thrust)/((g));                              // thrust for dw, x(11) = disturbance_z excluding gravity in world frame
     return y;
 }
 
