@@ -67,6 +67,14 @@ class DISTURBANCE_OBSERVER{
     Eigen::MatrixXd h(Eigen::MatrixXd x);                                        // measurement model
     Eigen::MatrixXd compute_jacobian_F(Eigen::MatrixXd x, Eigen::MatrixXd u);    // compute Jacobian of system process model
     Eigen::MatrixXd compute_jacobian_H(Eigen::MatrixXd x);                       // compute Jacobian of measurement model
+
+    Eigen::Matrix3d q2ROT(const geometry_msgs::Quaternion);
+    Eigen::Vector3d disturbance_raw(
+        const geometry_msgs::AccelStamped& imu_B,
+        const mavros_msgs::AttitudeTarget& u_B,
+        const geometry_msgs::PoseStamped& pose
+    );
+
 };
 
 #endif
