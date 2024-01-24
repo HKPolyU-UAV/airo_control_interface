@@ -201,8 +201,8 @@ const geometry_msgs::AccelStamped & imu){
     std::cout << "disturbance_x: "<<force_disturbance.vector.x*mass<<" N |disturbance_y: "<<force_disturbance.vector.y*mass<<" N |disturbance_z: "<<force_disturbance.vector.z*mass<<" N"<<std::endl;
     std::cout << "U1_x: "<<measurement_states.thrust_x<<" |U1_y: "<<measurement_states.thrust_y<<" |U1_z: "<<measurement_states.thrust_z<<std::endl;
     std::cout<< "U1: "<<attitude_target.thrust<<std::endl;
-    std::cout<<"acc_x:"<<accel.x<<" |acc_y: "<<accel.y<<" |acc_z: "<<accel.z<<std::endl;
-    std::cout<<"acc_x_imu:"<<imu.accel.linear.x<<" |acc_y_imu: "<<imu.accel.linear.y<<" |acc_z_imu: "<<imu.accel.linear.z<<std::endl;
+    std::cout<<"acc_x: "<<accel.x<<" |acc_y: "<<accel.y<<" |acc_z: "<<accel.z<<std::endl;
+    std::cout<<"acc_x_imu: "<<imu.accel.linear.x<<" |acc_y_imu: "<<imu.accel.linear.y<<" |acc_z_imu: "<<imu.accel.linear.z<<std::endl;
 
     // std::cout<<"mass = hover_thrust/g = "<<hover_thrust/g<<std::endl;
 
