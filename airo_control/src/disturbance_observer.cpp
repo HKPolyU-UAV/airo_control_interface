@@ -279,9 +279,9 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
         // (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(9) = disturbance_x in body frame 
         // (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*sin(x(8))-sin(x(6))*cos(x(8))))),  // thrust for dv, x(10) = disturbance_y in body frame
         // (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                              // thrust for dw, x(11) = disturbance_z excluding gravity in body frame
-        (accel.x-x(9))*(hover_thrust)/((g)),   // thrust for du, x(9) = disturbance_x in world frame 
-        (accel.y-x(10))*(hover_thrust)/((g)),  // thrust for dv, x(10) = disturbance_y in world frame
-        (accel.z-x(11)+g)*(hover_thrust)/((g));                              // thrust for dw, x(11) = disturbance_z excluding gravity in world frame
+        (accel.x-x(9))*(hover_thrust)/((g)),     // thrust for du, x(9) = disturbance_x in world frame 
+        (accel.y-x(10))*(hover_thrust)/((g)),    // thrust for dv, x(10) = disturbance_y in world frame
+        (accel.z-x(11)+g)*(hover_thrust)/((g));  // thrust for dw, x(11) = disturbance_z excluding gravity in world frame
     return y;
 }
 
