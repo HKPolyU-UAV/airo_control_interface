@@ -42,6 +42,7 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs:
 const geometry_msgs::TwistStamped& twist,
 const mavros_msgs::AttitudeTarget attitude_target, 
 const geometry_msgs::AccelStamped & imu){
+    
     // x,y,z,u,v,w in measurement and system states
     measurement_states.x = pose.pose.position.x; 
     measurement_states.y = pose.pose.position.y;
@@ -57,27 +58,13 @@ const geometry_msgs::AccelStamped & imu){
     system_states.v = twist.twist.linear.y; 
     system_states.w = twist.twist.linear.z;
 
+    // p,q,r in system state
+    system_states.p = twist.twist.angular.x;
+    system_states.q = twist.twist.angular.y;
+    system_states.r = twist.twist.angular.z;
+    
     // phi,theta,psi in measurement and system states
     Eigen::Vector3d current_euler = q2rpy(pose.pose.orientation);
-    measurement_states.phi = current_euler.x();
-    measurement_states.theta = current_euler.y();
-    measurement_states.psi = current_euler.z();
-
-    system_states.phi = current_euler.x();
-    system_states.theta = current_euler.y();
-    system_states.psi = current_euler.z();
-
-    // disturbances in system state
-    geometry_msgs::Vector3Stamped force_disturbance;
-    force_disturbance.vector.x = system_states.disturbance_x;
-    force_disturbance.vector.y = system_states.disturbance_y;
-    force_disturbance.vector.z = system_states.disturbance_z;
-
-    // U1(thrust) in measurement state
-    measurement_states.thrust_x = attitude_target.thrust;
-    measurement_states.thrust_y = attitude_target.thrust;
-    measurement_states.thrust_z = attitude_target.thrust;
-
     // Rotation matrix
     R_z << cos(current_euler.z()), sin(current_euler.z()), 0,
         -sin(current_euler.z()), cos(current_euler.z()), 0,
@@ -92,6 +79,47 @@ const geometry_msgs::AccelStamped & imu){
         0, -sin(current_euler.x()), cos(current_euler.x());  
 
     R_b2w = R_z * R_y * R_x;
+
+    euler_body << current_euler.x(),current_euler.y(), current_euler.z();
+    euler_world = R_b2w*euler_body;
+
+    measurement_states.phi = euler_world(0,0);
+    measurement_states.theta = euler_world(1,0);
+    measurement_states.psi = euler_world(2,0);
+
+    system_states.phi = euler_world(0,0);
+    system_states.theta = euler_world(1,0);
+    system_states.psi = euler_world(2,0);
+
+    // phi_dot,theta_dot,psi_dot in system states
+    system_states.phi_dot_b = system_states.p  
+                        + (sin(current_euler.x())*tan(current_euler.y()))*system_states.q
+                        + (cos(current_euler.x())*tan(current_euler.y()))*system_states.r;
+
+    system_states.theta_dot_b = system_states.q*cos(current_euler.x())-system_states.r*sin(current_euler.x());
+
+    system_states.psi_dot_b = (sin(current_euler.x())/cos(current_euler.y()))*system_states.q
+                            + (cos(current_euler.x())/cos(current_euler.y()))*system_states.r;
+
+    euler_dot_body << system_states.phi_dot_b, system_states.theta_dot_b, system_states.psi_dot_b;
+    euler_dot_world = R_b2w*euler_dot_body;
+
+    system_states.phi_dot_w = euler_dot_world(0,0);
+    system_states.theta_dot_w = euler_dot_world(1,0);
+    system_states.psi_dot_w = euler_dot_world(2,0);
+
+    // disturbances in system state
+    geometry_msgs::Vector3Stamped force_disturbance;
+    force_disturbance.vector.x = system_states.disturbance_x;
+    force_disturbance.vector.y = system_states.disturbance_y;
+    force_disturbance.vector.z = system_states.disturbance_z;
+
+    // U1(thrust) in measurement state
+    measurement_states.thrust_x = attitude_target.thrust;
+    measurement_states.thrust_y = attitude_target.thrust;
+    measurement_states.thrust_z = attitude_target.thrust;
+
+    
     
     // Linear acceleration 
     accel_body << imu.accel.linear.x, imu.accel.linear.y, imu.accel.linear.z-g;
@@ -105,18 +133,16 @@ const geometry_msgs::AccelStamped & imu){
     thrust_body << attitude_target.thrust, attitude_target.thrust, attitude_target.thrust;
     thrust_world = R_b2w * thrust_body;
 
-    measurement_states.thrust_x = thrust_world(0,0);
-    measurement_states.thrust_y = thrust_world(1,0);
-    measurement_states.thrust_z = thrust_world(2,0);
-    // measurement_states.thrust_y = attitude_target.thrust;
-    // measurement_states.thrust_z = attitude_target.thrust;
+    // measurement_states.thrust_x = thrust_world(0,0);
+    // measurement_states.thrust_y = thrust_world(1,0);
+    // measurement_states.thrust_z = thrust_world(2,0);
 
-    // measurement_states.thrust_x = attitude_target.thrust;
-    // measurement_states.thrust_y = attitude_target.thrust;
-    // measurement_states.thrust_z = attitude_target.thrust;
+    measurement_states.thrust_x = thrust_body(0,0);
+    measurement_states.thrust_y = thrust_body(1,0);
+    measurement_states.thrust_z = thrust_body(2,0);
 
     // Get input u and measurment y
-    input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z;
+    input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z; // Thrust from MPC output in in body frame
    
     meas_y << measurement_states.x, measurement_states.y, measurement_states.z,
                 measurement_states.u, measurement_states.v, measurement_states.w,
@@ -236,8 +262,9 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::f(Eigen::MatrixXd x, Eigen::MatrixXd u)
 {
     // Define system dynamics
     Eigen::Matrix<double,12,1> xdot;    
-    xdot << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
-            0,0,0;                                         // Disturbance_x, disturbance_y, disturbance_z in du, dv, dw
+    xdot << x(3),x(4),x(5),accel.x,accel.y,accel.z,                               // x_dot,y_dot,z_dot,u_dot,v_dot,w_dot
+            system_states.phi_dot_w,system_states.theta_dot_w,system_states.psi_dot_w,  // phi_dot,theta_dot,psi_dot
+            0,0,0;                                                                // Disturbance_x, disturbance_y, disturbance_z in du, dv, dw
     return xdot; // dt is the time step
 }
 
@@ -247,9 +274,9 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
     // Define measurement model
     Eigen::Matrix<double,12,1> y;
     y << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
-        (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(11) = disturbance_x  
-        (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7))*sin(x(8))-sin(x(6))*cos(x(8)))),  // thrust for dv, x(12) = disturbance_y
-        (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                                // thrust for dw, x(13) = disturbance_z excluding gravity 
+        (accel.x-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(9) = disturbance_x in body frame 
+        (accel.y-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),  // thrust for dv, x(10) = disturbance_y in body frame
+        (accel.z-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                              // thrust for dw, x(11) = disturbance_z excluding gravity in body frame
     return y;
 }
 
