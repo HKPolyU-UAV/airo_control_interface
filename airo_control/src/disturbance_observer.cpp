@@ -38,10 +38,71 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::q2rpy(const geometry_msgs::Quaternion& qua
     return euler;
 }
 
-geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& pose, 
-const geometry_msgs::TwistStamped& twist,
-const mavros_msgs::AttitudeTarget attitude_target, 
-const geometry_msgs::AccelStamped & imu){
+Eigen::Matrix3d DISTURBANCE_OBSERVER::q2ROT(const geometry_msgs::Quaternion q)
+{
+    Eigen::Quaterniond qd(
+        q.w,
+        q.x,
+        q.y,
+        q.z
+    );
+
+    return qd.toRotationMatrix();
+}
+
+Eigen::Vector3d DISTURBANCE_OBSERVER::disturbance_raw(
+    const geometry_msgs::AccelStamped& imu_B_msg,
+    const mavros_msgs::AttitudeTarget& u_B,
+    const geometry_msgs::PoseStamped& pose
+)
+{
+    Eigen::Vector3d delta_B;
+    Eigen::Vector3d imu_B(
+        imu_B_msg.accel.linear.x,
+        imu_B_msg.accel.linear.y,
+        imu_B_msg.accel.linear.z
+    );
+
+    Eigen::Matrix3d ROT_I2B = q2ROT(pose.pose.orientation).inverse();
+
+    delta_B = imu_B - u_B.thrust / thrust_h_B * Eigen::Vector3d(0.0,0.0,g);
+
+    return delta_B;
+}
+
+geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(
+    const geometry_msgs::PoseStamped& pose, 
+    const geometry_msgs::TwistStamped& twist,
+    const mavros_msgs::AttitudeTarget attitude_target, 
+    const geometry_msgs::AccelStamped & imu
+)
+{
+    std::cout<<"=============== here ==============="<<std::endl;
+    Eigen::Vector3d delta_B = disturbance_raw(
+        imu,
+        attitude_target,
+        pose
+    );
+    // std::cout<<
+    //     "delta_B_x: "<<delta_B.x()<<' '
+    //     <<"delta_B_y: "<<delta_B.y()<<' '
+    //     <<"delta_B_z: "<<delta_B.z()<<' '<<std::endl<<std::endl;
+
+    // std::cout<<"norm: "<<delta_B.norm()<<std::endl;
+
+    Eigen::Vector3d delta_W = q2ROT(pose.pose.orientation) * delta_B;
+
+    std::cout<<
+        "delta_B_x: "<<delta_W.x()<<' '
+        <<"delta_B_y: "<<delta_W.y()<<' '
+        <<"delta_B_z: "<<delta_W.z()<<' '<<std::endl<<std::endl;
+
+    std::cout<<"norm: "<<delta_W.norm()<<std::endl;
+
+
+    geometry_msgs::Vector3Stamped lala;
+    return lala;
+
     
     // x,y,z,u,v,w in measurement and system states
     measurement_states.x = pose.pose.position.x; 

@@ -113,7 +113,12 @@ void AIRO_CONTROL_FSM::process(){
 
     // Step 3: Run observer and solve position controller if needed
     if(solve_controller){
-        force_disturbance = disturbance_observer->observe(local_pose,local_twist,attitude_target,local_accel);
+        force_disturbance = disturbance_observer->observe(
+            local_pose,
+            local_twist,
+            attitude_target,
+            local_accel
+        );
         
         if (!use_preview){
             attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref);

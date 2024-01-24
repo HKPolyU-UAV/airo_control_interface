@@ -26,6 +26,10 @@ class MPC : public BASE_CONTROLLER{
             double tau_psi;
             bool enable_preview;
             std::vector<double> diag_cost_x,diag_cost_u,diag_cost_xn;
+
+            double delta_x;
+            double delta_y;
+            double delta_z;
         };
 
         enum SystemStates{

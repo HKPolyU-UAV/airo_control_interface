@@ -11,6 +11,8 @@
 #include <sstream>
 #include <fstream>
 #include <string>
+#include <eigen3/Eigen/Dense>
+
 
 geometry_msgs::PoseStamped local_pose;
 airo_message::FSMInfo fsm_info;
@@ -110,6 +112,13 @@ int main(int argc, char **argv)
                             std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_1.ref_pose.position.x << std::endl;
                             std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_1.ref_pose.position.y << std::endl;
                             std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_1.ref_pose.position.z << std::endl;
+
+                            Eigen::Vector3d local_posi, ref_posi;
+                            local_posi << local_pose.pose.position.x, local_pose.pose.position.y, local_pose.pose.position.z;
+                            ref_posi   << target_pose_1.ref_pose.position.x, target_pose_1.ref_pose.position.y, target_pose_1.ref_pose.position.z;
+
+                            std::cout<<"abs tracking error:"<<(local_posi - ref_posi).norm()<<std::endl<<std::endl;
+
                         }
                     }
                     else{
