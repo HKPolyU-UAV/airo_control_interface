@@ -185,8 +185,10 @@ const geometry_msgs::AccelStamped & imu){
     // std::cout << "meas_phi: "<<measurement_states.phi<< " meas_theta: "<<measurement_states.theta<<" meas_psi: "<<measurement_states.psi<<std::endl;
     std::cout << "disturbance_x: "<<force_disturbance.vector.x<<" ms^-2 |disturbance_y: "<<force_disturbance.vector.y<<" ms^-2 |disturbance_z: "<<force_disturbance.vector.z<<" ms^-2"<<std::endl;
     std::cout << "disturbance_x: "<<force_disturbance.vector.x*mass<<" N |disturbance_y: "<<force_disturbance.vector.y*mass<<" N |disturbance_z: "<<force_disturbance.vector.z*mass<<" N"<<std::endl;
-    std::cout << "U1_x: "<<measurement_states.thrust_x<<" U1_y: "<<measurement_states.thrust_y<<" U1_z: "<<measurement_states.thrust_z<<std::endl;
+    std::cout << "U1_x: "<<measurement_states.thrust_x<<" |U1_y: "<<measurement_states.thrust_y<<" |U1_z: "<<measurement_states.thrust_z<<std::endl;
     std::cout<<"acc_x:"<<accel.x<<" |acc_y: "<<accel.y<<" |acc_z: "<<accel.z<<std::endl;
+    std::cout<<"acc_x_imu:"<<imu.accel.linear.x<<" |acc_y_imu: "<<imu.accel.linear.y<<" |acc_z_imu: "<<imu.accel.linear.z<<std::endl;
+
     // std::cout<<"mass = hover_thrust/g = "<<hover_thrust/g<<std::endl;
 
     cout_counter = 0;
