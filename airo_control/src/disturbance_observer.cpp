@@ -132,17 +132,19 @@ const geometry_msgs::AccelStamped & imu){
     // U1(thrust) in measurement state
     thrust_body << attitude_target.thrust, attitude_target.thrust, attitude_target.thrust;
     thrust_world = R_b2w * thrust_body;
-
+    
+    // Thrust from MPC output in in world frame
     // measurement_states.thrust_x = thrust_world(0,0);
     // measurement_states.thrust_y = thrust_world(1,0);
     // measurement_states.thrust_z = thrust_world(2,0);
 
-    measurement_states.thrust_x = thrust_body(0,0);
+    // Thrust from MPC output in in body frame
+    measurement_states.thrust_x = thrust_body(0,0); 
     measurement_states.thrust_y = thrust_body(1,0);
     measurement_states.thrust_z = thrust_body(2,0);
 
     // Get input u and measurment y
-    input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z; // Thrust from MPC output in in body frame
+    input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z; 
    
     meas_y << measurement_states.x, measurement_states.y, measurement_states.z,
                 measurement_states.u, measurement_states.v, measurement_states.w,
