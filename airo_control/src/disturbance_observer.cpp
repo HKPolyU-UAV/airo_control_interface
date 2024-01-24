@@ -101,6 +101,20 @@ const geometry_msgs::AccelStamped & imu){
     accel.y = accel_world(1,0);
     accel.z = accel_world(2,0);
 
+    // U1(thrust) in measurement state
+    thrust_body << attitude_target.thrust, attitude_target.thrust, attitude_target.thrust;
+    thrust_world = R_b2w * thrust_body;
+
+    measurement_states.thrust_x = thrust_world(0,0);
+    measurement_states.thrust_y = thrust_world(1,0);
+    measurement_states.thrust_z = thrust_world(2,0);
+    // measurement_states.thrust_y = attitude_target.thrust;
+    // measurement_states.thrust_z = attitude_target.thrust;
+
+    // measurement_states.thrust_x = attitude_target.thrust;
+    // measurement_states.thrust_y = attitude_target.thrust;
+    // measurement_states.thrust_z = attitude_target.thrust;
+
     // Get input u and measurment y
     input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z;
    
@@ -186,6 +200,7 @@ const geometry_msgs::AccelStamped & imu){
     std::cout << "disturbance_x: "<<force_disturbance.vector.x<<" ms^-2 |disturbance_y: "<<force_disturbance.vector.y<<" ms^-2 |disturbance_z: "<<force_disturbance.vector.z<<" ms^-2"<<std::endl;
     std::cout << "disturbance_x: "<<force_disturbance.vector.x*mass<<" N |disturbance_y: "<<force_disturbance.vector.y*mass<<" N |disturbance_z: "<<force_disturbance.vector.z*mass<<" N"<<std::endl;
     std::cout << "U1_x: "<<measurement_states.thrust_x<<" |U1_y: "<<measurement_states.thrust_y<<" |U1_z: "<<measurement_states.thrust_z<<std::endl;
+    std::cout<< "U1: "<<attitude_target.thrust<<std::endl;
     std::cout<<"acc_x:"<<accel.x<<" |acc_y: "<<accel.y<<" |acc_z: "<<accel.z<<std::endl;
     std::cout<<"acc_x_imu:"<<imu.accel.linear.x<<" |acc_y_imu: "<<imu.accel.linear.y<<" |acc_z_imu: "<<imu.accel.linear.z<<std::endl;
 
