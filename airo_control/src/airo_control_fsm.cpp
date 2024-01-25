@@ -3,6 +3,12 @@
 AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     // ROS Parameters
     nh.getParam("airo_control_node/fsm/controller_type",CONTROLLER_TYPE);
+    nh.getParam("airo_control_node/fsm/enable_observer",ENABLE_OBSERVER);
+    nh.getParam("airo_control_node/fsm/apply_observer",APPLY_OBSERVER);
+    if (ENABLE_OBSERVER == false && APPLY_OBSERVER == true){
+        ROS_ERROR("[AIRo Control] Cannot apply observer when it's disabled!");
+        APPLY_OBSERVER = false;
+    }
     nh.getParam("airo_control_node/fsm/pose_topic",POSE_TOPIC);
     nh.getParam("airo_control_node/fsm/twist_topic",TWIST_TOPIC);
     nh.getParam("airo_control_node/fsm/state_timeout",STATE_TIMEOUT);
@@ -71,6 +77,9 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     rc_input.set_rc_param(rc_param);
     controller_ref.header.stamp = ros::Time::now();
     disturbance_observer = std::make_unique<DISTURBANCE_OBSERVER>(nh,controller->get_hover_thrust());
+    force_disturbance.vector.x = 0;
+    force_disturbance.vector.y = 0;
+    force_disturbance.vector.z = 0;
 
     // For MPC Preview
     if(auto dummy_mpc = dynamic_cast<MPC*>(controller.get())){
@@ -113,14 +122,30 @@ void AIRO_CONTROL_FSM::process(){
 
     // Step 3: Run observer and solve position controller if needed
     if(solve_controller){
-        force_disturbance = disturbance_observer->observe(local_pose,local_twist,attitude_target,local_accel);
-        
-        if (!use_preview){
-            attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref);
+        if (ENABLE_OBSERVER){
+            force_disturbance = disturbance_observer->observe(local_pose,local_twist,attitude_target,local_accel);
+        }
+
+        if (APPLY_OBSERVER){
+            if (CONTROLLER_TYPE != "mpc"){
+                ROS_WARN_STREAM_THROTTLE(1.0,"[AIRo Control] Observed disturbances will not be used for controllers other than MPC");
+            }
+            if (!use_preview){
+                attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref,force_disturbance);
+            }
+            else{
+                MPC* dummy_mpc = dynamic_cast<MPC*>(controller.get());
+                attitude_target = dummy_mpc->solve(local_pose,local_twist,local_accel,controller_ref_preview,force_disturbance);
+            }
         }
         else{
-            MPC* dummy_mpc = dynamic_cast<MPC*>(controller.get());
-            attitude_target = dummy_mpc->solve(local_pose,local_twist,local_accel,controller_ref_preview);
+            if (!use_preview){
+                attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref);
+            }
+            else{
+                MPC* dummy_mpc = dynamic_cast<MPC*>(controller.get());
+                attitude_target = dummy_mpc->solve(local_pose,local_twist,local_accel,controller_ref_preview);
+            }
         }
     }
 
@@ -135,8 +160,10 @@ void AIRO_CONTROL_FSM::process(){
     fsm_info.is_landed = is_landed;
     fsm_info_pub.publish(fsm_info);
     
-    force_disturbance.header.stamp = current_time;
-    disturbance_pub.publish(force_disturbance);
+    if (ENABLE_OBSERVER){
+        force_disturbance.header.stamp = current_time;
+        disturbance_pub.publish(force_disturbance);
+    }
 
     // Step 6: Reset all variables
 	rc_input.enter_fsm = false;

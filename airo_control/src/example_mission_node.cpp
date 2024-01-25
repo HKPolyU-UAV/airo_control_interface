@@ -84,10 +84,10 @@ int main(int argc, char **argv)
                         takeoff_land_pub.publish(takeoff_land_trigger);
                         ros::spinOnce();
                         ros::Duration(0.5).sleep();
-                        if(fsm_info.is_waiting_for_command){
-                            state = COMMAND;
-                            break;
-                        }
+                        // if(fsm_info.is_waiting_for_command){
+                        //     state = COMMAND;
+                        //     break;
+                        // }
                     }
                 }
                 break;

@@ -32,6 +32,14 @@ MPC::MPC(ros::NodeHandle& nh){
 }
 
 mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){
+    geometry_msgs::Vector3Stamped force_disturbance;
+    force_disturbance.vector.x = 0;
+    force_disturbance.vector.y = 0;
+    force_disturbance.vector.z = 0;
+    return MPC::solve(current_pose,current_twist,current_accel,ref,force_disturbance);
+}
+
+mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref, const geometry_msgs::Vector3Stamped& force_disturbance){
     // Resize ref to fit prediction horizon
     airo_message::ReferencePreview ref_preview;
     ref_preview.header = ref.header;
@@ -43,10 +51,18 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
         ref_preview.ref_twist[i] = ref.ref_twist;
         ref_preview.ref_accel[i] = ref.ref_accel;
     }
-    return MPC::solve(current_pose,current_twist,current_accel,ref_preview);
+    return MPC::solve(current_pose,current_twist,current_accel,ref_preview,force_disturbance);
 }
 
 mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferencePreview& ref_preview){
+    geometry_msgs::Vector3Stamped force_disturbance;
+    force_disturbance.vector.x = 0;
+    force_disturbance.vector.y = 0;
+    force_disturbance.vector.z = 0;
+    return MPC::solve(current_pose,current_twist,current_accel,ref_preview,force_disturbance);
+}
+
+mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferencePreview& ref_preview, const geometry_msgs::Vector3Stamped& force_disturbance){
     // Set reference
     ref_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[0].orientation);
     for (int i = 0; i < QUADROTOR_N+1; i++){
@@ -83,9 +99,9 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
         acados_param[i][1] = param.tau_phi;
         acados_param[i][2] = param.tau_theta;
 
-        acados_param[i][4] = param.delta_x;
-        acados_param[i][5] = param.delta_y;
-        acados_param[i][6] = param.delta_z;
+        acados_param[i][4] = force_disturbance.vector.x;
+        acados_param[i][5] = force_disturbance.vector.y;
+        acados_param[i][6] = force_disturbance.vector.z;
 
         // For yaw prediction
         if (i == 0){

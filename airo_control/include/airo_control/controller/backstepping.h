@@ -20,6 +20,7 @@ class BACKSTEPPING : public BASE_CONTROLLER{
         BACKSTEPPING(ros::NodeHandle&);
         void pub_debug();
         mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&);
+        mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::Reference&, const geometry_msgs::Vector3Stamped&);
         double get_hover_thrust();
 };
 

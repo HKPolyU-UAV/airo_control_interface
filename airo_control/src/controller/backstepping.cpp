@@ -32,7 +32,15 @@ void BACKSTEPPING::pub_debug(){
     debug_pub.publish(debug_msg);  
 }
 
-mavros_msgs::AttitudeTarget BACKSTEPPING::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){  
+mavros_msgs::AttitudeTarget BACKSTEPPING::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){
+    geometry_msgs::Vector3Stamped force_disturbance;
+    force_disturbance.vector.x = 0.0;
+    force_disturbance.vector.y = 0.0;
+    force_disturbance.vector.z = 0.0;
+    return BACKSTEPPING::solve(current_pose,current_twist,current_accel,ref,force_disturbance);
+}
+
+mavros_msgs::AttitudeTarget BACKSTEPPING::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref, const geometry_msgs::Vector3Stamped& force_disturbance){  
     current_euler = q2rpy(current_pose.pose.orientation);
     ref_euler = q2rpy(ref.ref_pose.orientation);
 

@@ -134,10 +134,13 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(
     <<"Mean of delta_W_y: "<< meanDelta_y_W << " "
     <<"Mean of delta_W_z: "<< meanDelta_z_W << std::endl;
     
+    geometry_msgs::Vector3Stamped force_disturbance;
+    force_disturbance.header.stamp = ros::Time::now();
+    force_disturbance.vector.x = meanDelta_x_W;
+    force_disturbance.vector.y = meanDelta_y_W;
+    force_disturbance.vector.z = meanDelta_z_W;
 
-
-    geometry_msgs::Vector3Stamped lala;
-    return lala;
+    return force_disturbance;
 }
 // geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& pose, 
 // const geometry_msgs::TwistStamped& twist,

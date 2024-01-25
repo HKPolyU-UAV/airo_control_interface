@@ -50,8 +50,7 @@ class AIRO_CONTROL_FSM{
 	double HOVER_MAX_YAW_RATE;
 	bool CHECK_SAFETY_VOLUMN;
 	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y max_z
-	bool WITHOUT_RC;
-
+	bool WITHOUT_RC,ENABLE_OBSERVER,APPLY_OBSERVER;
 
 	// Variables
 	STATE_FSM state_fsm;
