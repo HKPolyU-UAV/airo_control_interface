@@ -83,6 +83,10 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
         acados_param[i][1] = param.tau_phi;
         acados_param[i][2] = param.tau_theta;
 
+        acados_param[i][4] = param.delta_x;
+        acados_param[i][5] = param.delta_y;
+        acados_param[i][6] = param.delta_z;
+
         // For yaw prediction
         if (i == 0){
             acados_param[i][3] = current_euler.z();
