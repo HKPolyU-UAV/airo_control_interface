@@ -41,6 +41,15 @@ class DISTURBANCE_OBSERVER{
     int cout_counter = 0;
     double mass = 1.5;
 
+    // Raw disturbance parameters
+    int window_size = 10;
+    std::deque<double> delta_x_W_buffer;
+    std::deque<double> delta_y_W_buffer;
+    std::deque<double> delta_z_W_buffer;
+    double meanDelta_x_W = 0.0;
+    double meanDelta_y_W = 0.0;
+    double meanDelta_z_W = 0.0;
+
     // Weights
     int m = 12;
     int n = 12;
@@ -69,11 +78,7 @@ class DISTURBANCE_OBSERVER{
     Eigen::MatrixXd compute_jacobian_H(Eigen::MatrixXd x);                       // compute Jacobian of measurement model
 
     Eigen::Matrix3d q2ROT(const geometry_msgs::Quaternion);
-    Eigen::Vector3d disturbance_raw(
-        const geometry_msgs::AccelStamped& imu_B,
-        const mavros_msgs::AttitudeTarget& u_B,
-        const geometry_msgs::PoseStamped& pose
-    );
+    Eigen::Vector3d disturbance_raw(const geometry_msgs::AccelStamped& ,const mavros_msgs::AttitudeTarget& ,const geometry_msgs::PoseStamped& );
 
 };
 
