@@ -22,7 +22,10 @@ protected:
     };
 
     struct ThrustModel{
-        double mass;
+        float mass;
+        float K1;
+        float K2;
+        float K3;
     };
 
     Param param;
