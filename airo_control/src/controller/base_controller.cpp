@@ -23,6 +23,7 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
     if (param.enable_thrust_model) {
         
     const float g = 9.81;  // Acceleration due to gravity
+    
             // thrust = (a_z/g)*param.hover_thrust;
             //  std::cout<<a_z<<std::endl;
 

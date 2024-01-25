@@ -1,6 +1,6 @@
 pub_debug: false
 enable_preview: true
-enable_thrust_model: false
+enable_thrust_model: true
 
 # system parameters
 hover_thrust: 0.20
