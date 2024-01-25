@@ -52,11 +52,11 @@ Eigen::Matrix3d DISTURBANCE_OBSERVER::q2ROT(const geometry_msgs::Quaternion q)
 
 Eigen::Vector3d DISTURBANCE_OBSERVER::disturbance_raw(
     const geometry_msgs::AccelStamped& imu_B_msg,
-    const mavros_msgs::AttitudeTarget& u_B,
+    const mavros_msgs::AttitudeTarget& Thrust_B,
     const geometry_msgs::PoseStamped& pose
 ){
     Eigen::Vector3d delta_B;
-    Eigen::Vector3d imu_B(
+    Eigen::Vector3d imu_accel_B(
         imu_B_msg.accel.linear.x,
         imu_B_msg.accel.linear.y,
         imu_B_msg.accel.linear.z
@@ -64,7 +64,7 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::disturbance_raw(
 
     Eigen::Matrix3d ROT_I2B = q2ROT(pose.pose.orientation).inverse();
 
-    delta_B = imu_B - u_B.thrust / hover_thrust * Eigen::Vector3d(0.0,0.0,g);
+    delta_B = imu_accel_B - Thrust_B.thrust / hover_thrust * Eigen::Vector3d(0.0,0.0,g);
 
     return delta_B;
 }
@@ -76,18 +76,12 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(
     const geometry_msgs::AccelStamped & imu
 )
 {
-    std::cout<<"=============== here ==============="<<std::endl;
+    std::cout<<"=============== Raw disturbances ==============="<<std::endl;
     Eigen::Vector3d delta_B = disturbance_raw(
         imu,
         attitude_target,
         pose
     );
-    // std::cout<<
-    //     "delta_B_x: "<<delta_B.x()<<' '
-    //     <<"delta_B_y: "<<delta_B.y()<<' '
-    //     <<"delta_B_z: "<<delta_B.z()<<' '<<std::endl<<std::endl;
-
-    // std::cout<<"norm: "<<delta_B.norm()<<std::endl;
 
     Eigen::Vector3d delta_W = q2ROT(pose.pose.orientation) * delta_B;
 
@@ -97,6 +91,49 @@ geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(
         <<"delta_B_z: "<<delta_W.z()<<' '<<std::endl<<std::endl;
 
     std::cout<<"norm: "<<delta_W.norm()<<std::endl;
+
+    // Store delta_W.x(), delta_W.y(), delta_W.z() in buffer
+    delta_x_W_buffer.push_back(delta_W.x()); 
+    delta_y_W_buffer.push_back(delta_W.y());
+    delta_z_W_buffer.push_back(delta_W.z()); 
+
+    // Remove oldest value if buffer size exceeds window size
+    if (delta_x_W_buffer.size() > window_size) delta_x_W_buffer.pop_front();  
+    if (delta_y_W_buffer.size() > window_size) delta_y_W_buffer.pop_front(); 
+    if (delta_z_W_buffer.size() > window_size) delta_z_W_buffer.pop_front(); 
+
+    // Calculate the mean of delta_W.x(), delta_W.y(), delta_W.z() values in the buffer
+    for (const auto& valx : delta_x_W_buffer){
+        meanDelta_x_W += valx;
+    }
+    meanDelta_x_W/= delta_x_W_buffer.size();
+
+    for (const auto& valy : delta_y_W_buffer){
+        meanDelta_y_W += valy;
+    }
+    meanDelta_y_W/= delta_y_W_buffer.size();
+    
+    for (const auto& valz : delta_z_W_buffer){
+        meanDelta_z_W += valz;
+    }
+    meanDelta_z_W/= delta_z_W_buffer.size();
+
+    // Print the buffer contents
+    std::cout << "Buffer contents: ";
+    for (const auto& valx : delta_x_W_buffer)
+        std::cout << "delta_x_W: "<< valx << " ";
+    std::cout << std::endl;
+    for (const auto& valy : delta_y_W_buffer)
+        std::cout << "delta_y_W: "<< valy << " ";
+    std::cout << std::endl;
+    for (const auto& valz : delta_z_W_buffer)
+        std::cout << "delta_z_W: "<< valz << " ";
+    std::cout << std::endl;
+
+    std::cout<<"Mean of delta_W_x: "<< meanDelta_x_W << " " 
+    <<"Mean of delta_W_y: "<< meanDelta_y_W << " "
+    <<"Mean of delta_W_z: "<< meanDelta_z_W << std::endl;
+    
 
 
     geometry_msgs::Vector3Stamped lala;
