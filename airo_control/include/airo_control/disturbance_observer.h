@@ -30,7 +30,7 @@ class DISTURBANCE_OBSERVER{
     SYSTEM_STATES system_states;
     
     struct ACCEL{
-        double x,y,z;
+        double x_b,y_b,z_b,x_w,y_w,z_w;
     };
     ACCEL accel;
 
