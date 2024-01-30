@@ -1,9 +1,9 @@
 pub_debug: true
 enable_preview: true
-enable_thrust_model: true
+enable_thrust_model: false
 
 # system parameters
-hover_thrust: 0.5656428200006485
+hover_thrust: 0.31
 tau_phi: 0.1742504945971047
 tau_theta: 0.1704274688906173
 tau_psi: 0.7410010081424614
