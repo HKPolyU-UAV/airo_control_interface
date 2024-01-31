@@ -22,13 +22,22 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
 
     if (param.enable_thrust_model) {
 
-            
-            // thrust = (sqrt(((1 * a_z)/4) / (K1 * pow(voltage_2, K2)) + pow(((1 - K3) / (2 * sqrt(K3))), 2)) - ((1 - K3) / (2 * sqrt(K3)))) / sqrt(K3);
-            double thrust = (sqrt(((thrust_model.mass * a_z)/ 4) / (thrust_model.K1 * pow(voltage, thrust_model.K2)) + pow((1 - thrust_model.K3) / (2 * sqrt(thrust_model.K3)), 2)) - ((1 - thrust_model.K3) / (2 * sqrt(thrust_model.K3)))) / sqrt(thrust_model.K3);
- 
+        const float K1 = 0.06092;
+        const float K2 = 1.843;
+        const float K3 = 0.7826;
+        const double mass = 1.5;
+
+            thrust = (sqrt((( mass * a_z)/4) / (K1 * pow(voltage_2, K2)) + pow(((1 - K3) / (2 * sqrt(K3))), 2)) - ((1 - K3) / (2 * sqrt(K3)))) / sqrt(K3);
+            // thrust = (sqrt(((thrust_model.mass * a_z)/ 4) / (thrust_model.K1 * pow(voltage, thrust_model.K2)) + pow((1 - thrust_model.K3) / (2 * sqrt(thrust_model.K3)), 2)) - ((1 - thrust_model.K3) / (2 * sqrt(thrust_model.K3)))) / sqrt(thrust_model.K3);
+            // thrust = (sqrt(((thrust_model.mass * a_z) / 4) / (thrust_model.K1 * pow(voltage_2, thrust_model.K2)) + pow(((1 - thrust_model.K3) / (2 * sqrt(thrust_model.K3))), 2)) - ((1 - thrust_model.K3) / (2 * sqrt(thrust_model.K3)))) / sqrt(thrust_model.K3);
+
+
         // std::cout<<a_z<<std::endl;
         std::cout<<"enable thrust_model"<<std::endl;
         std::cout<<thrust<<std::endl;
+        // std::cout<<thrust_model.mass<<std::endl;
+        // std::cout<<thrust_model.K2<<std::endl;
+        // std::cout<<thrust_model.K3<<std::endl;
 
     }
     else {
@@ -37,14 +46,14 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
         std::cout<<thrust<<std::endl;
     } 
 
-    // if (thrust > 1.0) {
-    //     ROS_ERROR("Thrust = %f",thrust);
-    //     thrust = 0.9999;
-    // }
-    // else if (thrust < 0.0) {
-    //     ROS_ERROR("Thrust = %f",thrust);
-    //     thrust = 0.0001;
-    // }
+    if (thrust > 1.0) {
+        ROS_ERROR("Thrust = %f",thrust);
+        thrust = 0.9999;
+    }
+    else if (thrust < 0.0) {
+        ROS_ERROR("Thrust = %f",thrust);
+        thrust = 0.0001;
+    }
 
     return thrust;
 }

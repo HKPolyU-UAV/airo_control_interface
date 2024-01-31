@@ -14,10 +14,10 @@ MPC::MPC(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/mpc/diag_cost_xn",param.diag_cost_xn);
 
     if (param.enable_thrust_model){
-        nh.getParam("aio_control_nod/thrust_model/mass",thrust_model.mass);
-        nh.getParam("aio_control_nod/thrust_model/K1",thrust_model.K1);
-        nh.getParam("aio_control_nod/thrust_model/K2",thrust_model.K2);
-        nh.getParam("aio_control_nod/thrust_model/K3",thrust_model.K3);
+        nh.getParam("aio_control_node/thrust_model/mass",thrust_model.mass);
+        nh.getParam("aio_control_node/thrust_model/K1",thrust_model.K1);
+        nh.getParam("aio_control_node/thrust_model/K2",thrust_model.K2);
+        nh.getParam("aio_control_node/thrust_model/K3",thrust_model.K3);
     }
 
     // Set publishers
