@@ -287,9 +287,9 @@ const geometry_msgs::AccelStamped & imu){
         ","<<"ekf_dx_w"<<","<<force_disturbance.vector.x<<","<<
             "ekf_dy_w"<<","<<force_disturbance.vector.y<<","<<
             "ekf_dz_w"<<","<<force_disturbance.vector.z<<","<<
-            "raw_dx_w"<<","<<meanDelta_x_W<<","<<
-            "raw_dy_w"<<","<<meanDelta_y_W<<","<<
-            "raw_dz_w"<<","<<meanDelta_z_W<<","<<std::endl;
+            "raw_dx_w"<<","<<delta_W.x()<<","<<
+            "raw_dy_w"<<","<<delta_W.y()<<","<<
+            "raw_dz_w"<<","<<delta_W.z()<<","<<std::endl;
     save.close();
 
     if (cout_counter > 100){
