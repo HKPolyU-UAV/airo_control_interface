@@ -15,11 +15,11 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
 
     // Weights
     // Q_noise, R_noise, P0 init
-    Q_cov << Q_POS,Q_POS,Q_POS,Q_VEL,Q_VEL,Q_VEL,Q_ATT,Q_ATT,Q_ATT,
+    Q_cov << Q_VEL,Q_VEL,Q_VEL,
                 Q_DISTURBANCE,Q_DISTURBANCE,Q_DISTURBANCE;
     Q_noise = Q_cov.asDiagonal();
 
-    R_cov << R_POS,R_POS,R_POS,R_VEL,R_VEL,R_VEL,R_ATT,R_ATT,R_ATT,
+    R_cov << R_VEL,R_VEL,R_VEL,
                 R_CONTROL,R_CONTROL,R_CONTROL;
     R_noise = R_cov.asDiagonal();
     
@@ -27,7 +27,7 @@ DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOV
     esti_P = P0;
     dt = 1/FSM_FREQUENCY;
  
-    esti_x << 0,0,0,0,0,0,1e-6,1e-6,1e-6,0,0,0; // phi & theta CAN'T be 0
+    esti_x << 0,0,0,0,0,0; // phi & theta CAN'T be 0
 }
 
 Eigen::Vector3d DISTURBANCE_OBSERVER::q2rpy(const geometry_msgs::Quaternion& quaternion){
@@ -137,64 +137,50 @@ const mavros_msgs::AttitudeTarget attitude_target,
 const geometry_msgs::AccelStamped & imu){
     
     // x,y,z,u,v,w in measurement and system states
-    measurement_states.x = pose.pose.position.x; 
-    measurement_states.y = pose.pose.position.y;
-    measurement_states.z = pose.pose.position.z;
+    // measurement_states.x = pose.pose.position.x; 
+    // measurement_states.y = pose.pose.position.y;
+    // measurement_states.z = pose.pose.position.z;
     measurement_states.u = twist.twist.linear.x;   
     measurement_states.v = twist.twist.linear.y; 
     measurement_states.w = twist.twist.linear.z; 
    
-    system_states.x = pose.pose.position.x;
-    system_states.y = pose.pose.position.y;
-    system_states.z = pose.pose.position.z;
+    // system_states.x = pose.pose.position.x;
+    // system_states.y = pose.pose.position.y;
+    // system_states.z = pose.pose.position.z;
     system_states.u = twist.twist.linear.x;   
     system_states.v = twist.twist.linear.y; 
     system_states.w = twist.twist.linear.z;
 
     // p,q,r in system state
-    system_states.p = twist.twist.angular.x;
-    system_states.q = twist.twist.angular.y;
-    system_states.r = twist.twist.angular.z;
+    // system_states.p = twist.twist.angular.x;
+    // system_states.q = twist.twist.angular.y;
+    // system_states.r = twist.twist.angular.z;
     
     // phi,theta,psi in measurement and system states
     Eigen::Vector3d current_euler = q2rpy(pose.pose.orientation);
+    // measurement_states.phi = current_euler.x();
+    // measurement_states.theta = current_euler.y();
+    // measurement_states.psi = current_euler.z();
 
-    euler_body << current_euler.x(),current_euler.y(), current_euler.z();
-    euler_world = q2ROT(pose.pose.orientation)*euler_body;
-
-    measurement_states.phi = euler_world(0,0);
-    measurement_states.theta = euler_world(1,0);
-    measurement_states.psi = euler_world(2,0);
-
-    system_states.phi = euler_world(0,0);
-    system_states.theta = euler_world(1,0);
-    system_states.psi = euler_world(2,0);
+    // system_states.phi = current_euler.x();
+    // system_states.theta = current_euler.y();
+    // system_states.psi = current_euler.z();
 
     // phi_dot,theta_dot,psi_dot in system states
-    system_states.phi_dot_b = system_states.p  
+    system_states.phi_dot_w = system_states.p  
                         + (sin(current_euler.x())*tan(current_euler.y()))*system_states.q
                         + (cos(current_euler.x())*tan(current_euler.y()))*system_states.r;
 
-    system_states.theta_dot_b = system_states.q*cos(current_euler.x())-system_states.r*sin(current_euler.x());
+    system_states.theta_dot_w = system_states.q*cos(current_euler.x())-system_states.r*sin(current_euler.x());
 
-    system_states.psi_dot_b = (sin(current_euler.x())/cos(current_euler.y()))*system_states.q
+    system_states.psi_dot_w = (sin(current_euler.x())/cos(current_euler.y()))*system_states.q
                             + (cos(current_euler.x())/cos(current_euler.y()))*system_states.r;
-
-    euler_dot_body << system_states.phi_dot_b, system_states.theta_dot_b, system_states.psi_dot_b;
-    euler_dot_world = q2ROT(pose.pose.orientation)*euler_dot_body;
-
-    system_states.phi_dot_w = euler_dot_world(0,0);
-    system_states.theta_dot_w = euler_dot_world(1,0);
-    system_states.psi_dot_w = euler_dot_world(2,0);
 
     // disturbances in system state
     geometry_msgs::Vector3Stamped force_disturbance;
-    // force_disturbance.vector.x = system_states.disturbance_x;
-    // force_disturbance.vector.y = system_states.disturbance_y;
-    // force_disturbance.vector.z = system_states.disturbance_z;
     
     // Linear acceleration 
-    accel_body << imu.accel.linear.x, imu.accel.linear.y, imu.accel.linear.z-g;
+    accel_body << imu.accel.linear.x, imu.accel.linear.y, imu.accel.linear.z;
     accel_world = q2ROT(pose.pose.orientation) * accel_body;
 
     accel.x_b = accel_body(0,0);
@@ -208,11 +194,6 @@ const geometry_msgs::AccelStamped & imu){
     thrust_body << attitude_target.thrust, attitude_target.thrust, attitude_target.thrust;
     thrust_world = q2ROT(pose.pose.orientation) * thrust_body;
 
-    // Thrust from MPC output in in world frame
-    // measurement_states.thrust_x = thrust_world(0,0)*(cos(current_euler.x())*sin(current_euler.y()*cos(current_euler.z())+sin(current_euler.x())*sin(current_euler.z())));
-    // measurement_states.thrust_y = thrust_world(1,0)*(cos(current_euler.x())*sin(current_euler.y()*sin(current_euler.z())-sin(current_euler.x())*cos(current_euler.z())));
-    // measurement_states.thrust_z = thrust_world(2,0)*(cos(current_euler.x())*cos(current_euler.y()));
-
     // Thrust from MPC output in in body frame
     measurement_states.thrust_x = thrust_body(0,0); 
     measurement_states.thrust_y = thrust_body(1,0);
@@ -220,23 +201,21 @@ const geometry_msgs::AccelStamped & imu){
 
     // Get input u and measurment y
     input_u << measurement_states.thrust_x, measurement_states.thrust_y, measurement_states.thrust_z; 
-    meas_y << measurement_states.x, measurement_states.y, measurement_states.z,
-                measurement_states.u, measurement_states.v, measurement_states.w,
-                measurement_states.phi, measurement_states.theta, measurement_states.psi,
+    meas_y << measurement_states.u, measurement_states.v, measurement_states.w,
                 input_u[0], input_u[1], input_u[2];
 
     // Define Jacobian matrices of system dynamics and measurement model
-    Eigen::Matrix<double,12,12> F;     // Jacobian of system dynamics
-    Eigen::Matrix<double,12,12> H;     // Jacobian of measurement model
+    Eigen::Matrix<double,6,6> F;     // Jacobian of system dynamics
+    Eigen::Matrix<double,6,6> H;     // Jacobian of measurement model
 
     // Define Kalman gain matrix
-    Eigen::Matrix<double,12,12> Kal;
+    Eigen::Matrix<double,6,6> Kal;
 
     // Define prediction and update steps
-    Eigen::Matrix<double,12,1> x_pred;     // predicted state
-    Eigen::Matrix<double,12,12> P_pred;    // predicted covariance
-    Eigen::Matrix<double,12,1> y_pred;     // predicted measurement
-    Eigen::Matrix<double,12,1> y_err;      // measurement error
+    Eigen::Matrix<double,6,1> x_pred;     // predicted state
+    Eigen::Matrix<double,6,6> P_pred;    // predicted covariance
+    Eigen::Matrix<double,6,1> y_pred;     // predicted measurement
+    Eigen::Matrix<double,6,1> y_err;      // measurement error
 
     // Prediction step: estimate state and covariance at time k+1|k
     F = compute_jacobian_F(esti_x, input_u);             // compute Jacobian of system dynamics at current state and input
@@ -253,61 +232,74 @@ const geometry_msgs::AccelStamped & imu){
     esti_P = (Eigen::MatrixXd::Identity(m, m) - Kal * H) * P_pred * (Eigen::MatrixXd::Identity(m, m) - Kal * H).transpose() + Kal*R_noise*Kal.transpose(); // correct covariance estimate
 
     // Update disturbance_x in system state
-    system_states.x = esti_x(0);
-    system_states.y = esti_x(1);
-    system_states.z = esti_x(2);
-    system_states.u = esti_x(3);
-    system_states.v = esti_x(4);
-    system_states.w = esti_x(5);
-    system_states.phi = esti_x(6);
-    system_states.theta = esti_x(7);
-    system_states.psi = esti_x(8);
-    system_states.disturbance_x = esti_x(9);    // Unit: ms^-2
-    system_states.disturbance_y = esti_x(10);
-    system_states.disturbance_z = esti_x(11);
+    system_states.u = esti_x(0);
+    system_states.v = esti_x(1);
+    system_states.w = esti_x(2);
+    
+    system_states.disturbance_x = esti_x(3);    // Unit: ms^-2
+    system_states.disturbance_y = esti_x(4);
+    system_states.disturbance_z = esti_x(5);
 
-    Eigen::Vector3d delta_B (system_states.disturbance_x,system_states.disturbance_y,system_states.disturbance_z);
+    Eigen::Vector3d Delta_B (system_states.disturbance_x,system_states.disturbance_y,system_states.disturbance_z);
 
-    Eigen::Vector3d delta_W = q2ROT(pose.pose.orientation)*delta_B;
+    Eigen::Vector3d Delta_W = q2ROT(pose.pose.orientation)*Delta_B;
 
-    force_disturbance.vector.x = delta_W.x();
-    force_disturbance.vector.y = delta_W.y();
-    force_disturbance.vector.z = delta_W.z();
+    force_disturbance.vector.x = Delta_W.x();
+    force_disturbance.vector.y = Delta_W.y();
+    force_disturbance.vector.z = Delta_W.z();
 
-    // std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking.csv", std::ios::app);
+    // std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/log/disturbance_tracking.csv", std::ios::app);
     // save<<std::setprecision(20)<<ros::Time::now().toSec()<<
-    //     ","<<"x"<<","<<system_states.x<<","<<measurement_states.x<<","<<
-    //         "y"<<","<<system_states.y<<","<<measurement_states.y<<","<<
-    //         "z"<<","<<system_states.z<<","<<measurement_states.z<<","<<
-    //         "u"<<","<<system_states.u<<","<<measurement_states.u<<","<<
-    //         "v"<<","<<system_states.v<<","<<measurement_states.v<<","<<
-    //         "w"<<","<<system_states.w<<","<<measurement_states.w<<","<<
-    //         "phi"<<","<<system_states.phi<<","<<measurement_states.phi<<","<<
-    //         "theta"<<","<<system_states.theta<<","<<measurement_states.theta<<","<<
-    //         "psi"<<","<<system_states.psi<<","<<measurement_states.psi<<","<<std::endl;
+    //     ","<<"disturbance_x"<<","<<force_disturbance.vector.x<<","<<
+    //         "disturbance_y"<<","<<force_disturbance.vector.y<<","<<
+    //         "disturbance_z"<<","<<force_disturbance.vector.z<<","<<std::endl;
     // save.close();
 
-    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/log/disturbance_tracking.csv", std::ios::app);
-    save<<std::setprecision(20)<<ros::Time::now().toSec()<<
-        ","<<"disturbance_x"<<","<<force_disturbance.vector.x<<","<<
-            "disturbance_y"<<","<<force_disturbance.vector.y<<","<<
-            "disturbance_z"<<","<<force_disturbance.vector.z<<","<<std::endl;
-    save.close();
+    Eigen::Vector3d delta_B = disturbance_raw(
+        imu,
+        attitude_target,
+        pose
+    );
+
+    Eigen::Vector3d delta_W = q2ROT(pose.pose.orientation) * delta_B;
+    // Store delta_W.x(), delta_W.y(), delta_W.z() in buffer
+    delta_x_W_buffer.push_back(delta_W.x()); 
+    delta_y_W_buffer.push_back(delta_W.y());
+    delta_z_W_buffer.push_back(delta_W.z()); 
+
+    // Remove oldest value if buffer size exceeds window size
+    if (delta_x_W_buffer.size() > window_size) delta_x_W_buffer.pop_front();  
+    if (delta_y_W_buffer.size() > window_size) delta_y_W_buffer.pop_front(); 
+    if (delta_z_W_buffer.size() > window_size) delta_z_W_buffer.pop_front(); 
+
+    // Calculate the mean of delta_W.x(), delta_W.y(), delta_W.z() values in the buffer
+    for (const auto& valx : delta_x_W_buffer){
+        meanDelta_x_W += valx;
+    }
+    meanDelta_x_W/= delta_x_W_buffer.size();
+
+    for (const auto& valy : delta_y_W_buffer){
+        meanDelta_y_W += valy;
+    }
+    meanDelta_y_W/= delta_y_W_buffer.size();
+    
+    for (const auto& valz : delta_z_W_buffer){
+        meanDelta_z_W += valz;
+    }
+    meanDelta_z_W/= delta_z_W_buffer.size();
+
+    
 
     if (cout_counter > 100){
-        std::cout << "--------------------- System and Measurement states in EKF ------------------------" << std::endl;
-    // std::cout << "state_x: "<<system_states.x<< " state_y: "<<system_states.y<<" state_z: "<<system_states.z<<std::endl;
-    // std::cout << "meas_x: "<<measurement_states.x<< " meas_y: "<<measurement_states.y<<" meas_z: "<<measurement_states.z<<std::endl;
-    // std::cout << "state_u: "<<system_states.u<< " state_v: "<<system_states.v<<" state_w: "<<system_states.w<<std::endl;
-    // std::cout << "meas_u: "<<measurement_states.u<< " meas_v: "<<measurement_states.v<<" meas_w: "<<measurement_states.w<<std::endl;
-    // std::cout << "state_phi: "<<system_states.phi<< " state_theta: "<<system_states.theta<<" state_psi: "<<system_states.psi<<std::endl;
-    // std::cout << "meas_phi: "<<measurement_states.phi<< " meas_theta: "<<measurement_states.theta<<" meas_psi: "<<measurement_states.psi<<std::endl;
-    std::cout << "disturbance_x_b: "<<force_disturbance.vector.x<<" ms^-2 |disturbance_y_b: "<<force_disturbance.vector.y<<" ms^-2 |disturbance_z: "<<force_disturbance.vector.z<<" ms^-2"<<std::endl;
+    std::cout<<"=============== Raw disturbances ==============="<<std::endl;
+    std::cout<<"Mean of delta_W_x: "<< meanDelta_x_W << " " 
+    <<"Mean of delta_W_y: "<< meanDelta_y_W << " "
+    <<"Mean of delta_W_z: "<< meanDelta_z_W << std::endl;
+
+    std::cout << "--------------------- System and Measurement states in EKF ------------------------" << std::endl;
+    // std::cout << "disturbance_x_b: "<<system_states.disturbance_x<<" ms^-2 |disturbance_y_b: "<<system_states.disturbance_y<<" ms^-2 |disturbance_z: "<<system_states.disturbance_z<<" ms^-2"<<std::endl;
     std::cout << "disturbance_x_w: "<<delta_W.x()<<" ms^-2 |disturbance_y_w: "<<delta_W.y()<<" ms^-2 |disturbance_z: "<<delta_W.z()<<" ms^-2"<<std::endl;
-    std::cout << "U1_x: "<<measurement_states.thrust_x<<" |U1_y: "<<measurement_states.thrust_y<<" |U1_z: "<<measurement_states.thrust_z<<std::endl;
-    std::cout<< "U1: "<<attitude_target.thrust<<std::endl;
     std::cout<<"acc_x: "<<accel.x_b<<" |acc_y: "<<accel.y_b<<" |acc_z: "<<accel.z_b<<std::endl;
-    std::cout<<"acc_x_imu: "<<imu.accel.linear.x<<" |acc_y_imu: "<<imu.accel.linear.y<<" |acc_z_imu: "<<imu.accel.linear.z<<std::endl;
 
     cout_counter = 0;
     }
@@ -321,10 +313,10 @@ const geometry_msgs::AccelStamped & imu){
 // 4th order RK for integration
 Eigen::MatrixXd DISTURBANCE_OBSERVER::RK4(Eigen::MatrixXd x, Eigen::MatrixXd u)
 {
-    Eigen::Matrix<double,12,1> k1;
-    Eigen::Matrix<double,12,1> k2;
-    Eigen::Matrix<double,12,1> k3;
-    Eigen::Matrix<double,12,1> k4;
+    Eigen::Matrix<double,6,1> k1;
+    Eigen::Matrix<double,6,1> k2;
+    Eigen::Matrix<double,6,1> k3;
+    Eigen::Matrix<double,6,1> k4;
 
     k1 = f(x, u) * dt;
     k2 = f(x+k1/2, u) * dt;
@@ -338,9 +330,9 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::RK4(Eigen::MatrixXd x, Eigen::MatrixXd u)
 Eigen::MatrixXd DISTURBANCE_OBSERVER::f(Eigen::MatrixXd x, Eigen::MatrixXd u)
 {
     // Define system dynamics
-    Eigen::Matrix<double,12,1> xdot;    
-    xdot << x(3),x(4),x(5),accel.x_w,accel.y_w,accel.z_w,                               // x_dot,y_dot,z_dot,u_dot,v_dot,w_dot
-            system_states.phi_dot_w,system_states.theta_dot_w,system_states.psi_dot_w,  // phi_dot,theta_dot,psi_dot
+    Eigen::Matrix<double,6,1> xdot;    
+    xdot << accel.x_b,accel.y_b,accel.z_b,                               // x_dot,y_dot,z_dot,u_dot,v_dot,w_dot
+              // phi_dot,theta_dot,psi_dot
             0,0,0;                                                                // Disturbance_x, disturbance_y, disturbance_z in du, dv, dw
     return xdot; // dt is the time step
 }
@@ -349,14 +341,14 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::f(Eigen::MatrixXd x, Eigen::MatrixXd u)
 Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
 {
     // Define measurement model
-    Eigen::Matrix<double,12,1> y;
-    y << x(0),x(1),x(2),x(3),x(4),x(5),x(6),x(7),x(8),  // x,y,z,u,v,w,phi,theta,psi
-        (accel.x_b-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(9) = disturbance_x in body frame 
-        (accel.y_b-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*sin(x(8))-sin(x(6))*cos(x(8))))),  // thrust for dv, x(10) = disturbance_y in body frame
-        (accel.z_b-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                              // thrust for dw, x(11) = disturbance_z excluding gravity in body frame
-        // x(9)+(measurement_states.thrust_x/hover_thrust)*(g),    // du, x(9) = disturbance_x in world frame 
-        // x(10)+(measurement_states.thrust_x/hover_thrust)*(g),   // dv, x(10) = disturbance_y in world frame
-        // x(11)+(measurement_states.thrust_x/hover_thrust)*(g);   // dw, x(11) = disturbance_z excluding gravity in world frame
+    Eigen::Matrix<double,6,1> y;
+    y << x(0),x(1),x(2),  // x,y,z,u,v,w,phi,theta,psi
+        // (accel.x_b-x(9))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*cos(x(8))+sin(x(6))*sin(x(8))))),   // thrust for du, x(9) = disturbance_x in body frame 
+        // (accel.y_b-x(10))*(hover_thrust)/((g)*(cos(x(6))*sin(x(7)*sin(x(8))-sin(x(6))*cos(x(8))))),  // thrust for dv, x(10) = disturbance_y in body frame
+        // (accel.z_b-x(11)+g)*(hover_thrust)/((g)*(cos(x(6))*cos(x(7))));                              // thrust for dw, x(11) = disturbance_z excluding gravity in body frame
+        (accel.x_b-x(3))*(hover_thrust),   // thrust for du, x(9) = disturbance_x in body frame 
+        (accel.y_b-x(4))*(hover_thrust),  // thrust for dv, x(10) = disturbance_y in body frame
+        (accel.z_b-x(5))*(hover_thrust)/g;  // thrust for dw, x(11) = disturbance_z excluding gravity in body frame
     return y;
 }
 
@@ -364,7 +356,7 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
 Eigen::MatrixXd DISTURBANCE_OBSERVER::compute_jacobian_F(Eigen::MatrixXd x, Eigen::MatrixXd u)
 {
     // Define Jacobian of system dynamics
-    Eigen::Matrix<double,12,12> F;
+    Eigen::Matrix<double,6,6> F;
     double d = 1e-6;                    // finite difference step size
     Eigen::VectorXd f0 = RK4(x, u);
     for (int i = 0; i < n; i++){
@@ -380,7 +372,7 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::compute_jacobian_F(Eigen::MatrixXd x, Eige
 Eigen::MatrixXd DISTURBANCE_OBSERVER::compute_jacobian_H(Eigen::MatrixXd x)
 {
     // Define Jacobian of measurement model
-    Eigen::Matrix<double,12,12> H;
+    Eigen::Matrix<double,6,6> H;
     double d = 1e-6;                    // finite difference step size
     Eigen::VectorXd f0 = h(x);
     for (int i = 0; i < n; i++){

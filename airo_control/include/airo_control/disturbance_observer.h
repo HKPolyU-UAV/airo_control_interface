@@ -25,7 +25,7 @@ class DISTURBANCE_OBSERVER{
     
     struct SYSTEM_STATES{
         double x,y,z,u,v,w,phi,theta,psi,disturbance_x,disturbance_y,disturbance_z,
-        p,q,r,phi_dot_b,theta_dot_b,psi_dot_b,phi_dot_w,theta_dot_w,psi_dot_w;
+        p,q,r,phi_dot_w,theta_dot_w,psi_dot_w;
     };
     SYSTEM_STATES system_states;
     
@@ -51,21 +51,20 @@ class DISTURBANCE_OBSERVER{
     double meanDelta_z_W = 0.0;
 
     // Weights
-    int m = 12;
-    int n = 12;
-    Eigen::Matrix<double,12,12> Q_noise,R_noise,P0,esti_P;       // Process noise matrix, Measurement noise matrix, Initial covariance, Estimate covariance
-    Eigen::Matrix<double,1,12> Q_cov,R_cov;                      // Process noise value, Measurement noise value
+    int m = 6;
+    int n = 6;
+    Eigen::Matrix<double,6,6> Q_noise,R_noise,P0,esti_P;       // Process noise matrix, Measurement noise matrix, Initial covariance, Estimate covariance
+    Eigen::Matrix<double,1,6> Q_cov,R_cov;                      // Process noise value, Measurement noise value
     Eigen::Matrix<double,3,3> R_z,R_y,R_x,R_b2w;                 // Rotation matrix in z,y,x, Rotaion matrix from body frame to world frame
     Eigen::Matrix<double,3,1> euler_body, euler_world;           // Euler angles in body frame and world frame
-    Eigen::Matrix<double,3,1> euler_dot_body, euler_dot_world;   // Euler angles dot in body frame and world frame          
     Eigen::Matrix<double,3,1> accel_body, accel_world;           // Linear acceleration in body frame and world frame 
 
     Eigen::Matrix<double,3,1> thrust_body, thrust_world;         // Thrust in body frame and world frame 
 
     // EKF Parameters
     Eigen::Matrix<double,3,1> input_u;                           // Inputs
-    Eigen::Matrix<double,12,1> meas_y;                           // Measurement vector
-    Eigen::Matrix<double,12,1> esti_x;                           // Estimate states
+    Eigen::Matrix<double,6,1> meas_y;                           // Measurement vector
+    Eigen::Matrix<double,6,1> esti_x;                           // Estimate states
 
     public:
     DISTURBANCE_OBSERVER(ros::NodeHandle&,const double&);
