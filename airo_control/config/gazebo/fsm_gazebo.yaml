@@ -7,7 +7,7 @@ controller_type: mpc
 #controller_type: backstepping
 #controller_type: slidingmode
 enable_observer: true
-apply_observer: true
+apply_observer: false
 fsm_frequency: 100
 state_timeout: 1.5
 rc_timeout: 0.25

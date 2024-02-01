@@ -58,7 +58,7 @@ int main(int argc, char **argv)
     ros::Publisher command_pub = nh.advertise<airo_message::Reference>("/airo_control/setpoint",10);
     ros::Publisher takeoff_land_pub = nh.advertise<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",10);
 
-    target_pose_1.ref_pose.position.x = 0;
+    target_pose_1.ref_pose.position.x = 1;
     target_pose_1.ref_pose.position.y = 0;
     target_pose_1.ref_pose.position.z = 1.5;
     target_pose_1.ref_pose.orientation.w = 1.0;
@@ -84,10 +84,10 @@ int main(int argc, char **argv)
                         takeoff_land_pub.publish(takeoff_land_trigger);
                         ros::spinOnce();
                         ros::Duration(0.5).sleep();
-                        // if(fsm_info.is_waiting_for_command){
-                        //     state = COMMAND;
-                        //     break;
-                        // }
+                        if(fsm_info.is_waiting_for_command){
+                            state = COMMAND;
+                            break;
+                        }
                     }
                 }
                 break;
