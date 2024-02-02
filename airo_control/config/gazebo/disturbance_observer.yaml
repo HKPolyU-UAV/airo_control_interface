@@ -9,6 +9,6 @@ r_control_z: 1
 q_vel_x: 0.0001
 q_vel_y: 0.0001
 q_vel_z: 0.0001
-q_disturbancez_x: 0.0001
-q_disturbancez_y: 0.0001
-q_disturbancez_z: 0.0001
+q_disturbancez_x: 0.001
+q_disturbancez_y: 0.001
+q_disturbancez_z: 0.001
