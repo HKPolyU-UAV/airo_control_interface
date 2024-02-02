@@ -3,31 +3,34 @@
 DISTURBANCE_OBSERVER::DISTURBANCE_OBSERVER(ros::NodeHandle& nh,const double& HOVER_THRUST){
     // ROS Parameters
     hover_thrust = HOVER_THRUST;
-    nh.getParam("airo_control_node/observer/r_pos",R_POS);
-    nh.getParam("airo_control_node/observer/r_vel",R_VEL);
-    nh.getParam("airo_control_node/observer/r_att",R_ATT);
-    nh.getParam("airo_control_node/observer/r_control",R_CONTROL);
-    nh.getParam("airo_control_node/observer/q_pos",Q_POS);
-    nh.getParam("airo_control_node/observer/q_vel",Q_VEL);
-    nh.getParam("airo_control_node/observer/q_att",Q_ATT);
-    nh.getParam("airo_control_node/observer/q_disturbance",Q_DISTURBANCE);
+    nh.getParam("airo_control_node/observer/r_vel_x",R_VEL_X);
+    nh.getParam("airo_control_node/observer/r_vel_y",R_VEL_Y);
+    nh.getParam("airo_control_node/observer/r_vel_z",R_VEL_Z);
+    nh.getParam("airo_control_node/observer/r_control_x",R_CONTROL_X);
+    nh.getParam("airo_control_node/observer/r_control_y",R_CONTROL_Y);
+    nh.getParam("airo_control_node/observer/r_control_z",R_CONTROL_Z);
+    nh.getParam("airo_control_node/observer/q_vel_x",Q_VEL_X);
+    nh.getParam("airo_control_node/observer/q_vel_y",Q_VEL_Y);
+    nh.getParam("airo_control_node/observer/q_vel_z",Q_VEL_Z);
+    nh.getParam("airo_control_node/observer/q_disturbance_x",Q_DISTURBANCE_X);
+    nh.getParam("airo_control_node/observer/q_disturbance_y",Q_DISTURBANCE_Y);
+    nh.getParam("airo_control_node/observer/q_disturbance_z",Q_DISTURBANCE_Z);
     nh.getParam("airo_control_node/fsm/fsm_frequency",FSM_FREQUENCY);
 
     // Weights
-    // Q_noise, R_noise, P0 init
-    Q_cov << Q_VEL,Q_VEL,Q_VEL,
-                Q_DISTURBANCE,Q_DISTURBANCE,Q_DISTURBANCE;
+    Q_cov << Q_VEL_X,Q_VEL_Y,Q_VEL_Z,
+                Q_DISTURBANCE_X,Q_DISTURBANCE_Y,Q_DISTURBANCE_Z;
     Q_noise = Q_cov.asDiagonal();
 
-    R_cov << R_VEL,R_VEL,R_VEL,
-                R_CONTROL,R_CONTROL,R_CONTROL;
+    R_cov << R_VEL_X,R_VEL_Y,R_VEL_Z,
+                R_CONTROL_X,R_CONTROL_Y,R_CONTROL_Z;
     R_noise = R_cov.asDiagonal();
     
     P0 = Eigen::MatrixXd::Identity(m,m);
     esti_P = P0;
     dt = 1/FSM_FREQUENCY;
  
-    esti_x << 0,0,0,0,0,0; // phi & theta CAN'T be 0
+    esti_x << 0,0,0,0,0,0;
 }
 
 Eigen::Vector3d DISTURBANCE_OBSERVER::q2rpy(const geometry_msgs::Quaternion& quaternion){
@@ -69,114 +72,20 @@ Eigen::Vector3d DISTURBANCE_OBSERVER::disturbance_raw(
     return delta_B;
 }
 
-// geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(
-//     const geometry_msgs::PoseStamped& pose, 
-//     const geometry_msgs::TwistStamped& twist,
-//     const mavros_msgs::AttitudeTarget attitude_target, 
-//     const geometry_msgs::AccelStamped & imu
-// )
-// {
-//     std::cout<<"=============== Raw disturbances ==============="<<std::endl;
-//     Eigen::Vector3d delta_B = disturbance_raw(
-//         imu,
-//         attitude_target,
-//         pose
-//     );
-
-//     Eigen::Vector3d delta_W = q2ROT(pose.pose.orientation) * delta_B;
-
-//     std::cout<<
-//         "delta_B_x: "<<delta_W.x()<<' '
-//         <<"delta_B_y: "<<delta_W.y()<<' '
-//         <<"delta_B_z: "<<delta_W.z()<<' '<<std::endl<<std::endl;
-
-//     std::cout<<"norm: "<<delta_W.norm()<<std::endl;
-
-//     // Store delta_W.x(), delta_W.y(), delta_W.z() in buffer
-//     delta_x_W_buffer.push_back(delta_W.x()); 
-//     delta_y_W_buffer.push_back(delta_W.y());
-//     delta_z_W_buffer.push_back(delta_W.z()); 
-
-//     // Remove oldest value if buffer size exceeds window size
-//     if (delta_x_W_buffer.size() > window_size) delta_x_W_buffer.pop_front();  
-//     if (delta_y_W_buffer.size() > window_size) delta_y_W_buffer.pop_front(); 
-//     if (delta_z_W_buffer.size() > window_size) delta_z_W_buffer.pop_front(); 
-
-//     // Calculate the mean of delta_W.x(), delta_W.y(), delta_W.z() values in the buffer
-//     for (const auto& valx : delta_x_W_buffer){
-//         meanDelta_x_W += valx;
-//     }
-//     meanDelta_x_W/= delta_x_W_buffer.size();
-
-//     for (const auto& valy : delta_y_W_buffer){
-//         meanDelta_y_W += valy;
-//     }
-//     meanDelta_y_W/= delta_y_W_buffer.size();
-    
-//     for (const auto& valz : delta_z_W_buffer){
-//         meanDelta_z_W += valz;
-//     }
-//     meanDelta_z_W/= delta_z_W_buffer.size();
-
-//     std::cout<<"Mean of delta_W_x: "<< meanDelta_x_W << " " 
-//     <<"Mean of delta_W_y: "<< meanDelta_y_W << " "
-//     <<"Mean of delta_W_z: "<< meanDelta_z_W << std::endl;
-    
-//     geometry_msgs::Vector3Stamped force_disturbance;
-//     force_disturbance.header.stamp = ros::Time::now();
-//     force_disturbance.vector.x = meanDelta_x_W;
-//     force_disturbance.vector.y = meanDelta_y_W;
-//     force_disturbance.vector.z = meanDelta_z_W;
-
-//     return force_disturbance;
-// }
 
 geometry_msgs::Vector3Stamped DISTURBANCE_OBSERVER::observe(const geometry_msgs::PoseStamped& pose, 
 const geometry_msgs::TwistStamped& twist,
 const mavros_msgs::AttitudeTarget attitude_target, 
 const geometry_msgs::AccelStamped & imu){
     
-    // x,y,z,u,v,w in measurement and system states
-    // measurement_states.x = pose.pose.position.x; 
-    // measurement_states.y = pose.pose.position.y;
-    // measurement_states.z = pose.pose.position.z;
+    // u,v,w in measurement and system states
     measurement_states.u = twist.twist.linear.x;   
     measurement_states.v = twist.twist.linear.y; 
     measurement_states.w = twist.twist.linear.z; 
-   
-    // system_states.x = pose.pose.position.x;
-    // system_states.y = pose.pose.position.y;
-    // system_states.z = pose.pose.position.z;
     system_states.u = twist.twist.linear.x;   
     system_states.v = twist.twist.linear.y; 
     system_states.w = twist.twist.linear.z;
-
-    // p,q,r in system state
-    // system_states.p = twist.twist.angular.x;
-    // system_states.q = twist.twist.angular.y;
-    // system_states.r = twist.twist.angular.z;
     
-    // phi,theta,psi in measurement and system states
-    Eigen::Vector3d current_euler = q2rpy(pose.pose.orientation);
-    // measurement_states.phi = current_euler.x();
-    // measurement_states.theta = current_euler.y();
-    // measurement_states.psi = current_euler.z();
-
-    // system_states.phi = current_euler.x();
-    // system_states.theta = current_euler.y();
-    // system_states.psi = current_euler.z();
-
-    // phi_dot,theta_dot,psi_dot in system states
-    // system_states.phi_dot_w = system_states.p  
-    //                     + (sin(current_euler.x())*tan(current_euler.y()))*system_states.q
-    //                     + (cos(current_euler.x())*tan(current_euler.y()))*system_states.r;
-
-    // system_states.theta_dot_w = system_states.q*cos(current_euler.x())-system_states.r*sin(current_euler.x());
-
-    // system_states.psi_dot_w = (sin(current_euler.x())/cos(current_euler.y()))*system_states.q
-    //                         + (cos(current_euler.x())/cos(current_euler.y()))*system_states.r;
-
-    // disturbances in system state
     geometry_msgs::Vector3Stamped force_disturbance;
     
     // Linear acceleration 
@@ -246,8 +155,6 @@ const geometry_msgs::AccelStamped & imu){
     force_disturbance.vector.x = Delta_W.x();
     force_disturbance.vector.y = Delta_W.y();
     force_disturbance.vector.z = Delta_W.z();
-
-    
 
     Eigen::Vector3d delta_B = disturbance_raw(
         imu,

@@ -35,7 +35,7 @@ class DISTURBANCE_OBSERVER{
     ACCEL accel;
 
     // Parameters
-    double FSM_FREQUENCY,hover_thrust,current_euler,R_POS,R_VEL,R_ATT,R_CONTROL,Q_POS,Q_VEL,Q_ATT,Q_DISTURBANCE;
+    double FSM_FREQUENCY,hover_thrust,current_euler,R_VEL_X,R_VEL_Y,R_VEL_Z,R_CONTROL_X,R_CONTROL_Y,R_CONTROL_Z,Q_VEL_X,Q_VEL_Y,Q_VEL_Z,Q_DISTURBANCE_X,Q_DISTURBANCE_Y,Q_DISTURBANCE_Z;
     double g = 9.80665;
     double dt;
     int cout_counter = 0;
