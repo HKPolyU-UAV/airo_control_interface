@@ -189,7 +189,9 @@ const geometry_msgs::AccelStamped & imu){
     }
     meanDelta_z_W/= delta_z_W_buffer.size();
 
-    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/log/disturbance_comparison.csv", std::ios::app);
+    const std::string filePath = "/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/log/disturbance_comparison.csv";
+    std::ofstream save(filePath, std::ios::app);
+
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<"ekf_dx_w"<<","<<force_disturbance.vector.x<<","<<
             "ekf_dy_w"<<","<<force_disturbance.vector.y<<","<<
@@ -255,7 +257,7 @@ Eigen::MatrixXd DISTURBANCE_OBSERVER::h(Eigen::MatrixXd x)
 {
     // Define measurement model
     Eigen::Matrix<double,6,1> y;
-    y << x(0),x(1),x(2),  // x,y,z,u,v,w,phi,theta,psi
+    y << x(0),x(1),x(2),  // u,v,w
         x(3),    // du, x(9) = disturbance_x in body frame 
         x(4),    // dv, x(10) = disturbance_y in body frame
         x(5)+(measurement_states.thrust_z/hover_thrust)*g;  // dw, x(11) = disturbance_z excluding gravity in body frame

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <istream>
 #include <sstream>
+#include <cstdio>
 #include <ros/ros.h>
 #include <eigen3/Eigen/Dense>
 #include <geometry_msgs/PoseStamped.h>
