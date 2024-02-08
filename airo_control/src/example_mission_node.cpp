@@ -108,14 +108,15 @@ int main(int argc, char **argv)
                         target_pose_1.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_1);
                         datalogger();
+                        std::cout<<"------- current xyz -------"<<std::endl;
+                        std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
+                        std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
+                        std::cout<<"local_pose.z: "<< local_pose.pose.position.z<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose.position.x)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose.position.y)
                          + abs(local_pose.pose.position.z - target_pose_1.ref_pose.position.z) < 0.5){
                             //target_1_reached = true;
-                            std::cout<<"------- current xyz -------"<<std::endl;
-                            std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
-                            std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
-                            std::cout<<"local_pose.z: "<< local_pose.pose.position.z<<std::endl;
+                            std::cout<<"reaching target 1"<<std::endl;
                             std::cout<<"--- ---- current tracking error -------"<<std::endl;
                             std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_1.ref_pose.position.x << std::endl;
                             std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_1.ref_pose.position.y << std::endl;
