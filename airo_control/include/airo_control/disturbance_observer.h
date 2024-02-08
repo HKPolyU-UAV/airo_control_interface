@@ -43,7 +43,7 @@ class DISTURBANCE_OBSERVER{
     double mass = 1.5;
 
     // Raw disturbance parameters
-    int window_size = 10;
+    int window_size = 100;
     std::deque<double> delta_x_W_buffer;
     std::deque<double> delta_y_W_buffer;
     std::deque<double> delta_z_W_buffer;

@@ -198,7 +198,10 @@ const geometry_msgs::AccelStamped & imu){
             "ekf_dz_w"<<","<<force_disturbance.vector.z<<","<<
             "raw_dx_w"<<","<<delta_W.x()<<","<<
             "raw_dy_w"<<","<<delta_W.y()<<","<<
-            "raw_dz_w"<<","<<delta_W.z()<<","<<std::endl;
+            "raw_dz_w"<<","<<delta_W.z()<<","<<
+            "raw_dx_w_mean"<<","<<meanDelta_x_W<<","<<
+            "raw_dy_w_mean"<<","<<meanDelta_y_W<<","<<
+            "raw_dz_w_mean"<<","<<meanDelta_z_W<<","<<std::endl;
     save.close();
 
     if (cout_counter > 100){
