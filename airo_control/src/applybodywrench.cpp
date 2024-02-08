@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     // Main loop
     while (ros::ok())
     {
-        applied_wrench.fx = 0; //unit: Newtons
+        applied_wrench.fx = 3; //unit: Newtons
         applied_wrench.fy = 0; //unit: Newtons
         applied_wrench.fz = 2; //unit: Newtons
 
