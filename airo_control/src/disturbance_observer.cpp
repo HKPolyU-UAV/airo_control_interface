@@ -152,9 +152,19 @@ const geometry_msgs::AccelStamped & imu){
 
     Eigen::Vector3d Delta_W = q2ROT(pose.pose.orientation)*Delta_B;
 
-    // force_disturbance.vector.x = Delta_W.x();
-    // force_disturbance.vector.y = Delta_W.y();
-    // force_disturbance.vector.z = Delta_W.z();
+    if (Delta_W.x() > 0.5 || Delta_W.x() < -0.5) {
+    Delta_W.x() = Delta_W.x() > 0.5 ? 0.5 : -0.5;
+    }
+    if (Delta_W.y() > 0.5 || Delta_W.y() < -0.5) {
+    Delta_W.y() = Delta_W.y() > 0.5 ? 0.5 : -0.5;
+    }
+    if (Delta_W.z() > 0.5 || Delta_W.z() < -0.5) {
+    Delta_W.z() = Delta_W.z() > 0.5 ? 0.5 : -0.5;
+    }
+
+    force_disturbance.vector.x = Delta_W.x();
+    force_disturbance.vector.y = Delta_W.y();
+    force_disturbance.vector.z = Delta_W.z();
 
     Eigen::Vector3d delta_B = disturbance_raw(
         imu,
@@ -189,9 +199,9 @@ const geometry_msgs::AccelStamped & imu){
     }
     meanDelta_z_W/= delta_z_W_buffer.size();
 
-    force_disturbance.vector.x = meanDelta_x_W;
-    force_disturbance.vector.y = meanDelta_y_W;
-    force_disturbance.vector.z = meanDelta_z_W;
+    // force_disturbance.vector.x = meanDelta_x_W;
+    // force_disturbance.vector.y = meanDelta_y_W;
+    // force_disturbance.vector.z = meanDelta_z_W;
 
     const std::string filePath = "/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/log/disturbance_comparison.csv";
     std::ofstream save(filePath, std::ios::app);

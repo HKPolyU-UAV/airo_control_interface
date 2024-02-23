@@ -85,8 +85,8 @@ target_link_libraries(init_applybodywrench
   ${catkin_LIBRARIES}
 )
 
-add_executable(mass src/mass.cpp)
-target_link_libraries(mass
+add_executable(pwm_input src/pwm_input.cpp)
+target_link_libraries(pwm_input
   ${catkin_LIBRARIES}
 )
 
