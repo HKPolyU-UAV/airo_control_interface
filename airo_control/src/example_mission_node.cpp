@@ -16,6 +16,10 @@
 
 geometry_msgs::PoseStamped local_pose;
 airo_message::FSMInfo fsm_info;
+int grasp_init = 800000;     // Set the duty cycle to 800000 (gripper initially opens)
+int grasp_open = 1200000;    // Update the duty cycle to 1200000 (Gripper fully opens)
+int grasp_close = 1600000;   // Update the duty cycle to 1600000 (Gripper fully closes)
+
 
 enum State{
     TAKEOFF,
@@ -90,8 +94,7 @@ int main(int argc, char **argv)
     periodFile << "2000000";
     periodFile.close();
 
-    // Set the duty cycle to 800000 (gripper initially opens)
-    setDutyCycle(800000);
+    setDutyCycle(grasp_init);
 
     // Enable output from the PWM pin
     std::ofstream enableFile;
@@ -124,8 +127,7 @@ int main(int argc, char **argv)
         switch(state){
             case TAKEOFF:{
                 if(fsm_info.is_landed == true){
-                    // Update the duty cycle to 1200000 (Gripper fully opens)
-                    setDutyCycle(1200000);
+                    setDutyCycle(grasp_open);
                     while(ros::ok()){
                         takeoff_land_trigger.takeoff_land_trigger = true; // Takeoff
                         takeoff_land_trigger.header.stamp = ros::Time::now();
@@ -146,8 +148,7 @@ int main(int argc, char **argv)
                     if(!target_1_reached){
                         target_pose_1.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_1);
-                        // Update the duty cycle to 1200000 (Gripper fully opens)
-                        setDutyCycle(1200000);
+                        setDutyCycle(grasp_open);
                         datalogger();
                         std::cout<<"------- current xyz -------"<<std::endl;
                         std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
@@ -167,8 +168,7 @@ int main(int argc, char **argv)
                     else{
                         target_pose_2.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_2);
-                        // Update the duty cycle to 1600000 (Gripper fully closes)
-                        setDutyCycle(1600000);
+                        setDutyCycle(grasp_close);
                         std::cout<<"grasping"<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_2.ref_pose.position.x)
                          + abs(local_pose.pose.position.y - target_pose_2.ref_pose.position.y)
