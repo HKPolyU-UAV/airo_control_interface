@@ -31,31 +31,29 @@ MPC::MPC(ros::NodeHandle& nh){
     set_terminal_weights(param.diag_cost_xn);
 }
 
-mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){
+mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferenceStamped& ref){
     // Resize ref to fit prediction horizon
     airo_message::ReferencePreview ref_preview;
     ref_preview.header = ref.header;
-    ref_preview.ref_pose.resize(QUADROTOR_N+1);
-    ref_preview.ref_twist.resize(QUADROTOR_N+1);
-    ref_preview.ref_accel.resize(QUADROTOR_N+1);
+    ref_preview.ref_preview.resize(QUADROTOR_N+1);
     for (int i = 0; i < QUADROTOR_N+1; i++){
-        ref_preview.ref_pose[i] = ref.ref_pose;
-        ref_preview.ref_twist[i] = ref.ref_twist;
-        ref_preview.ref_accel[i] = ref.ref_accel;
+        ref_preview.ref_preview[i].pose = ref.ref.pose;
+        ref_preview.ref_preview[i].twist = ref.ref.twist;
+        ref_preview.ref_preview[i].accel = ref.ref.accel;
     }
     return MPC::solve(current_pose,current_twist,current_accel,ref_preview);
 }
 
 mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferencePreview& ref_preview){
     // Set reference
-    ref_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[0].orientation);
+    ref_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_preview[0].pose.orientation);
     for (int i = 0; i < QUADROTOR_N+1; i++){
-        acados_in.yref[i][0] = ref_preview.ref_pose[i].position.x;
-        acados_in.yref[i][1] = ref_preview.ref_pose[i].position.y;
-        acados_in.yref[i][2] = ref_preview.ref_pose[i].position.z;
-        acados_in.yref[i][3] = ref_preview.ref_twist[i].linear.x;
-        acados_in.yref[i][4] = ref_preview.ref_twist[i].linear.y;
-        acados_in.yref[i][5] = ref_preview.ref_twist[i].linear.z;
+        acados_in.yref[i][0] = ref_preview.ref_preview[i].pose.position.x;
+        acados_in.yref[i][1] = ref_preview.ref_preview[i].pose.position.y;
+        acados_in.yref[i][2] = ref_preview.ref_preview[i].pose.position.z;
+        acados_in.yref[i][3] = ref_preview.ref_preview[i].twist.linear.x;
+        acados_in.yref[i][4] = ref_preview.ref_preview[i].twist.linear.y;
+        acados_in.yref[i][5] = ref_preview.ref_preview[i].twist.linear.z;
         acados_in.yref[i][6] = 0;
         acados_in.yref[i][7] = 0;
         acados_in.yref[i][8] = param.hover_thrust;
@@ -88,7 +86,7 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
             acados_param[i][3] = current_euler.z();
         }
         else{
-            Eigen::Vector3d dummy_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_pose[i-1].orientation);
+            Eigen::Vector3d dummy_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_preview[i-1].pose.orientation);
             if (dummy_euler.z() - acados_param[i-1][3] > M_PI){
                 dummy_euler.z() = dummy_euler.z() - 2*M_PI;
             }

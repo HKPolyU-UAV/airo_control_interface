@@ -38,15 +38,15 @@ void SLIDINGMODE::pub_debug(){
     debug_pub.publish(debug_msg);
 }
 
-mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::Reference& ref){  
+mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferenceStamped& ref){  
     current_euler = q2rpy(current_pose.pose.orientation);
-    ref_euler = q2rpy(ref.ref_pose.orientation);
+    ref_euler = q2rpy(ref.ref.pose.orientation);
 
     // Altitude Control
-    e_z = ref.ref_pose.position.z - current_pose.pose.position.z;
-    e_dz= ref.ref_twist.linear.z - current_twist.twist.linear.z;
+    e_z = ref.ref.pose.position.z - current_pose.pose.position.z;
+    e_dz= ref.ref.twist.linear.z - current_twist.twist.linear.z;
     s_z = param.k_ze * e_z + e_dz;
-    attitude_target.thrust = param.hover_thrust/(g*cos(current_euler.x())*cos(current_euler.y())) * (param.k_ze*e_dz+ref.ref_accel.linear.z+g+param.k_zs*tanh(param.k_zt*s_z));
+    attitude_target.thrust = param.hover_thrust/(g*cos(current_euler.x())*cos(current_euler.y())) * (param.k_ze*e_dz+ref.ref.accel.linear.z+g+param.k_zs*tanh(param.k_zt*s_z));
     if (attitude_target.thrust > 1.0){
         attitude_target.thrust = 1.0;
     }
@@ -55,16 +55,16 @@ mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped&
     }
 
     // X Translation Control
-    e_x = ref.ref_pose.position.x - current_pose.pose.position.x;
-    e_dx = ref.ref_twist.linear.x - current_twist.twist.linear.x;
+    e_x = ref.ref.pose.position.x - current_pose.pose.position.x;
+    e_dx = ref.ref.twist.linear.x - current_twist.twist.linear.x;
     s_x = param.k_xe*e_x + e_dx;
-    u_x = param.hover_thrust/(attitude_target.thrust*g)*(param.k_xe*e_dx+ref.ref_accel.linear.x+param.k_xs*tanh(param.k_xt*s_x));
+    u_x = param.hover_thrust/(attitude_target.thrust*g)*(param.k_xe*e_dx+ref.ref.accel.linear.x+param.k_xs*tanh(param.k_xt*s_x));
 
     // Y Translation Control
-    e_y = ref.ref_pose.position.y - current_pose.pose.position.y;
-    e_dy = ref.ref_twist.linear.y - current_twist.twist.linear.y;
+    e_y = ref.ref.pose.position.y - current_pose.pose.position.y;
+    e_dy = ref.ref.twist.linear.y - current_twist.twist.linear.y;
     s_y = param.k_ye*e_y + e_dy;
-    u_y = param.hover_thrust/(attitude_target.thrust*g)*(param.k_ye*e_dy+ref.ref_accel.linear.y+param.k_ys*tanh(param.k_yt*s_y));
+    u_y = param.hover_thrust/(attitude_target.thrust*g)*(param.k_ye*e_dy+ref.ref.accel.linear.y+param.k_ys*tanh(param.k_yt*s_y));
 
     // Calculate Target Eulers
     target_euler.x() = asin(u_x*sin(ref_euler.z()) - u_y*cos(ref_euler.z()));

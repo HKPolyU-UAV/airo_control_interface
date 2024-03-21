@@ -229,6 +229,8 @@ int main(int argc, char **argv){
     ros::Time last_request = ros::Time::now();
 
     while(ros::ok()){
+        ros::spinOnce();
+
         switch(state){
             case TAKEOFF:{
                 if( current_state.mode != "OFFBOARD" && (ros::Time::now() - last_request > ros::Duration(5.0))){
@@ -379,7 +381,6 @@ int main(int argc, char **argv){
         }
 
         ros::Duration(rate).sleep();
-        ros::spinOnce();
     }
 
     return 0;

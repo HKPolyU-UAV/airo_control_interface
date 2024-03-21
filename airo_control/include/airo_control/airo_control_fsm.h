@@ -14,7 +14,7 @@
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/SetMode.h>
 #include <airo_message/FSMInfo.h>
-#include <airo_message/Reference.h>
+#include <airo_message/ReferenceStamped.h>
 #include <airo_message/ReferencePreview.h>
 #include <airo_message/TakeoffLandTrigger.h>
 #include "airo_control/rc_input.h"
@@ -85,8 +85,8 @@ class AIRO_CONTROL_FSM{
 	// Messages
 	airo_message::TakeoffLandTrigger takeoff_land_trigger; // 1 for takeoff 0 for landing
 	airo_message::FSMInfo fsm_info;
-	airo_message::Reference controller_ref;
-	airo_message::Reference external_command;
+	airo_message::ReferenceStamped controller_ref;
+	airo_message::ReferenceStamped external_command;
 	airo_message::ReferencePreview controller_ref_preview;
 	airo_message::ReferencePreview external_command_preview;
 	geometry_msgs::PoseStamped local_pose;
@@ -129,7 +129,7 @@ class AIRO_CONTROL_FSM{
 	void state_cb(const mavros_msgs::State::ConstPtr&);
 	void extended_state_cb(const mavros_msgs::ExtendedState::ConstPtr&);
 	void rc_input_cb(const mavros_msgs::RCIn::ConstPtr&);
-	void external_command_cb(const airo_message::Reference::ConstPtr&);
+	void external_command_cb(const airo_message::ReferenceStamped::ConstPtr&);
 	void external_command_preview_cb(const airo_message::ReferencePreview::ConstPtr&);
 	void takeoff_land_cb(const airo_message::TakeoffLandTrigger::ConstPtr&);
 	bool state_received(const ros::Time&);
