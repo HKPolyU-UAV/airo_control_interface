@@ -2,7 +2,9 @@
 <launch>
 
 	<param name="pose_topic" value="/mavros/vision_pose/pose" />
-	<param name="yaml_file" value="/config/vicon/mpc_vicon.yaml" />
+	<param name="backstepping_file" value="/config/vicon/backstepping_vicon.yaml" />
+	<param name="slidingmode_file" value="/config/vicon/slidingmode_vicon.yaml" />
+	<param name="mpc_file" value="/config/vicon/mpc_vicon.yaml" />
 
 	<node pkg="airo_control" type="system_identification" name="system_identification_node" output="screen">
         <rosparam command="load" file="$(find airo_control)/config/vicon/mpc_vicon.yaml" />
