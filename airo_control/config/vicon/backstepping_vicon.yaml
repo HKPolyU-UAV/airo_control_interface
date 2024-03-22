@@ -1,5 +1,5 @@
 pub_debug: false
-enable_thrust_model: false
+enable_thrust_model: true
 
 hover_thrust: 0.20
 k_x1: 1.0

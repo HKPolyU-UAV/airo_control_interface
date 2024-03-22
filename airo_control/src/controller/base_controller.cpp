@@ -1,4 +1,6 @@
 #include "airo_control/controller/base_controller.h"
+#include <cmath> 
+#include <iostream>
 
 Eigen::Vector3d BASE_CONTROLLER::q2rpy(const geometry_msgs::Quaternion& quaternion){
     tf::Quaternion tf_quaternion;
@@ -13,16 +15,31 @@ geometry_msgs::Quaternion BASE_CONTROLLER::rpy2q(const Eigen::Vector3d& euler){
     return quaternion;
 }
 
-float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model){
+float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model)
+{
     float thrust;
 
+
     if (param.enable_thrust_model) {
-        thrust = (a_z/g)*param.hover_thrust;
-        std::cout<<"under development"<<std::endl;
+
+        const float K1 = 1.450420984642443;
+        const float K2 = 1.143035702043988;
+        const float K3 = 0.422541015026179;
+        const double mass = 0.711;
+        
+        
+              thrust = ((sqrt(( mass * a_z) / (K1 * pow(voltage, K2)) + pow(((1 - K3) / (2 * sqrt(K3))), 2)) - ((1 - K3) / (2 * sqrt(K3)))) / sqrt(K3)) ;
+           
+
+        std::cout<<"enable thrust_model"<<std::endl;
+        std::cout<<thrust<<std::endl;
+       
     }
     else {
         thrust = (a_z/g)*param.hover_thrust;
-    }
+        std::cout<<a_z<<std::endl;
+        std::cout<<thrust<<std::endl;
+    } 
 
     if (thrust > 1.0) {
         ROS_ERROR("Thrust = %f",thrust);
