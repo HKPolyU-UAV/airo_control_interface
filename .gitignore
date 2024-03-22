@@ -1,0 +1,12 @@
+.vscode
+airo_control/acados_scripts/__pycache__
+airo_control/acados_scripts/acados_ocp.json
+airo_control/acados_scripts/c_generated_code/Makefile
+airo_control/acados_scripts/c_generated_code/acados_sim_solver_quadrotor.c
+airo_control/acados_scripts/c_generated_code/acados_sim_solver_quadrotor.h
+airo_control/acados_scripts/c_generated_code/acados_solver.pxd
+airo_control/acados_scripts/c_generated_code/main_quadrotor.c
+airo_control/acados_scripts/c_generated_code/main_sim_quadrotor.c
+airo_control/acados_scripts/c_generated_code/acados_solver_quadrotor.c
+airo_control/acados_scripts/c_generated_code/acados_solver_quadrotor.o
+startup/.tmuxinator.yml

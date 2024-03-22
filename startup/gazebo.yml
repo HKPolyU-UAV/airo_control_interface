@@ -1,0 +1,16 @@
+name: airo_control_interface
+root: ./
+startup_window: control_interface
+windows:
+  - roscore:
+      layout: tiled
+      panes:
+        - roscore
+        - ./wait_for_ros.sh; cd ~/PX4-Autopilot;
+          make px4_sitl_default gazebo
+        - ./wait_for_ros.sh; roslaunch airo_control mavros_gazebo.launch
+  - control_interface:
+      layout: tiled
+      panes:
+        - ./wait_for_ros.sh; roslaunch airo_control fsm_gazebo.launch
+        - ./wait_for_ros.sh; rosrun airo_control example_mission_node

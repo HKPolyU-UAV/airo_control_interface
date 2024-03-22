@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+
+	<param name="pose_topic" value="/mavros/vision_pose/pose" />
+	<param name="yaml_file" value="/config/vicon/mpc_vicon.yaml" />
+
+	<node pkg="airo_control" type="system_identification" name="system_identification_node" output="screen">
+        <rosparam command="load" file="$(find airo_control)/config/vicon/mpc_vicon.yaml" />
+	</node>
+
+</launch>

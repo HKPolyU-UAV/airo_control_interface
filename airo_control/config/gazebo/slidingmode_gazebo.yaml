@@ -1,0 +1,12 @@
+pub_debug: true
+enable_thrust_model: true
+hover_thrust: 0.56
+k_xe: 2.0
+k_xs: 1.0
+k_xt: 5.0
+k_ye: 2.0
+k_ys: 1.0
+k_yt: 5.0
+k_ze: 8.0
+k_zs: 1.0
+k_zt: 3.0

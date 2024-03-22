@@ -1,0 +1,141 @@
+<mxfile host="Electron" modified="2023-10-03T10:33:20.593Z" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.7.5 Chrome/114.0.5735.289 Electron/25.8.1 Safari/537.36" etag="UsBNDEIiZFw6O8QoXM9E" version="21.7.5" type="device">
+  <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
+    <mxGraphModel dx="1606" dy="474" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="WIyWlLk6GJQsqaUBKTNV-1" parent="WIyWlLk6GJQsqaUBKTNV-0" />
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="xZ0XVGUIxLxzNmTCteq_-0" target="xZ0XVGUIxLxzNmTCteq_-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-9" value="FSM switched&lt;br&gt;&amp;amp;&amp;amp; UAV disarmed&lt;br&gt;&amp;amp;&amp;amp; !command mode" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="xZ0XVGUIxLxzNmTCteq_-8" vertex="1" connectable="0">
+          <mxGeometry x="0.0979" y="-1" relative="1" as="geometry">
+            <mxPoint x="-66" y="-31" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-0" value="RC_MANUAL" style="rounded=1;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="300" y="270" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-1" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" target="xZ0XVGUIxLxzNmTCteq_-0" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="360" y="200" as="sourcePoint" />
+            <mxPoint x="470" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-2" value="Initialized" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="xZ0XVGUIxLxzNmTCteq_-1" vertex="1" connectable="0">
+          <mxGeometry x="-0.3102" y="2" relative="1" as="geometry">
+            <mxPoint x="28" y="16" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-3" value="AUTO_HOVER" style="rounded=1;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="300" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-4" value="" style="endArrow=classic;html=1;rounded=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="359.71" y="330" as="sourcePoint" />
+            <mxPoint x="359.71" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-5" value="FSM switched&lt;br&gt;&amp;amp;&amp;amp; UAV armed" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="xZ0XVGUIxLxzNmTCteq_-4" vertex="1" connectable="0">
+          <mxGeometry x="-0.3102" y="2" relative="1" as="geometry">
+            <mxPoint x="38" y="9" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-6" value="AUTO_TAKEOFF" style="rounded=1;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="560" y="330" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-11" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;Takeoff trigger received&lt;br&gt;&amp;amp;&amp;amp; UAV armed&lt;br&gt;&amp;amp;&amp;amp; command mode&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="570" y="240" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-12" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.995;entryY=0.321;entryDx=0;entryDy=0;entryPerimeter=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="xZ0XVGUIxLxzNmTCteq_-6" target="xZ0XVGUIxLxzNmTCteq_-3" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="420" y="450" as="sourcePoint" />
+            <mxPoint x="470" y="400" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="620" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-13" value="Takeoff height reached" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="xZ0XVGUIxLxzNmTCteq_-12" vertex="1" connectable="0">
+          <mxGeometry x="0.0045" relative="1" as="geometry">
+            <mxPoint x="-29" y="-10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-14" value="&lt;font color=&quot;#ff0000&quot;&gt;AUTO_LAND&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="-10" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-15" value="" style="endArrow=classic;html=1;rounded=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;exitX=0;exitY=0.25;exitDx=0;exitDy=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="xZ0XVGUIxLxzNmTCteq_-3" target="xZ0XVGUIxLxzNmTCteq_-14" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="420" y="450" as="sourcePoint" />
+            <mxPoint x="470" y="400" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-16" value="Land trigger received&lt;br&gt;&amp;amp;&amp;amp; command mode&lt;br&gt;&amp;amp;&amp;amp; trajectory command not received" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="xZ0XVGUIxLxzNmTCteq_-15" vertex="1" connectable="0">
+          <mxGeometry x="-0.2598" relative="1" as="geometry">
+            <mxPoint x="-23" y="-25" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-17" value="OR" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="540" y="255" width="40" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-18" value="&lt;font color=&quot;#ff0000&quot;&gt;POS_COMMAND&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="300" y="545" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-19" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.416;entryY=-0.007;entryDx=0;entryDy=0;exitX=0.406;exitY=1.005;exitDx=0;exitDy=0;exitPerimeter=0;entryPerimeter=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="xZ0XVGUIxLxzNmTCteq_-3" target="xZ0XVGUIxLxzNmTCteq_-18" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="359.71" y="450" as="sourcePoint" />
+            <mxPoint x="359.71" y="510" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-20" value="Trajectory command received&lt;br&gt;&amp;amp;&amp;amp; command mode" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="xZ0XVGUIxLxzNmTCteq_-19" vertex="1" connectable="0">
+          <mxGeometry x="-0.3102" y="2" relative="1" as="geometry">
+            <mxPoint x="-82" y="14" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-21" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.587;exitY=-0.007;exitDx=0;exitDy=0;entryX=0.583;entryY=1.005;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;" parent="WIyWlLk6GJQsqaUBKTNV-1" source="xZ0XVGUIxLxzNmTCteq_-18" target="xZ0XVGUIxLxzNmTCteq_-3" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="359.76" y="580" as="sourcePoint" />
+            <mxPoint x="359.76" y="450" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6CDRb3o4DjMT0WxdfXee-2" value="Trajectory command&lt;br&gt;not received&lt;br&gt;OR&lt;br&gt;!command mode" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="xZ0XVGUIxLxzNmTCteq_-21">
+          <mxGeometry x="-0.4586" relative="1" as="geometry">
+            <mxPoint x="50" y="-25" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xZ0XVGUIxLxzNmTCteq_-24" value="&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;1. Any mode can switch to RC_MANUAL mode if !FSM mode or no odom received.&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;2. States that can only be used in command mode are highlighted in &lt;/span&gt;&lt;font style=&quot;background-color: initial;&quot; color=&quot;#ff0000&quot;&gt;red&lt;/font&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;.&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;3. FSM switched means transition from !FSM mode to FSM mode.&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: justify;&quot;&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;4. If vehicle is landed or killed, FSM go back to RC_MANUAL mode&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;strokeColor=default;" parent="WIyWlLk6GJQsqaUBKTNV-1" vertex="1">
+          <mxGeometry x="490" y="440" width="190" height="165" as="geometry" />
+        </mxCell>
+        <mxCell id="6CDRb3o4DjMT0WxdfXee-0" value="" style="endArrow=classic;html=1;rounded=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="xZ0XVGUIxLxzNmTCteq_-14" target="xZ0XVGUIxLxzNmTCteq_-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="410" y="420" as="sourcePoint" />
+            <mxPoint x="460" y="370" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="190" y="435" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6CDRb3o4DjMT0WxdfXee-1" value="!command mode" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="6CDRb3o4DjMT0WxdfXee-0">
+          <mxGeometry x="-0.607" relative="1" as="geometry">
+            <mxPoint x="53" y="15" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6CDRb3o4DjMT0WxdfXee-3" value="" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="xZ0XVGUIxLxzNmTCteq_-14" target="xZ0XVGUIxLxzNmTCteq_-0">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="270" y="340" as="sourcePoint" />
+            <mxPoint x="320" y="290" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="50" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="6CDRb3o4DjMT0WxdfXee-4" value="UAV landed" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="6CDRb3o4DjMT0WxdfXee-3">
+          <mxGeometry x="0.3303" relative="1" as="geometry">
+            <mxPoint x="-6" y="-15" as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
