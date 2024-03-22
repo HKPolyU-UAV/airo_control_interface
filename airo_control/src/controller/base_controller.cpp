@@ -22,24 +22,18 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
 
     if (param.enable_thrust_model) {
 
-        const float K1 = 0.06092;
-        const float K2 = 1.843;
-        const float K3 = 0.7826;
-        const double mass = 0.72;
-        float e = 0.85 ;
+        const float K1 = 1.450420984642443;
+        const float K2 = 1.143035702043988;
+        const float K3 = 0.422541015026179;
+        const double mass = 0.711;
+        
+        
+              thrust = ((sqrt(( mass * a_z) / (K1 * pow(voltage, K2)) + pow(((1 - K3) / (2 * sqrt(K3))), 2)) - ((1 - K3) / (2 * sqrt(K3)))) / sqrt(K3)) ;
+           
 
-            thrust = ((sqrt((( mass * a_z)/4) / (K1 * pow(voltage, K2)) + pow(((1 - K3) / (2 * sqrt(K3))), 2)) - ((1 - K3) / (2 * sqrt(K3)))) / sqrt(K3)) * e;
-            // thrust = (sqrt(((thrust_model.mass * a_z)/ 4) / (thrust_model.K1 * pow(voltage, thrust_model.K2)) + pow((1 - thrust_model.K3) / (2 * sqrt(thrust_model.K3)), 2)) - ((1 - thrust_model.K3) / (2 * sqrt(thrust_model.K3)))) / sqrt(thrust_model.K3);
-            // thrust = (sqrt(((thrust_model.mass * a_z) / 4) / (thrust_model.K1 * pow(voltage_2, thrust_model.K2)) + pow(((1 - thrust_model.K3) / (2 * sqrt(thrust_model.K3))), 2)) - ((1 - thrust_model.K3) / (2 * sqrt(thrust_model.K3)))) / sqrt(thrust_model.K3);
-
-
-        // std::cout<<a_z<<std::endl;
         std::cout<<"enable thrust_model"<<std::endl;
         std::cout<<thrust<<std::endl;
-        // std::cout<<thrust_model.mass<<std::endl;
-        // std::cout<<thrust_model.K2<<std::endl;
-        // std::cout<<thrust_model.K3<<std::endl;
-
+       
     }
     else {
         thrust = (a_z/g)*param.hover_thrust;
