@@ -18,7 +18,7 @@ geometry_msgs::Quaternion BASE_CONTROLLER::rpy2q(const Eigen::Vector3d& euler){
 float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model)
 {
     float thrust;
-    float voltage_2 = 16.8; // 4s battery fully charged
+
 
     if (param.enable_thrust_model) {
 
