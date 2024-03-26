@@ -1,6 +1,6 @@
 pub_debug: true
 enable_preview: true
-enable_thrust_model: true
+
 hover_thrust: 0.5665529817342758
 tau_phi: 0.1862900226205849
 tau_theta: 0.1843685544940653

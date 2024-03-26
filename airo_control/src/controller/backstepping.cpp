@@ -11,7 +11,7 @@ BACKSTEPPING::BACKSTEPPING(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/backstepping/k_y2",param.k_y2);
     nh.getParam("airo_control_node/backstepping/k_z1",param.k_z1);
     nh.getParam("airo_control_node/backstepping/k_z2",param.k_z2);
-    
+
     if (param.enable_thrust_model){
         nh.getParam("aio_control_node/thrust_model/mass",thrust_model.mass);
         nh.getParam("aio_control_node/thrust_model/K1",thrust_model.K1);

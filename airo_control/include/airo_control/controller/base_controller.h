@@ -16,9 +16,9 @@
 class BASE_CONTROLLER{
 protected:
     struct Param{
-        bool pub_debug;
-        bool enable_thrust_model;
-        double hover_thrust;
+        bool pub_debug = false;
+        bool enable_thrust_model = false;
+        double hover_thrust = 0.0;
     };
 
     struct ThrustModel{

@@ -15,38 +15,23 @@ geometry_msgs::Quaternion BASE_CONTROLLER::rpy2q(const Eigen::Vector3d& euler){
     return quaternion;
 }
 
-float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model)
-{
+float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model){
     float thrust;
 
-
     if (param.enable_thrust_model) {
-
-        const float K1 = 1.450420984642443;
-        const float K2 = 1.143035702043988;
-        const float K3 = 0.422541015026179;
-        const double mass = 0.711;
-        
-        
-              thrust = ((sqrt(( mass * a_z) / (K1 * pow(voltage, K2)) + pow(((1 - K3) / (2 * sqrt(K3))), 2)) - ((1 - K3) / (2 * sqrt(K3)))) / sqrt(K3)) ;
-           
-
-        std::cout<<"enable thrust_model"<<std::endl;
-        std::cout<<thrust<<std::endl;
-       
+        thrust = ((sqrt((thrust_model.mass*a_z)/(thrust_model.K1*pow(voltage,thrust_model.K2))+pow(((1-thrust_model.K3)/(2*sqrt(thrust_model.K3))),2))-((1-thrust_model.K3)/(2*sqrt(thrust_model.K3))))/sqrt(thrust_model.K3)) ;
     }
     else {
         thrust = (a_z/g)*param.hover_thrust;
-
     } 
 
     if (thrust > 1.0) {
-        ROS_ERROR("Thrust = %f",thrust);
-        thrust = 0.9999;
+        ROS_ERROR("Thrust = %f. Too large!!",thrust);
+        thrust = param.hover_thrust;
     }
     else if (thrust < 0.0) {
-        ROS_ERROR("Thrust = %f",thrust);
-        thrust = 0.0001;
+        ROS_ERROR("Thrust = %f. Too small!!",thrust);
+        thrust = param.hover_thrust;
     }
 
     return thrust;
