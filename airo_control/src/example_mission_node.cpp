@@ -57,13 +57,31 @@ void flightCommandCallback(const std_msgs::Float32::ConstPtr& msg) {
   setDutyCycle(dutyCycle);
 }
 
-void datalogger(){
-    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking.csv", std::ios::app);
+void datalogger(int i){
+    if (i == 1){
+    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors_tracking1.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<local_pose.pose.position.x <<","<< target_pose_1.ref_pose.position.x
         <<","<<local_pose.pose.position.y <<","<< target_pose_1.ref_pose.position.y
         <<","<<local_pose.pose.position.z <<","<< target_pose_1.ref_pose.position.z<<std::endl;
     save.close();
+    }
+    if (i == 2){
+    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors_tracking2.csv", std::ios::app);
+    save<<std::setprecision(20)<<ros::Time::now().toSec()<<
+        ","<<local_pose.pose.position.x <<","<< target_pose_2.ref_pose.position.x
+        <<","<<local_pose.pose.position.y <<","<< target_pose_2.ref_pose.position.y
+        <<","<<local_pose.pose.position.z <<","<< target_pose_2.ref_pose.position.z<<std::endl;
+    save.close();
+    }
+    if (i == 3){
+    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors_tracking3.csv", std::ios::app);
+    save<<std::setprecision(20)<<ros::Time::now().toSec()<<
+        ","<<local_pose.pose.position.x <<","<< target_pose_3.ref_pose.position.x
+        <<","<<local_pose.pose.position.y <<","<< target_pose_3.ref_pose.position.y
+        <<","<<local_pose.pose.position.z <<","<< target_pose_3.ref_pose.position.z<<std::endl;
+    save.close();
+    }
 }
 
 int main(int argc, char **argv){
@@ -150,7 +168,7 @@ int main(int argc, char **argv){
                     if(!target_1_reached){
                         target_pose_1.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_1);    
-                        datalogger();
+                        datalogger(1);
                         std::cout<<"------- current xyz -------"<<std::endl;
                         std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
                         std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
@@ -179,7 +197,7 @@ int main(int argc, char **argv){
                     if(target_1_reached){
                         target_pose_2.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_2);
-                        // datalogger();
+                        datalogger(2);
                         std::cout<<"--- ---- current xyz -------"<<std::endl;
                         std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
                         std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
@@ -209,7 +227,7 @@ int main(int argc, char **argv){
                     if (target_2_reached){
                         target_pose_3.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_3);
-                        // datalogger();
+                        datalogger(3);
                         std::cout<<"--- ---- current xyz -------"<<std::endl;
                         std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
                         std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
