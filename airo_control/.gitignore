@@ -1,5 +1,6 @@
 .vscode
 .gitignore
 log
+tracking_errors
 ./tracking.csv
 /home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/acados_scripts/c_generated_code

@@ -59,7 +59,7 @@ void flightCommandCallback(const std_msgs::Float32::ConstPtr& msg) {
 
 void datalogger(int i){
     if (i == 1){
-    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors_tracking1.csv", std::ios::app);
+    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking1.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<local_pose.pose.position.x <<","<< target_pose_1.ref_pose.position.x
         <<","<<local_pose.pose.position.y <<","<< target_pose_1.ref_pose.position.y
@@ -67,7 +67,7 @@ void datalogger(int i){
     save.close();
     }
     if (i == 2){
-    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors_tracking2.csv", std::ios::app);
+    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking2.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<local_pose.pose.position.x <<","<< target_pose_2.ref_pose.position.x
         <<","<<local_pose.pose.position.y <<","<< target_pose_2.ref_pose.position.y
@@ -75,11 +75,19 @@ void datalogger(int i){
     save.close();
     }
     if (i == 3){
-    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors_tracking3.csv", std::ios::app);
+    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking3.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<local_pose.pose.position.x <<","<< target_pose_3.ref_pose.position.x
         <<","<<local_pose.pose.position.y <<","<< target_pose_3.ref_pose.position.y
         <<","<<local_pose.pose.position.z <<","<< target_pose_3.ref_pose.position.z<<std::endl;
+    save.close();
+    }
+    if (i == 4){
+    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking4.csv", std::ios::app);
+    save<<std::setprecision(20)<<ros::Time::now().toSec()<<
+        ","<<local_pose.pose.position.x <<","<< target_pose_3.ref_pose.position.x
+        <<","<<local_pose.pose.position.y <<","<< target_pose_3.ref_pose.position.y
+        <<","<<local_pose.pose.position.z <<","<< "0"<<std::endl;
     save.close();
     }
 }
@@ -181,7 +189,7 @@ int main(int argc, char **argv){
                             std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_1.ref_pose.position.y << std::endl;
                             std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_1.ref_pose.position.z << std::endl;
                             std::cout<<"cnt: "<<cnt<<std::endl;
-                            if (cnt<100){
+                            if (cnt<150){
                                 //Update the duty cycle to 1600000 (Gripper fully closes)
                                 setDutyCycle(1600000);
                                 std::cout<<"gasping"<<std::endl;
@@ -210,7 +218,7 @@ int main(int argc, char **argv){
                             std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_2.ref_pose.position.y << std::endl;
                             std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_2.ref_pose.position.z << std::endl;
                             std::cout<<"cnt: "<<cnt<<std::endl;
-                            if (cnt<200){
+                            if (cnt<100){
                                 cnt++;
                                 //Update the duty cycle to 1600000 (Gripper fully closes)
                                 setDutyCycle(1600000);
@@ -240,7 +248,7 @@ int main(int argc, char **argv){
                             std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_3.ref_pose.position.y << std::endl;
                             std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_3.ref_pose.position.z << std::endl;
                             std::cout<<"cnt: "<<cnt<<std::endl;
-                            if (cnt<200){
+                            if (cnt<100){
                                 cnt++;
                                 //Update the duty cycle to 1200000 (Gripper fully opens)
                                 setDutyCycle(1200000);
@@ -261,7 +269,7 @@ int main(int argc, char **argv){
                 if(fsm_info.is_waiting_for_command){
                     // Update the duty cycle to 1200000 (Gripper fully opens)
                     setDutyCycle(1200000);
-                    // datalogger();
+                    datalogger(4);
                     takeoff_land_trigger.takeoff_land_trigger = false; // Land
                     takeoff_land_trigger.header.stamp = ros::Time::now();
                     takeoff_land_pub.publish(takeoff_land_trigger);
