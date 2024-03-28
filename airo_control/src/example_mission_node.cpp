@@ -102,7 +102,7 @@ int main(int argc, char **argv){
 
     target_pose_1.ref_pose.position.x = -1;
     target_pose_1.ref_pose.position.y = 0;
-    target_pose_1.ref_pose.position.z = 1;
+    target_pose_1.ref_pose.position.z = 0.7;
     target_pose_1.ref_pose.orientation.w = 1.0;
     target_pose_1.ref_pose.orientation.x = 0.0;
     target_pose_1.ref_pose.orientation.y = 0.0;
@@ -110,7 +110,7 @@ int main(int argc, char **argv){
 
     target_pose_2.ref_pose.position.x = -1;
     target_pose_2.ref_pose.position.y = 0;
-    target_pose_2.ref_pose.position.z = 0.7;
+    target_pose_2.ref_pose.position.z = 1.5;
     target_pose_2.ref_pose.orientation.w = 1.0;
     target_pose_2.ref_pose.orientation.x = 0.0;
     target_pose_2.ref_pose.orientation.y = 0.0;
@@ -118,7 +118,7 @@ int main(int argc, char **argv){
 
     target_pose_3.ref_pose.position.x = -1.5;
     target_pose_3.ref_pose.position.y = 0;
-    target_pose_3.ref_pose.position.z = 1;
+    target_pose_3.ref_pose.position.z = 0.6;
     target_pose_3.ref_pose.orientation.w = 1.0;
     target_pose_3.ref_pose.orientation.x = 0.0;
     target_pose_3.ref_pose.orientation.y = 0.0;
@@ -129,7 +129,7 @@ int main(int argc, char **argv){
             case TAKEOFF:{
                 if(fsm_info.is_landed == true){
                     //Update the duty cycle to 1200000 (Gripper fully opens)
-                    // setDutyCycle(1200000);
+                    setDutyCycle(1200000);
                     while(ros::ok()){
                         takeoff_land_trigger.takeoff_land_trigger = true; // Takeoff
                         takeoff_land_trigger.header.stamp = ros::Time::now();
@@ -165,8 +165,8 @@ int main(int argc, char **argv){
                             std::cout<<"cnt: "<<cnt<<std::endl;
                             if (cnt<100){
                                 //Update the duty cycle to 1600000 (Gripper fully closes)
-                                // setDutyCycle(1600000);
-                                std::cout<<"hover over the object"<<std::endl;
+                                setDutyCycle(1600000);
+                                std::cout<<"gasping"<<std::endl;
                                 cnt++;
                             }
                             else{
@@ -180,10 +180,10 @@ int main(int argc, char **argv){
                         target_pose_2.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_2);
                         // datalogger();
-                        std::cout<<"--- ---- current tracking error -------"<<std::endl;
-                        std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_2.ref_pose.position.x << std::endl;
-                        std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_2.ref_pose.position.y << std::endl;
-                        std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_2.ref_pose.position.z << std::endl;
+                        std::cout<<"--- ---- current xyz -------"<<std::endl;
+                        std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
+                        std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
+                        std::cout<<"local_pose.z: "<< local_pose.pose.position.z<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_2.ref_pose.position.x)
                          + abs(local_pose.pose.position.y - target_pose_2.ref_pose.position.y)
                          + abs(local_pose.pose.position.z - target_pose_2.ref_pose.position.z) < 0.5){
@@ -194,16 +194,15 @@ int main(int argc, char **argv){
                             std::cout<<"cnt: "<<cnt<<std::endl;
                             if (cnt<200){
                                 cnt++;
-                                //Update the duty cycle to 1200000 (Gripper fully open)
-                                // setDutyCycle(1200000);
-                                std::cout<<"grasping"<<std::endl;
+                                //Update the duty cycle to 1600000 (Gripper fully closes)
+                                setDutyCycle(1600000);
+                                std::cout<<"holding and lifting object"<<std::endl;
 
                             }
                             else{
                                 cnt = 0;
                                 // state = LAND;
                                 target_2_reached = true;
-                                std::cout<<"start lifting"<<std::endl;
                             }
                         }
                     }
@@ -211,10 +210,10 @@ int main(int argc, char **argv){
                         target_pose_3.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_3);
                         // datalogger();
-                        std::cout<<"--- ---- current tracking error -------"<<std::endl;
-                        std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_3.ref_pose.position.x << std::endl;
-                        std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_3.ref_pose.position.y << std::endl;
-                        std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_3.ref_pose.position.z << std::endl;
+                        std::cout<<"--- ---- current xyz -------"<<std::endl;
+                        std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
+                        std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
+                        std::cout<<"local_pose.z: "<< local_pose.pose.position.z<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_3.ref_pose.position.x)
                          + abs(local_pose.pose.position.y - target_pose_3.ref_pose.position.y)
                          + abs(local_pose.pose.position.z - target_pose_3.ref_pose.position.z) < 0.5){
@@ -225,15 +224,14 @@ int main(int argc, char **argv){
                             std::cout<<"cnt: "<<cnt<<std::endl;
                             if (cnt<200){
                                 cnt++;
-                                //Update the duty cycle to 1200000 (Gripper fully open)
-                                // setDutyCycle(1200000);
-                                std::cout<<"lifting"<<std::endl;
+                                //Update the duty cycle to 1200000 (Gripper fully opens)
+                                setDutyCycle(1200000);
+                                std::cout<<"releasing object"<<std::endl;
 
                             }
                             else{
                                 cnt = 0;
                                 state = LAND;
-                                std::cout<<"start landing"<<std::endl;
                             }
                         }
                     }
@@ -244,7 +242,7 @@ int main(int argc, char **argv){
             case LAND:{
                 if(fsm_info.is_waiting_for_command){
                     // Update the duty cycle to 1200000 (Gripper fully opens)
-                    // setDutyCycle(1200000);
+                    setDutyCycle(1200000);
                     // datalogger();
                     takeoff_land_trigger.takeoff_land_trigger = false; // Land
                     takeoff_land_trigger.header.stamp = ros::Time::now();
