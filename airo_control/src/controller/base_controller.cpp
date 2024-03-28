@@ -19,7 +19,7 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
     float thrust;
 
     if (param.enable_thrust_model) {
-        thrust = ((sqrt((thrust_model.mass*a_z)/(thrust_model.K1*pow(voltage,thrust_model.K2))+pow(((1-thrust_model.K3)/(2*sqrt(thrust_model.K3))),2))-((1-thrust_model.K3)/(2*sqrt(thrust_model.K3))))/sqrt(thrust_model.K3)) ;
+        thrust = ((sqrt((thrust_model.mass*a_z)/(thrust_model.K1*pow(voltage,thrust_model.K2))+pow(((1-thrust_model.K3)/(2*sqrt(thrust_model.K3))),2))-((1-thrust_model.K3)/(2*sqrt(thrust_model.K3))))/sqrt(thrust_model.K3));
     }
     else {
         thrust = (a_z/g)*param.hover_thrust;
@@ -27,11 +27,10 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
 
     if (thrust > 1.0) {
         ROS_ERROR("Thrust = %f. Too large!!",thrust);
-        thrust = param.hover_thrust;
+        thrust = 1.0;
     }
     else if (thrust < 0.0) {
-        ROS_ERROR("Thrust = %f. Too small!!",thrust);
-        thrust = param.hover_thrust;
+        thrust = 0.0;
     }
 
     return thrust;
