@@ -80,8 +80,8 @@ target_link_libraries(applybodywrench
   ${catkin_LIBRARIES}
 )
 
-add_executable(init_applybodywrench src/init_applybodywrench.cpp)
-target_link_libraries(init_applybodywrench
+add_executable(aerial_grasping src/aerial_grasping.cpp)
+target_link_libraries(aerial_grasping
   ${catkin_LIBRARIES}
 )
 
