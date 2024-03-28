@@ -25,8 +25,11 @@ enum State{
 
 airo_message::Reference target_pose_1;
 airo_message::Reference target_pose_2;
+airo_message::Reference target_pose_3;
+
 airo_message::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
+bool target_2_reached = false;
 
 void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
     local_pose.header = msg->header;
@@ -99,7 +102,7 @@ int main(int argc, char **argv){
 
     target_pose_1.ref_pose.position.x = -1;
     target_pose_1.ref_pose.position.y = 0;
-    target_pose_1.ref_pose.position.z = 0.5;
+    target_pose_1.ref_pose.position.z = 1;
     target_pose_1.ref_pose.orientation.w = 1.0;
     target_pose_1.ref_pose.orientation.x = 0.0;
     target_pose_1.ref_pose.orientation.y = 0.0;
@@ -107,11 +110,19 @@ int main(int argc, char **argv){
 
     target_pose_2.ref_pose.position.x = -1;
     target_pose_2.ref_pose.position.y = 0;
-    target_pose_2.ref_pose.position.z = 1;
+    target_pose_2.ref_pose.position.z = 0.7;
     target_pose_2.ref_pose.orientation.w = 1.0;
     target_pose_2.ref_pose.orientation.x = 0.0;
     target_pose_2.ref_pose.orientation.y = 0.0;
     target_pose_2.ref_pose.orientation.z = 0.0;
+
+    target_pose_3.ref_pose.position.x = -1.5;
+    target_pose_3.ref_pose.position.y = 0;
+    target_pose_3.ref_pose.position.z = 1;
+    target_pose_3.ref_pose.orientation.w = 1.0;
+    target_pose_3.ref_pose.orientation.x = 0.0;
+    target_pose_3.ref_pose.orientation.y = 0.0;
+    target_pose_3.ref_pose.orientation.z = 0.0;
 
     while(ros::ok()){
         switch(state){
@@ -155,7 +166,7 @@ int main(int argc, char **argv){
                             if (cnt<100){
                                 //Update the duty cycle to 1600000 (Gripper fully closes)
                                 // setDutyCycle(1600000);
-                                std::cout<<"grasping"<<std::endl;
+                                std::cout<<"hover over the object"<<std::endl;
                                 cnt++;
                             }
                             else{
@@ -170,23 +181,53 @@ int main(int argc, char **argv){
                         command_pub.publish(target_pose_2);
                         // datalogger();
                         std::cout<<"--- ---- current tracking error -------"<<std::endl;
-                        std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_1.ref_pose.position.x << std::endl;
-                        std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_1.ref_pose.position.y << std::endl;
-                        std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_1.ref_pose.position.z << std::endl;
-                        std::cout<<"lifting"<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_1.ref_pose.position.x)
-                         + abs(local_pose.pose.position.y - target_pose_1.ref_pose.position.y)
-                         + abs(local_pose.pose.position.z - target_pose_1.ref_pose.position.z) < 0.5){
+                        std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_2.ref_pose.position.x << std::endl;
+                        std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_2.ref_pose.position.y << std::endl;
+                        std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_2.ref_pose.position.z << std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose.position.x)
+                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose.position.y)
+                         + abs(local_pose.pose.position.z - target_pose_2.ref_pose.position.z) < 0.5){
                             std::cout<<"--- ---- current tracking error -------"<<std::endl;
-                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_1.ref_pose.position.x << std::endl;
-                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_1.ref_pose.position.y << std::endl;
-                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_1.ref_pose.position.z << std::endl;
+                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_2.ref_pose.position.x << std::endl;
+                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_2.ref_pose.position.y << std::endl;
+                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_2.ref_pose.position.z << std::endl;
                             std::cout<<"cnt: "<<cnt<<std::endl;
                             if (cnt<200){
                                 cnt++;
                                 //Update the duty cycle to 1200000 (Gripper fully open)
                                 // setDutyCycle(1200000);
-                                std::cout<<"gripper open"<<std::endl;
+                                std::cout<<"grasping"<<std::endl;
+
+                            }
+                            else{
+                                cnt = 0;
+                                // state = LAND;
+                                target_2_reached = true;
+                                std::cout<<"start lifting"<<std::endl;
+                            }
+                        }
+                    }
+                    if (target_2_reached){
+                        target_pose_3.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_3);
+                        // datalogger();
+                        std::cout<<"--- ---- current tracking error -------"<<std::endl;
+                        std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_3.ref_pose.position.x << std::endl;
+                        std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_3.ref_pose.position.y << std::endl;
+                        std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_3.ref_pose.position.z << std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_3.ref_pose.position.x)
+                         + abs(local_pose.pose.position.y - target_pose_3.ref_pose.position.y)
+                         + abs(local_pose.pose.position.z - target_pose_3.ref_pose.position.z) < 0.5){
+                            std::cout<<"--- ---- current tracking error -------"<<std::endl;
+                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_3.ref_pose.position.x << std::endl;
+                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_3.ref_pose.position.y << std::endl;
+                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_3.ref_pose.position.z << std::endl;
+                            std::cout<<"cnt: "<<cnt<<std::endl;
+                            if (cnt<200){
+                                cnt++;
+                                //Update the duty cycle to 1200000 (Gripper fully open)
+                                // setDutyCycle(1200000);
+                                std::cout<<"lifting"<<std::endl;
 
                             }
                             else{
@@ -194,7 +235,7 @@ int main(int argc, char **argv){
                                 state = LAND;
                                 std::cout<<"start landing"<<std::endl;
                             }
-                         }
+                        }
                     }
                 }
                 break;
@@ -208,6 +249,7 @@ int main(int argc, char **argv){
                     takeoff_land_trigger.takeoff_land_trigger = false; // Land
                     takeoff_land_trigger.header.stamp = ros::Time::now();
                     takeoff_land_pub.publish(takeoff_land_trigger);
+                    std::cout<<"landing"<<std::endl;
                 }
                 break;
             }
