@@ -13,13 +13,9 @@
 #include <string>
 #include "std_msgs/Float32.h"
 
-
 geometry_msgs::PoseStamped local_pose;
 airo_message::FSMInfo fsm_info;
-int grasp_init = 800000;     // Set the duty cycle to 800000 (gripper initially opens)
-int grasp_open = 1200000;    // Update the duty cycle to 1200000 (Gripper fully opens)
-int grasp_close = 1600000;   // Update the duty cycle to 1600000 (Gripper fully closes)
-
+int cnt = 0;
 
 enum State{
     TAKEOFF,
@@ -43,12 +39,6 @@ void fsm_info_cb(const airo_message::FSMInfo::ConstPtr& msg){
     fsm_info.is_waiting_for_command = msg->is_waiting_for_command;
 }
 
-// void datalogger(){
-//     std::ofstream save("tracking_errors.csv", std::ios::app);
-//     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
-//         ","<<local_pose.pose.position.x - target_pose_1.ref_pose.position.x<<","<<local_pose.pose.position.y - target_pose_1.ref_pose.position.y<<","<<local_pose.pose.position.z - target_pose_1.ref_pose.position.z<<std::endl;
-//     save.close();
-// }
 void setDutyCycle(int dutyCycle) {
     std::ofstream pwmFile;
     pwmFile.open("/sys/class/pwm/pwmchip4/pwm1/duty_cycle");
@@ -65,7 +55,7 @@ void flightCommandCallback(const std_msgs::Float32::ConstPtr& msg) {
 }
 
 void datalogger(){
-    std::ofstream save("/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking.csv", std::ios::app);
+    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<local_pose.pose.position.x <<","<< target_pose_1.ref_pose.position.x
         <<","<<local_pose.pose.position.y <<","<< target_pose_1.ref_pose.position.y
@@ -73,8 +63,7 @@ void datalogger(){
     save.close();
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv){
     ros::init(argc, argv, "offb_node");
     ros::NodeHandle nh;
     ros::Rate rate(20.0);
@@ -94,7 +83,8 @@ int main(int argc, char **argv)
     periodFile << "2000000";
     periodFile.close();
 
-    setDutyCycle(grasp_init);
+    // Set the duty cycle to 800000 (gripper initially opens)
+    setDutyCycle(800000);
 
     // Enable output from the PWM pin
     std::ofstream enableFile;
@@ -107,17 +97,17 @@ int main(int argc, char **argv)
     ros::Publisher command_pub = nh.advertise<airo_message::Reference>("/airo_control/setpoint",10);
     ros::Publisher takeoff_land_pub = nh.advertise<airo_message::TakeoffLandTrigger>("/airo_control/takeoff_land_trigger",10);
 
-    target_pose_1.ref_pose.position.x = 1;
+    target_pose_1.ref_pose.position.x = -1;
     target_pose_1.ref_pose.position.y = 0;
-    target_pose_1.ref_pose.position.z = 1.5;
+    target_pose_1.ref_pose.position.z = 0.5;
     target_pose_1.ref_pose.orientation.w = 1.0;
     target_pose_1.ref_pose.orientation.x = 0.0;
     target_pose_1.ref_pose.orientation.y = 0.0;
     target_pose_1.ref_pose.orientation.z = 0.0;
 
-    target_pose_2.ref_pose.position.x = 0;
-    target_pose_2.ref_pose.position.y = 2.5;
-    target_pose_2.ref_pose.position.z = 1.5;
+    target_pose_2.ref_pose.position.x = -1;
+    target_pose_2.ref_pose.position.y = 0;
+    target_pose_2.ref_pose.position.z = 1;
     target_pose_2.ref_pose.orientation.w = 1.0;
     target_pose_2.ref_pose.orientation.x = 0.0;
     target_pose_2.ref_pose.orientation.y = 0.0;
@@ -127,7 +117,8 @@ int main(int argc, char **argv)
         switch(state){
             case TAKEOFF:{
                 if(fsm_info.is_landed == true){
-                    setDutyCycle(grasp_open);
+                    //Update the duty cycle to 1200000 (Gripper fully opens)
+                    // setDutyCycle(1200000);
                     while(ros::ok()){
                         takeoff_land_trigger.takeoff_land_trigger = true; // Takeoff
                         takeoff_land_trigger.header.stamp = ros::Time::now();
@@ -147,8 +138,7 @@ int main(int argc, char **argv)
                 if(fsm_info.is_waiting_for_command){
                     if(!target_1_reached){
                         target_pose_1.header.stamp = ros::Time::now();
-                        command_pub.publish(target_pose_1);
-                        setDutyCycle(grasp_open);
+                        command_pub.publish(target_pose_1);    
                         datalogger();
                         std::cout<<"------- current xyz -------"<<std::endl;
                         std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
@@ -157,24 +147,54 @@ int main(int argc, char **argv)
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose.position.x)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose.position.y)
                          + abs(local_pose.pose.position.z - target_pose_1.ref_pose.position.z) < 0.5){
-                            //target_1_reached = true;
-                            std::cout<<"reaching target 1"<<std::endl;
                             std::cout<<"--- ---- current tracking error -------"<<std::endl;
                             std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_1.ref_pose.position.x << std::endl;
                             std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_1.ref_pose.position.y << std::endl;
                             std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_1.ref_pose.position.z << std::endl;
+                            std::cout<<"cnt: "<<cnt<<std::endl;
+                            if (cnt<100){
+                                //Update the duty cycle to 1600000 (Gripper fully closes)
+                                // setDutyCycle(1600000);
+                                std::cout<<"grasping"<<std::endl;
+                                cnt++;
+                            }
+                            else{
+                                cnt = 0;
+                                target_1_reached = true;
+
+                            }   
                         }
                     }
-                    else{
+                    if(target_1_reached){
                         target_pose_2.header.stamp = ros::Time::now();
                         command_pub.publish(target_pose_2);
-                        setDutyCycle(grasp_close);
-                        std::cout<<"grasping"<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose.position.x)
-                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose.position.y)
-                         + abs(local_pose.pose.position.z - target_pose_2.ref_pose.position.z) < 0.5){
-                            state = LAND;
-                        }
+                        // datalogger();
+                        std::cout<<"--- ---- current tracking error -------"<<std::endl;
+                        std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_1.ref_pose.position.x << std::endl;
+                        std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_1.ref_pose.position.y << std::endl;
+                        std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_1.ref_pose.position.z << std::endl;
+                        std::cout<<"lifting"<<std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_1.ref_pose.position.x)
+                         + abs(local_pose.pose.position.y - target_pose_1.ref_pose.position.y)
+                         + abs(local_pose.pose.position.z - target_pose_1.ref_pose.position.z) < 0.5){
+                            std::cout<<"--- ---- current tracking error -------"<<std::endl;
+                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_1.ref_pose.position.x << std::endl;
+                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_1.ref_pose.position.y << std::endl;
+                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_1.ref_pose.position.z << std::endl;
+                            std::cout<<"cnt: "<<cnt<<std::endl;
+                            if (cnt<200){
+                                cnt++;
+                                //Update the duty cycle to 1200000 (Gripper fully open)
+                                // setDutyCycle(1200000);
+                                std::cout<<"gripper open"<<std::endl;
+
+                            }
+                            else{
+                                cnt = 0;
+                                state = LAND;
+                                std::cout<<"start landing"<<std::endl;
+                            }
+                         }
                     }
                 }
                 break;
@@ -182,6 +202,9 @@ int main(int argc, char **argv)
 
             case LAND:{
                 if(fsm_info.is_waiting_for_command){
+                    // Update the duty cycle to 1200000 (Gripper fully opens)
+                    // setDutyCycle(1200000);
+                    // datalogger();
                     takeoff_land_trigger.takeoff_land_trigger = false; // Land
                     takeoff_land_trigger.header.stamp = ros::Time::now();
                     takeoff_land_pub.publish(takeoff_land_trigger);

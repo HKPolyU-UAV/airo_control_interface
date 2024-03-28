@@ -152,14 +152,14 @@ const geometry_msgs::AccelStamped & imu){
 
     Eigen::Vector3d Delta_W = q2ROT(pose.pose.orientation)*Delta_B;
 
-    if (Delta_W.x() > 0.5 || Delta_W.x() < -0.5) {
-    Delta_W.x() = Delta_W.x() > 0.5 ? 0.5 : -0.5;
+    if (Delta_W.x() > 3 || Delta_W.x() < -3) {
+    Delta_W.x() = Delta_W.x() > 3 ? 3 : -3;
     }
-    if (Delta_W.y() > 0.5 || Delta_W.y() < -0.5) {
-    Delta_W.y() = Delta_W.y() > 0.5 ? 0.5 : -0.5;
+    if (Delta_W.y() > 3 || Delta_W.y() < -3) {
+    Delta_W.y() = Delta_W.y() > 3 ? 3 : -3;
     }
-    if (Delta_W.z() > 0.5 || Delta_W.z() < -0.5) {
-    Delta_W.z() = Delta_W.z() > 0.5 ? 0.5 : -0.5;
+    if (Delta_W.z() > 3 || Delta_W.z() < -3) {
+    Delta_W.z() = Delta_W.z() > 3 ? 3 : -3;
     }
 
     force_disturbance.vector.x = Delta_W.x();
