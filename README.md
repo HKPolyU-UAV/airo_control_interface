@@ -50,6 +50,7 @@ git clone https://github.com/HKPolyU-UAV/airo_control_interface.git
 Build the package.
 ```
 cd ~/airo_control_interface_ws
+git submodule update --init --recursive
 catkin_make
 ```
 
