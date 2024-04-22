@@ -21,9 +21,10 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
 
 
     if (param.enable_thrust_model) {
-        // const float K1 = 1.450420984642443;
-        // const float K2 = 1.143035702043988;
-        // const float K3 = 0.422541015026179;
+        // K ZJU Eq with full data
+        // const float K1 = 0.211221921558914;
+        // const float K2 = 1.887681577434585;
+        // const float K3 = 0.559194070136690;
 
 
         // K in thrust_id
