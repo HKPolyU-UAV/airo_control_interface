@@ -33,7 +33,7 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
         
         
               // thrust = ((sqrt(( mass * a_z) / (K1 * pow(voltage, K2)) + pow(((1 - K3) / (2 * sqrt(K3))), 2)) - ((1 - K3) / (2 * sqrt(K3)))) / sqrt(K3)) ;
-                 thrust = (sqrt(F * k1) - k3) / (k2 * pow(Ub, k4));
+                 thrust = (sqrt(F * K1) - K3) / (K2 * pow(voltage, K4));
 
         std::cout<<"enable thrust_model"<<std::endl;
         std::cout<<thrust<<std::endl;
