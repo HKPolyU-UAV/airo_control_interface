@@ -22,14 +22,18 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
 
     if (param.enable_thrust_model) {
 
-        const float K1 = 1.450420984642443;
-        const float K2 = 1.143035702043988;
-        const float K3 = 0.422541015026179;
+        // const float K1 = 1.450420984642443;
+        // const float K2 = 1.143035702043988;
+        // const float K3 = 0.422541015026179;
+        const float K1 = 0.4513 ;
+        const float K2 = 0.9442;
+        const float K3 = 0.7631 ;
+        const float K4 = 1.452 ;
         const double mass = 0.711;
         
         
-              thrust = ((sqrt(( mass * a_z) / (K1 * pow(voltage, K2)) + pow(((1 - K3) / (2 * sqrt(K3))), 2)) - ((1 - K3) / (2 * sqrt(K3)))) / sqrt(K3)) ;
-           
+              // thrust = ((sqrt(( mass * a_z) / (K1 * pow(voltage, K2)) + pow(((1 - K3) / (2 * sqrt(K3))), 2)) - ((1 - K3) / (2 * sqrt(K3)))) / sqrt(K3)) ;
+                 thrust = (sqrt(F * k1) - k3) / (k2 * pow(Ub, k4));
 
         std::cout<<"enable thrust_model"<<std::endl;
         std::cout<<thrust<<std::endl;
