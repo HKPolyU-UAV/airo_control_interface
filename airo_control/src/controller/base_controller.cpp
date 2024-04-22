@@ -40,7 +40,7 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
         const float K4 = 1.4520;
 
 
-        // K in single unit test 
+        // K in curver fitting single unit test 
         // const float K1 = 0.4944;
         // const float K2 = 0.2973;
         // const float K3 = 0.9536;
