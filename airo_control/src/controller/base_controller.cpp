@@ -21,20 +21,20 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
 
 
     if (param.enable_thrust_model) {
-        # K ZJU Eq with full data
+        // K ZJU Eq with full data
         // const float K1 = 0.211221921558914;
         // const float K2 = 1.887681577434585;
         // const float K3 = 0.559194070136690;
 
 
-        # K in thrust_id
+        // K in thrust_id
         // const float K1 = 1.9315;
         // const float K2 = 0.4766;
         // const float K3 = 0.7397;
         // const float K4 = 0.7615;
 
 
-        # K in curver fitting intenger 
+        // K in curver fitting intenger 
         const float K1 = 0.4513;
         const float K2 = 0.9442;
         const float K3 = 0.7631;
@@ -48,11 +48,11 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
         // const float K4 = 0.3443;
         const double mass = 0.711;
         
-                # ZJU Eq  
+            //  ZJU Eq  
             //  thrust = ((sqrt(( mass * a_z) / (K1 * pow(voltage, K2)) + pow(((1 - K3) / (2 * sqrt(K3))), 2)) - ((1 - K3) / (2 * sqrt(K3)))) / sqrt(K3)) ;
-                # interger Eq
+            //  interger Eq
             //  thrust = (sqrt(((mass * a_z )/4)/ K1) - K4) / (K2 * pow(voltage, K3)); 
-                # single Eq
+            //  single Eq
                 thrust = (sqrt((mass * a_z)/ K1) - K4) / (K2 * pow(voltage, K3));
 
         std::cout<<"enable thrust_model"<<std::endl;
