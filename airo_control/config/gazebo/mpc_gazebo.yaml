@@ -1,6 +1,5 @@
 pub_debug: true
 enable_preview: true
-enable_thrust_model: true
 
 # system parameters
 hover_thrust: 0.5656428200006485
@@ -19,7 +18,7 @@ diag_cost_x:
   - 10.0
   - 10.0
 diag_cost_u:
-  - 100.0
+  - 50.0
   - 2000.0
   - 2000.0
 diag_cost_xn:

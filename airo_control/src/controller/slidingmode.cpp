@@ -17,6 +17,9 @@ SLIDINGMODE::SLIDINGMODE(ros::NodeHandle& nh){
 
     if (param.enable_thrust_model){
         nh.getParam("aio_control_nod/thrust_model/mass",thrust_model.mass);
+        nh.getParam("airo_control_node/thrust_model/K1",thrust_model.K1);
+        nh.getParam("airo_control_node/thrust_model/K2",thrust_model.K2);
+        nh.getParam("airo_control_node/thrust_model/K3",thrust_model.K3);
     }
 
     debug_pub = nh.advertise<std_msgs::Float64MultiArray>("/airo_control/slidingmode/debug",1);
