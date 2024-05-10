@@ -33,7 +33,6 @@ extern "C" {
 #define casadi_s0 CASADI_PREFIX(s0)
 #define casadi_s1 CASADI_PREFIX(s1)
 #define casadi_s2 CASADI_PREFIX(s2)
-#define casadi_s3 CASADI_PREFIX(s3)
 
 /* Symbol visibility in DLLs */
 #ifndef CASADI_SYMBOL_EXPORT
@@ -52,10 +51,9 @@ extern "C" {
 
 static const casadi_int casadi_s0[12] = {8, 1, 0, 8, 0, 1, 2, 3, 4, 5, 6, 7};
 static const casadi_int casadi_s1[7] = {3, 1, 0, 3, 0, 1, 2};
-static const casadi_int casadi_s2[8] = {4, 1, 0, 4, 0, 1, 2, 3};
-static const casadi_int casadi_s3[15] = {11, 1, 0, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+static const casadi_int casadi_s2[15] = {11, 1, 0, 11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
-/* quadrotor_expl_vde_adj:(i0[8],i1[8],i2[3],i3[4])->(o0[11]) */
+/* quadrotor_expl_vde_adj:(i0[8],i1[8],i2[3],i3[3])->(o0[11]) */
 static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
   casadi_real a0, a1, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a2, a3, a4, a5, a6, a7, a8, a9;
   a0=0.;
@@ -70,92 +68,84 @@ static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw,
   if (res[0]!=0) res[0][5]=a0;
   a0=arg[0]? arg[0][6] : 0;
   a1=cos(a0);
-  a2=arg[3]? arg[3][3] : 0;
+  a2=arg[3]? arg[3][2] : 0;
   a3=sin(a2);
   a4=arg[2]? arg[2][0] : 0;
-  a5=9.8066499999999994e+00;
-  a6=arg[1]? arg[1][3] : 0;
-  a6=(a5*a6);
-  a7=arg[3]? arg[3][0] : 0;
-  a6=(a6/a7);
-  a8=(a4*a6);
-  a9=(a3*a8);
-  a1=(a1*a9);
-  a9=arg[1]? arg[1][6] : 0;
-  a10=arg[3]? arg[3][1] : 0;
-  a9=(a9/a10);
-  a10=sin(a0);
-  a11=arg[0]? arg[0][7] : 0;
-  a12=cos(a11);
-  a13=arg[1]? arg[1][5] : 0;
-  a13=(a5*a13);
-  a13=(a13/a7);
-  a14=(a4*a13);
-  a15=(a12*a14);
-  a10=(a10*a15);
-  a10=(a9+a10);
-  a15=cos(a0);
-  a16=cos(a2);
-  a17=arg[1]? arg[1][4] : 0;
-  a5=(a5*a17);
-  a5=(a5/a7);
-  a4=(a4*a5);
-  a7=(a16*a4);
-  a15=(a15*a7);
-  a10=(a10+a15);
-  a15=sin(a0);
-  a7=sin(a11);
+  a5=arg[1]? arg[1][3] : 0;
+  a6=(a4*a5);
+  a7=(a3*a6);
+  a1=(a1*a7);
+  a7=arg[1]? arg[1][6] : 0;
+  a8=arg[3]? arg[3][0] : 0;
+  a7=(a7/a8);
+  a8=sin(a0);
+  a9=arg[0]? arg[0][7] : 0;
+  a10=cos(a9);
+  a11=arg[1]? arg[1][5] : 0;
+  a12=(a4*a11);
+  a13=(a10*a12);
+  a8=(a8*a13);
+  a8=(a7+a8);
+  a13=cos(a0);
+  a14=cos(a2);
+  a15=arg[1]? arg[1][4] : 0;
+  a4=(a4*a15);
+  a16=(a14*a4);
+  a13=(a13*a16);
+  a8=(a8+a13);
+  a13=sin(a0);
+  a16=sin(a9);
   a17=sin(a2);
   a4=(a17*a4);
-  a18=(a7*a4);
-  a15=(a15*a18);
-  a10=(a10+a15);
-  a1=(a1-a10);
-  a10=sin(a0);
-  a15=sin(a11);
+  a18=(a16*a4);
+  a13=(a13*a18);
+  a8=(a8+a13);
+  a1=(a1-a8);
+  a8=sin(a0);
+  a13=sin(a9);
   a2=cos(a2);
-  a8=(a2*a8);
-  a18=(a15*a8);
-  a10=(a10*a18);
-  a1=(a1-a10);
+  a6=(a2*a6);
+  a18=(a13*a6);
+  a8=(a8*a18);
+  a1=(a1-a8);
   if (res[0]!=0) res[0][6]=a1;
-  a1=cos(a11);
-  a10=cos(a0);
-  a4=(a10*a4);
+  a1=cos(a9);
+  a8=cos(a0);
+  a4=(a8*a4);
   a1=(a1*a4);
   a4=arg[1]? arg[1][7] : 0;
-  a18=arg[3]? arg[3][2] : 0;
+  a18=arg[3]? arg[3][1] : 0;
   a4=(a4/a18);
-  a18=sin(a11);
+  a18=sin(a9);
   a19=cos(a0);
-  a14=(a19*a14);
-  a18=(a18*a14);
+  a12=(a19*a12);
+  a18=(a18*a12);
   a18=(a4+a18);
   a1=(a1-a18);
-  a11=cos(a11);
+  a9=cos(a9);
   a18=cos(a0);
-  a8=(a18*a8);
-  a11=(a11*a8);
-  a1=(a1+a11);
+  a6=(a18*a6);
+  a9=(a9*a6);
+  a1=(a1+a9);
   if (res[0]!=0) res[0][7]=a1;
-  a12=(a12*a19);
-  a12=(a12*a13);
-  a10=(a10*a7);
-  a10=(a10*a17);
+  a10=(a10*a19);
+  a10=(a10*a11);
+  a8=(a8*a16);
+  a8=(a8*a17);
   a17=sin(a0);
-  a17=(a17*a16);
-  a10=(a10-a17);
-  a10=(a10*a5);
-  a12=(a12+a10);
-  a18=(a18*a15);
+  a17=(a17*a14);
+  a8=(a8-a17);
+  a8=(a8*a15);
+  a10=(a10+a8);
+  a18=(a18*a13);
   a18=(a18*a2);
   a0=sin(a0);
   a0=(a0*a3);
   a18=(a18+a0);
-  a18=(a18*a6);
-  a12=(a12+a18);
-  if (res[0]!=0) res[0][8]=a12;
-  if (res[0]!=0) res[0][9]=a9;
+  a18=(a18*a5);
+  a10=(a10+a18);
+  if (res[0]!=0) res[0][8]=a10;
+  if (res[0]!=0) res[0][9]=a7;
   if (res[0]!=0) res[0][10]=a4;
   return 0;
 }
@@ -220,14 +210,14 @@ CASADI_SYMBOL_EXPORT const casadi_int* quadrotor_expl_vde_adj_sparsity_in(casadi
     case 0: return casadi_s0;
     case 1: return casadi_s0;
     case 2: return casadi_s1;
-    case 3: return casadi_s2;
+    case 3: return casadi_s1;
     default: return 0;
   }
 }
 
 CASADI_SYMBOL_EXPORT const casadi_int* quadrotor_expl_vde_adj_sparsity_out(casadi_int i) {
   switch (i) {
-    case 0: return casadi_s3;
+    case 0: return casadi_s2;
     default: return 0;
   }
 }

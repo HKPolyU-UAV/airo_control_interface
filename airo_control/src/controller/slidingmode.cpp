@@ -2,8 +2,9 @@
 
 SLIDINGMODE::SLIDINGMODE(ros::NodeHandle& nh){
     // Get Parameters
-    nh.getParam("airo_control_node/slidingmode/hover_thrust",param.hover_thrust);
     nh.getParam("airo_control_node/slidingmode/pub_debug",param.pub_debug);
+    nh.getParam("airo_control_node/slidingmode/enable_thrust_model",param.enable_thrust_model);
+    nh.getParam("airo_control_node/slidingmode/hover_thrust",param.hover_thrust);
     nh.getParam("airo_control_node/slidingmode/k_xe",param.k_xe);
     nh.getParam("airo_control_node/slidingmode/k_xs",param.k_xs);
     nh.getParam("airo_control_node/slidingmode/k_xt",param.k_xt);
@@ -13,6 +14,10 @@ SLIDINGMODE::SLIDINGMODE(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/slidingmode/k_ze",param.k_ze);
     nh.getParam("airo_control_node/slidingmode/k_zs",param.k_zs);
     nh.getParam("airo_control_node/slidingmode/k_zt",param.k_zt);
+
+    if (param.enable_thrust_model){
+        nh.getParam("aio_control_nod/thrust_model/mass",thrust_model.mass);
+    }
 
     debug_pub = nh.advertise<std_msgs::Float64MultiArray>("/airo_control/slidingmode/debug",1);
 }
@@ -38,7 +43,7 @@ void SLIDINGMODE::pub_debug(){
     debug_pub.publish(debug_msg);
 }
 
-mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferenceStamped& ref){  
+mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferenceStamped& ref, const sensor_msgs::BatteryState& battery_state){  
     current_euler = q2rpy(current_pose.pose.orientation);
     ref_euler = q2rpy(ref.ref.pose.orientation);
 
@@ -46,25 +51,20 @@ mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped&
     e_z = ref.ref.pose.position.z - current_pose.pose.position.z;
     e_dz= ref.ref.twist.linear.z - current_twist.twist.linear.z;
     s_z = param.k_ze * e_z + e_dz;
-    attitude_target.thrust = param.hover_thrust/(g*cos(current_euler.x())*cos(current_euler.y())) * (param.k_ze*e_dz+ref.ref.accel.linear.z+g+param.k_zs*tanh(param.k_zt*s_z));
-    if (attitude_target.thrust > 1.0){
-        attitude_target.thrust = 1.0;
-    }
-    else if (attitude_target.thrust < 0.0){
-        attitude_target.thrust = 0.0;
-    }
-
+    a_z = (param.k_ze*e_dz+ref.ref.accel.linear.z+g+param.k_zs*tanh(param.k_zt*s_z))/(cos(current_euler.x())*cos(current_euler.y()));
+    attitude_target.thrust = inverse_thrust_model(a_z,battery_state.voltage,param,thrust_model);
+    
     // X Translation Control
     e_x = ref.ref.pose.position.x - current_pose.pose.position.x;
     e_dx = ref.ref.twist.linear.x - current_twist.twist.linear.x;
     s_x = param.k_xe*e_x + e_dx;
-    u_x = param.hover_thrust/(attitude_target.thrust*g)*(param.k_xe*e_dx+ref.ref.accel.linear.x+param.k_xs*tanh(param.k_xt*s_x));
+    u_x = (param.k_xe*e_dx+ref.ref.accel.linear.x+param.k_xs*tanh(param.k_xt*s_x))/a_z;
 
     // Y Translation Control
     e_y = ref.ref.pose.position.y - current_pose.pose.position.y;
     e_dy = ref.ref.twist.linear.y - current_twist.twist.linear.y;
     s_y = param.k_ye*e_y + e_dy;
-    u_y = param.hover_thrust/(attitude_target.thrust*g)*(param.k_ye*e_dy+ref.ref.accel.linear.y+param.k_ys*tanh(param.k_yt*s_y));
+    u_y = (param.k_ye*e_dy+ref.ref.accel.linear.y+param.k_ys*tanh(param.k_yt*s_y))/a_z;
 
     // Calculate Target Eulers
     target_euler.x() = asin(u_x*sin(ref_euler.z()) - u_y*cos(ref_euler.z()));
