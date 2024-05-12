@@ -27,11 +27,17 @@ airo_message::Reference target_pose_1;
 airo_message::Reference target_pose_2;
 airo_message::Reference target_pose_3;
 airo_message::Reference target_pose_4;
+airo_message::Reference target_pose_5;
+airo_message::Reference target_pose_6;
+
 
 airo_message::TakeoffLandTrigger takeoff_land_trigger;
 bool target_1_reached = false;
 bool target_2_reached = false;
 bool target_3_reached = false;
+bool target_4_reached = false;
+bool target_5_reached = false;
+
 
 void pose_cb(const geometry_msgs::PoseStamped::ConstPtr& msg){
     local_pose.header = msg->header;
@@ -67,7 +73,7 @@ void flightCommandCallback(const std_msgs::Float32::ConstPtr& msg) {
 
 void datalogger(int i){
     if (i == 1){
-    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_grasp.csv", std::ios::app);
+    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_hover.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<local_pose.pose.position.x <<","<< target_pose_1.ref_pose.position.x
         <<","<<local_pose.pose.position.y <<","<< target_pose_1.ref_pose.position.y
@@ -75,34 +81,50 @@ void datalogger(int i){
     save.close();
     }
     if (i == 2){
-    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_lift.csv", std::ios::app);
+    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_approach.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<local_pose.pose.position.x <<","<< target_pose_2.ref_pose.position.x
         <<","<<local_pose.pose.position.y <<","<< target_pose_2.ref_pose.position.y
         <<","<<local_pose.pose.position.z <<","<< target_pose_2.ref_pose.position.z<<std::endl;
     save.close();
     }
-    if (i == 3){
-    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_release.csv", std::ios::app);
+    if (i == 2){
+    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_grasp.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<local_pose.pose.position.x <<","<< target_pose_3.ref_pose.position.x
         <<","<<local_pose.pose.position.y <<","<< target_pose_3.ref_pose.position.y
         <<","<<local_pose.pose.position.z <<","<< target_pose_3.ref_pose.position.z<<std::endl;
     save.close();
     }
-    if (i == 4){
-    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_preland.csv", std::ios::app);
+    if (i == 3){
+    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_lift.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
         ","<<local_pose.pose.position.x <<","<< target_pose_4.ref_pose.position.x
         <<","<<local_pose.pose.position.y <<","<< target_pose_4.ref_pose.position.y
         <<","<<local_pose.pose.position.z <<","<< target_pose_4.ref_pose.position.z<<std::endl;
     save.close();
     }
+    if (i == 4){
+    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_release.csv", std::ios::app);
+    save<<std::setprecision(20)<<ros::Time::now().toSec()<<
+        ","<<local_pose.pose.position.x <<","<< target_pose_5.ref_pose.position.x
+        <<","<<local_pose.pose.position.y <<","<< target_pose_5.ref_pose.position.y
+        <<","<<local_pose.pose.position.z <<","<< target_pose_5.ref_pose.position.z<<std::endl;
+    save.close();
+    }
     if (i == 5){
+    std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_preland.csv", std::ios::app);
+    save<<std::setprecision(20)<<ros::Time::now().toSec()<<
+        ","<<local_pose.pose.position.x <<","<< target_pose_5.ref_pose.position.x
+        <<","<<local_pose.pose.position.y <<","<< target_pose_5.ref_pose.position.y
+        <<","<<local_pose.pose.position.z <<","<< target_pose_5.ref_pose.position.z<<std::endl;
+    save.close();
+    }
+    if (i == 6){
     std::ofstream save("/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/tracking_errors/tracking_land.csv", std::ios::app);
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
-        ","<<local_pose.pose.position.x <<","<< target_pose_4.ref_pose.position.x
-        <<","<<local_pose.pose.position.y <<","<< target_pose_4.ref_pose.position.y
+        ","<<local_pose.pose.position.x <<","<< target_pose_6.ref_pose.position.x
+        <<","<<local_pose.pose.position.y <<","<< target_pose_6.ref_pose.position.y
         <<","<<local_pose.pose.position.z <<","<< "0"<<std::endl;
     save.close();
     }
@@ -149,41 +171,60 @@ int main(int argc, char **argv){
         object_pose.pose.position.y = current_object_pose.pose.position.y;
         object_pose.pose.position.z = current_object_pose.pose.position.z;
 
-        // Grasping pt
-        target_pose_1.ref_pose.position.x = current_object_pose.pose.position.x-0.8;
-        target_pose_1.ref_pose.position.y = current_object_pose.pose.position.y+0.1;
-        target_pose_1.ref_pose.position.z = 0.5;
+        // Hovering pt
+        target_pose_1.ref_pose.position.x = current_object_pose.pose.position.x-0.08; //badminton: -0.065; ball: -0.08
+        target_pose_1.ref_pose.position.y = current_object_pose.pose.position.y+0.03; //badminton: +0.03; ball: +0.03
+        target_pose_1.ref_pose.position.z = 1; //badminton: 0.8; ball: 0.8
         target_pose_1.ref_pose.orientation.w = 1.0;
         target_pose_1.ref_pose.orientation.x = 0.0;
         target_pose_1.ref_pose.orientation.y = 0.0;
         target_pose_1.ref_pose.orientation.z = 0.0;
 
-        // Lifting pt
-        target_pose_2.ref_pose.position.x = -1;
-        target_pose_2.ref_pose.position.y = 0;
-        target_pose_2.ref_pose.position.z = 1;
+        // Approaching pt
+        target_pose_2.ref_pose.position.x = current_object_pose.pose.position.x-0.08; //badminton: -0.065; ball: -0.08
+        target_pose_2.ref_pose.position.y = current_object_pose.pose.position.y+0.03; //badminton: +0.03; ball: +0.03
+        target_pose_2.ref_pose.position.z = 0.6; //badminton: 0.8; ball: 0.8
         target_pose_2.ref_pose.orientation.w = 1.0;
         target_pose_2.ref_pose.orientation.x = 0.0;
         target_pose_2.ref_pose.orientation.y = 0.0;
         target_pose_2.ref_pose.orientation.z = 0.0;
 
-        // Releasing pt
-        target_pose_3.ref_pose.position.x = -1.5;
-        target_pose_3.ref_pose.position.y = 0;
-        target_pose_3.ref_pose.position.z = 0.6;
+
+        // Grasping pt
+        target_pose_3.ref_pose.position.x = current_object_pose.pose.position.x-0.08; //badminton: -0.065; ball: -0.08
+        target_pose_3.ref_pose.position.y = current_object_pose.pose.position.y+0.03; //badminton: +0.03; ball: -0.03
+        target_pose_3.ref_pose.position.z = 0.425; //badminton: 0.4; ball: 0.38
         target_pose_3.ref_pose.orientation.w = 1.0;
         target_pose_3.ref_pose.orientation.x = 0.0;
         target_pose_3.ref_pose.orientation.y = 0.0;
         target_pose_3.ref_pose.orientation.z = 0.0;
 
-        // Landing pt
+        // Lifting pt
         target_pose_4.ref_pose.position.x = -1.5;
-        target_pose_4.ref_pose.position.y = 1;
-        target_pose_4.ref_pose.position.z = 0.6;
+        target_pose_4.ref_pose.position.y = 0;
+        target_pose_4.ref_pose.position.z = 1;
         target_pose_4.ref_pose.orientation.w = 1.0;
         target_pose_4.ref_pose.orientation.x = 0.0;
         target_pose_4.ref_pose.orientation.y = 0.0;
         target_pose_4.ref_pose.orientation.z = 0.0;
+
+        // Releasing pt
+        target_pose_5.ref_pose.position.x = -1.5;
+        target_pose_5.ref_pose.position.y = 1;
+        target_pose_5.ref_pose.position.z = 0.6;
+        target_pose_5.ref_pose.orientation.w = 1.0;
+        target_pose_5.ref_pose.orientation.x = 0.0;
+        target_pose_5.ref_pose.orientation.y = 0.0;
+        target_pose_5.ref_pose.orientation.z = 0.0;
+
+        // Pre-landing pt
+        target_pose_6.ref_pose.position.x = 0;
+        target_pose_6.ref_pose.position.y = 1;
+        target_pose_6.ref_pose.position.z = 0.6;
+        target_pose_6.ref_pose.orientation.w = 1.0;
+        target_pose_6.ref_pose.orientation.x = 0.0;
+        target_pose_6.ref_pose.orientation.y = 0.0;
+        target_pose_6.ref_pose.orientation.z = 0.0;
 
         switch(state){
             case TAKEOFF:{
@@ -217,13 +258,55 @@ int main(int argc, char **argv){
                         std::cout<<"obj_pose.z: "<< target_pose_1.ref_pose.position.z<<std::endl;
                         if(abs(local_pose.pose.position.x - target_pose_1.ref_pose.position.x)
                          + abs(local_pose.pose.position.y - target_pose_1.ref_pose.position.y)
-                         + abs(local_pose.pose.position.z - target_pose_1.ref_pose.position.z) < 0.4){
+                         + abs(local_pose.pose.position.z - target_pose_1.ref_pose.position.z) < 0.5){
                             std::cout<<"--- ---- current tracking error -------"<<std::endl;
                             std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_1.ref_pose.position.x << std::endl;
                             std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_1.ref_pose.position.y << std::endl;
                             std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_1.ref_pose.position.z << std::endl;
+                            //Update the duty cycle to 1200000 (Gripper fully opens)
+                            setDutyCycle(1200000);
+                            std::cout<<"hover over obj"<<std::endl;
+                            target_1_reached = true;
+                        }
+                    }
+                    if(target_1_reached){
+                        target_pose_2.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_2);    
+                        datalogger(2);
+                        std::cout<<"------- object pos -------"<<std::endl;
+                        std::cout<<"obj_pose.x: "<< target_pose_2.ref_pose.position.x<<std::endl;
+                        std::cout<<"obj_pose.y: "<< target_pose_2.ref_pose.position.y<<std::endl;
+                        std::cout<<"obj_pose.z: "<< target_pose_2.ref_pose.position.z<<std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose.position.x)
+                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose.position.y)
+                         + abs(local_pose.pose.position.z - target_pose_2.ref_pose.position.z) < 0.5){
+                            std::cout<<"--- ---- current tracking error ------"<<std::endl;
+                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_2.ref_pose.position.x << std::endl;
+                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_2.ref_pose.position.y << std::endl;
+                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_2.ref_pose.position.z << std::endl;
+                            //Update the duty cycle to 1200000 (Gripper fully opens)
+                            setDutyCycle(1200000);
+                            std::cout<<"approaching obj"<<std::endl;
+                            target_2_reached = true;
+                        }   
+                    }
+                    if(target_2_reached){
+                        target_pose_3.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_3);    
+                        datalogger(3);
+                        std::cout<<"------- object pos -------"<<std::endl;
+                        std::cout<<"obj_pose.x: "<< target_pose_3.ref_pose.position.x<<std::endl;
+                        std::cout<<"obj_pose.y: "<< target_pose_3.ref_pose.position.y<<std::endl;
+                        std::cout<<"obj_pose.z: "<< target_pose_3.ref_pose.position.z<<std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_3.ref_pose.position.x) < 0.15 &&
+                           abs(local_pose.pose.position.y - target_pose_3.ref_pose.position.y) < 0.15 &&
+                           abs(local_pose.pose.position.z - target_pose_3.ref_pose.position.z) < 0.15){
+                            std::cout<<"--- ---- current tracking error ------"<<std::endl;
+                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_3.ref_pose.position.x << std::endl;
+                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_3.ref_pose.position.y << std::endl;
+                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_3.ref_pose.position.z << std::endl;
                             std::cout<<"cnt: "<<cnt<<std::endl;
-                            if (cnt<250){
+                            if (cnt<200){
                                 //Update the duty cycle to 1600000 (Gripper fully closes)
                                 setDutyCycle(1600000);
                                 std::cout<<"gasping"<<std::endl;
@@ -231,68 +314,9 @@ int main(int argc, char **argv){
                             }
                             else{
                                 cnt = 0;
-                                target_1_reached = true;
+                                target_3_reached = true;
 
                             }   
-                        }
-                    }
-                    if(target_1_reached){
-                        target_pose_2.header.stamp = ros::Time::now();
-                        command_pub.publish(target_pose_2);
-                        datalogger(2);
-                        std::cout<<"--- ---- current xyz -------"<<std::endl;
-                        std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
-                        std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
-                        std::cout<<"local_pose.z: "<< local_pose.pose.position.z<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_2.ref_pose.position.x)
-                         + abs(local_pose.pose.position.y - target_pose_2.ref_pose.position.y)
-                         + abs(local_pose.pose.position.z - target_pose_2.ref_pose.position.z) < 0.5){
-                            std::cout<<"--- ---- current tracking error -------"<<std::endl;
-                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_2.ref_pose.position.x << std::endl;
-                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_2.ref_pose.position.y << std::endl;
-                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_2.ref_pose.position.z << std::endl;
-                            std::cout<<"cnt: "<<cnt<<std::endl;
-                            if (cnt<100){
-                                cnt++;
-                                //Update the duty cycle to 1600000 (Gripper fully closes)
-                                setDutyCycle(1600000);
-                                std::cout<<"holding and lifting object"<<std::endl;
-
-                            }
-                            else{
-                                cnt = 0;
-                                // state = LAND;
-                                target_2_reached = true;
-                            }
-                        }
-                    }
-                    if (target_2_reached){
-                        target_pose_3.header.stamp = ros::Time::now();
-                        command_pub.publish(target_pose_3);
-                        datalogger(3);
-                        std::cout<<"--- ---- current xyz -------"<<std::endl;
-                        std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
-                        std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
-                        std::cout<<"local_pose.z: "<< local_pose.pose.position.z<<std::endl;
-                        if(abs(local_pose.pose.position.x - target_pose_3.ref_pose.position.x)
-                         + abs(local_pose.pose.position.y - target_pose_3.ref_pose.position.y)
-                         + abs(local_pose.pose.position.z - target_pose_3.ref_pose.position.z) < 0.5){
-                            std::cout<<"--- ---- current tracking error -------"<<std::endl;
-                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_3.ref_pose.position.x << std::endl;
-                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_3.ref_pose.position.y << std::endl;
-                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_3.ref_pose.position.z << std::endl;
-                            std::cout<<"cnt: "<<cnt<<std::endl;
-                            if (cnt<100){
-                                cnt++;
-                                //Update the duty cycle to 1200000 (Gripper fully opens)
-                                setDutyCycle(1200000);
-                                std::cout<<"releasing object"<<std::endl;
-
-                            }
-                            else{
-                                cnt = 0;
-                                target_3_reached = true;
-                            }
                         }
                     }
                     if(target_3_reached){
@@ -310,6 +334,63 @@ int main(int argc, char **argv){
                             std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_4.ref_pose.position.x << std::endl;
                             std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_4.ref_pose.position.y << std::endl;
                             std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_4.ref_pose.position.z << std::endl;
+                            std::cout<<"cnt: "<<cnt<<std::endl;
+                            if (cnt<200){
+                                cnt++;
+                                //Update the duty cycle to 1600000 (Gripper fully closes)
+                                setDutyCycle(1600000);
+                                std::cout<<"holding and lifting object"<<std::endl;
+                            }
+                            else{
+                                cnt = 0;
+                                // state = LAND;
+                                target_4_reached = true;
+                            }
+                        }
+                    }
+                    if (target_4_reached){
+                        target_pose_5.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_5);
+                        datalogger(5);
+                        std::cout<<"--- ---- current xyz -------"<<std::endl;
+                        std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
+                        std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
+                        std::cout<<"local_pose.z: "<< local_pose.pose.position.z<<std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_5.ref_pose.position.x)
+                         + abs(local_pose.pose.position.y - target_pose_5.ref_pose.position.y)
+                         + abs(local_pose.pose.position.z - target_pose_5.ref_pose.position.z) < 0.5){
+                            std::cout<<"--- ---- current tracking error -------"<<std::endl;
+                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_5.ref_pose.position.x << std::endl;
+                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_5.ref_pose.position.y << std::endl;
+                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_5.ref_pose.position.z << std::endl;
+                            std::cout<<"cnt: "<<cnt<<std::endl;
+                            if (cnt<100){
+                                cnt++;
+                                //Update the duty cycle to 1200000 (Gripper fully opens)
+                                setDutyCycle(1200000);
+                                std::cout<<"releasing object"<<std::endl;
+                            }
+                            else{
+                                cnt = 0;
+                                target_5_reached = true;
+                            }
+                        }
+                    }
+                    if(target_5_reached){
+                        target_pose_5.header.stamp = ros::Time::now();
+                        command_pub.publish(target_pose_6);
+                        datalogger(6);
+                        std::cout<<"--- ---- current xyz -------"<<std::endl;
+                        std::cout<<"local_pose.x: "<< local_pose.pose.position.x<<std::endl;
+                        std::cout<<"local_pose.y: "<< local_pose.pose.position.y<<std::endl;
+                        std::cout<<"local_pose.z: "<< local_pose.pose.position.z<<std::endl;
+                        if(abs(local_pose.pose.position.x - target_pose_6.ref_pose.position.x)
+                         + abs(local_pose.pose.position.y - target_pose_6.ref_pose.position.y)
+                         + abs(local_pose.pose.position.z - target_pose_6.ref_pose.position.z) < 0.5){
+                            std::cout<<"--- ---- current tracking error -------"<<std::endl;
+                            std::cout<<"x tracking error: "<< local_pose.pose.position.x - target_pose_6.ref_pose.position.x << std::endl;
+                            std::cout<<"y tracking error: "<< local_pose.pose.position.y - target_pose_6.ref_pose.position.y << std::endl;
+                            std::cout<<"z tracking error: "<< local_pose.pose.position.z - target_pose_6.ref_pose.position.z << std::endl;
                             std::cout<<"cnt: "<<cnt<<std::endl;
                             if (cnt<100){
                                 cnt++;
@@ -332,7 +413,7 @@ int main(int argc, char **argv){
                 if(fsm_info.is_waiting_for_command){
                     // Update the duty cycle to 1200000 (Gripper fully opens)
                     setDutyCycle(1200000);
-                    datalogger(5);
+                    datalogger(6);
                     takeoff_land_trigger.takeoff_land_trigger = false; // Land
                     takeoff_land_trigger.header.stamp = ros::Time::now();
                     takeoff_land_pub.publish(takeoff_land_trigger);
