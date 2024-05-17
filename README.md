@@ -45,25 +45,14 @@ cd ~/airo_control_interface_ws
 catkin_make
 cd src
 git clone https://github.com/HKPolyU-UAV/airo_control_interface.git
+cd airo_control_interface
+git submodule update --init --recursive
 ```
 
 Build the package.
 ```
 cd ~/airo_control_interface_ws
-git submodule update --init --recursive
 catkin_make
-```
-
-Download and install the PX4 (1.11.0)
-```
-cd ~
-git clone https://github.com/PX4/PX4-Autopilot.git
-cd PX4-Autopilot/
-git checkout 71db090
-git submodule sync --recursive
-git submodule update --init --recursive
-bash ./Tools/setup/ubuntu.sh
-sudo apt upgrade libignition-math4 #(libignition-math2 for melodic)
 ```
 
 Add acados library path to ```.bashrc```, change ```<path_to_acados>``` to your path, e.g. ```/home/your_username```. Note that do not use ```~``` in ```<path_to_acados>```.
@@ -78,6 +67,18 @@ echo 'source ~/airo_control_interface_ws/devel/setup.bash' >> ~/.bashrc
 ```
 
 ## Running Simulation
+
+Download and install the PX4 (1.11.0)
+```
+cd ~
+git clone https://github.com/PX4/PX4-Autopilot.git
+cd PX4-Autopilot/
+git checkout 71db090
+git submodule sync --recursive
+git submodule update --init --recursive
+bash ./Tools/setup/ubuntu.sh
+sudo apt upgrade libignition-math4 #(libignition-math2 for melodic)
+```
 
 Start PX4 SITL
 ```
