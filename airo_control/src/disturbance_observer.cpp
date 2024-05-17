@@ -151,17 +151,16 @@ const geometry_msgs::AccelStamped & imu){
     Eigen::Vector3d Delta_B (system_states.disturbance_x,system_states.disturbance_y,system_states.disturbance_z);
 
     Eigen::Vector3d Delta_W = q2ROT(pose.pose.orientation)*Delta_B;
-
-    if (Delta_W.x() > 3 || Delta_W.x() < -3) {
-    Delta_W.x() = Delta_W.x() > 3 ? 3 : -3;
+    if (Delta_W.x() > 4 || Delta_W.x() < -4) {
+    Delta_W.x() = Delta_W.x() > 4 ? 4 : -4;
     }
-    if (Delta_W.y() > 3 || Delta_W.y() < -3) {
-    Delta_W.y() = Delta_W.y() > 3 ? 3 : -3;
+    if (Delta_W.y() > 4 || Delta_W.y() < -4) {
+    Delta_W.y() = Delta_W.y() > 4 ? 4 : -4;
     }
-    if (Delta_W.z() > 3 || Delta_W.z() < -3) {
-    Delta_W.z() = Delta_W.z() > 3 ? 3 : -3;
+    if (Delta_W.z() > 4 || Delta_W.z() < -4) {
+    Delta_W.z() = Delta_W.z() > 4 ? 4 : -4;
     }
-
+    
     force_disturbance.vector.x = Delta_W.x();
     force_disturbance.vector.y = Delta_W.y();
     force_disturbance.vector.z = Delta_W.z();
@@ -203,13 +202,13 @@ const geometry_msgs::AccelStamped & imu){
     // force_disturbance.vector.y = meanDelta_y_W;
     // force_disturbance.vector.z = meanDelta_z_W;
 
-    const std::string filePath = "/home/athena/airo_control_interface_ws/src/airo_control_interface/airo_control/src/log/disturbance_comparison.csv";
+    const std::string filePath = "/root/airo_control_interface_ws/src/airo_control_interface/airo_control/src/log/disturbance_comparison.csv";
     std::ofstream save(filePath, std::ios::app);
 
     save<<std::setprecision(20)<<ros::Time::now().toSec()<<
-        ","<<"ekf_dx_w"<<","<<force_disturbance.vector.x<<","<<
-            "ekf_dy_w"<<","<<force_disturbance.vector.y<<","<<
-            "ekf_dz_w"<<","<<force_disturbance.vector.z<<","<<
+        ","<<"ekf_dx_w"<<","<<Delta_W.x()<<","<<
+            "ekf_dy_w"<<","<<Delta_W.y()<<","<<
+            "ekf_dz_w"<<","<<Delta_W.z()<<","<<
             "raw_dx_w"<<","<<delta_W.x()<<","<<
             "raw_dy_w"<<","<<delta_W.y()<<","<<
             "raw_dz_w"<<","<<delta_W.z()<<","<<
@@ -231,7 +230,7 @@ const geometry_msgs::AccelStamped & imu){
     std::cout << "--------------------- System and Measurement states in EKF ------------------------" << std::endl;
     // std::cout << "disturbance_x_b: "<<system_states.disturbance_x<<" ms^-2 |disturbance_y_b: "<<system_states.disturbance_y<<" ms^-2 |disturbance_z: "<<system_states.disturbance_z<<" ms^-2"<<std::endl;
     std::cout << "disturbance_x_w: "<<Delta_W.x()<<" ms^-2 |disturbance_y_w: "<<Delta_W.y()<<" ms^-2 |disturbance_z: "<<Delta_W.z()<<" ms^-2"<<std::endl;
-    // std::cout<<"acc_x: "<<accel.x_b<<" |acc_y: "<<accel.y_b<<" |acc_z: "<<accel.z_b<<std::endl;
+    std::cout<<"acc_x: "<<accel.x_b<<" |acc_y: "<<accel.y_b<<" |acc_z: "<<accel.z_b<<std::endl;
 
     cout_counter = 0;
     }
