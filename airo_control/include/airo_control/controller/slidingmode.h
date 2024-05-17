@@ -18,9 +18,10 @@ class SLIDINGMODE : public BASE_CONTROLLER{
         Param param;
         SLIDINGMODE(ros::NodeHandle&);
         void pub_debug();
-        mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferenceStamped&, const sensor_msgs::BatteryState&);
+        mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferenceStamped&, const sensor_msgs::BatteryState&, const geometry_msgs::AccelStamped&);
         double get_hover_thrust();
         int sign(double&);
+        double get_last_az();
 };
 
 #endif

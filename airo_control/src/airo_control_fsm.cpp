@@ -3,6 +3,7 @@
 AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     // ROS Parameters
     nh.getParam("airo_control_node/fsm/controller_type",CONTROLLER_TYPE);
+    nh.getParam("airo_control_node/fsm/observer_type",OBSERVER_TYPE);
     nh.getParam("airo_control_node/fsm/pose_topic",POSE_TOPIC);
     nh.getParam("airo_control_node/fsm/twist_topic",TWIST_TOPIC);
     nh.getParam("airo_control_node/fsm/state_timeout",STATE_TIMEOUT);
@@ -48,13 +49,14 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     battery_state_sub = nh.subscribe<sensor_msgs::BatteryState>("/mavros/battery",1,&AIRO_CONTROL_FSM::battery_state_cb,this);
     setpoint_pub = nh.advertise<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/attitude",1);
     fsm_info_pub = nh.advertise<airo_message::FSMInfo>("/airo_control/fsm_info",1);
+    disturbance_pub = nh.advertise<geometry_msgs::AccelStamped>("/airo_control/accel_disturbance",1);
 
     // ROS Services
     setmode_srv = nh.serviceClient<mavros_msgs::SetMode>("/mavros/set_mode");
     arm_srv = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
     reboot_srv = nh.serviceClient<mavros_msgs::CommandLong>("/mavros/cmd/command");
 
-    // Initialize FSM & Controller 
+    // Initialize FSM, Controller, and Observer
     state_fsm = RC_MANUAL;
     if (CONTROLLER_TYPE == "mpc"){
         controller = std::make_unique<MPC>(nh);
@@ -70,6 +72,16 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     }
     rc_input.set_rc_param(rc_param);
     controller_ref.header.stamp = ros::Time::now();
+
+    if (OBSERVER_TYPE == "ekf"){
+        disturbance_observer = std::make_unique<EKF>(nh);
+    }
+    else if (OBSERVER_TYPE == "rd3"){
+        disturbance_observer = std::make_unique<RD3>(nh);
+    }
+    accel_disturbance.accel.linear.x = 0.0;
+    accel_disturbance.accel.linear.y = 0.0;
+    accel_disturbance.accel.linear.z = 0.0;
 
     // For MPC Preview
     if(auto dummy_mpc = dynamic_cast<MPC*>(controller.get())){
@@ -108,14 +120,18 @@ void AIRO_CONTROL_FSM::process(){
         return;
     }
 
-    // Step 3: Solve position controller if needed
+    // Step 3: Run observer and solve position controller if needed
     if(solve_controller){
+        if (OBSERVER_TYPE == "ekf" || OBSERVER_TYPE == "rd3"){
+            accel_disturbance = disturbance_observer->observe(local_pose,local_twist,local_accel,controller->get_last_az());
+        }
+
         if (!use_preview){
-            attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref,battery_state);
+            attitude_target = controller->solve(local_pose,local_twist,local_accel,controller_ref,battery_state,accel_disturbance);
         }
         else{
             MPC* dummy_mpc = dynamic_cast<MPC*>(controller.get());
-            attitude_target = dummy_mpc->solve(local_pose,local_twist,local_accel,controller_ref_preview,battery_state);
+            attitude_target = dummy_mpc->solve(local_pose,local_twist,local_accel,controller_ref_preview,battery_state,accel_disturbance);
         }
     }
 
@@ -129,6 +145,11 @@ void AIRO_CONTROL_FSM::process(){
     fsm_info.header.stamp = current_time;
     fsm_info.is_landed = is_landed;
     fsm_info_pub.publish(fsm_info);
+    
+    if (OBSERVER_TYPE == "ekf" || OBSERVER_TYPE == "rd3"){
+        accel_disturbance.header.stamp = current_time;
+        disturbance_pub.publish(accel_disturbance);
+    }
 
     // Step 6: Reset all variables
 	rc_input.enter_fsm = false;

@@ -5,6 +5,7 @@ MPC::MPC(ros::NodeHandle& nh){
     nh.getParam("airo_control_node/mpc/pub_debug",param.pub_debug);
     nh.getParam("airo_control_node/mpc/enable_preview",param.enable_preview);
     nh.getParam("airo_control_node/mpc/enable_thrust_model",param.enable_thrust_model);
+    nh.getParam("airo_control_node/mpc/apply_observer",param.apply_observer);
     nh.getParam("airo_control_node/mpc/hover_thrust",param.hover_thrust);
     nh.getParam("airo_control_node/mpc/tau_phi",param.tau_phi);
     nh.getParam("airo_control_node/mpc/tau_theta",param.tau_theta);
@@ -19,6 +20,10 @@ MPC::MPC(ros::NodeHandle& nh){
         nh.getParam("airo_control_node/thrust_model/K2",thrust_model.K2);
         nh.getParam("airo_control_node/thrust_model/K3",thrust_model.K3);
     }
+
+    disturbance_to_apply.accel.linear.x = 0.0;
+    disturbance_to_apply.accel.linear.y = 0.0;
+    disturbance_to_apply.accel.linear.z = 0.0;
 
     // Set publishers
     debug_pub = nh.advertise<std_msgs::Float64MultiArray>("/airo_control/mpc/debug",1);
@@ -39,7 +44,7 @@ MPC::MPC(ros::NodeHandle& nh){
     set_terminal_weights(param.diag_cost_xn);
 }
 
-mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferenceStamped& ref, const sensor_msgs::BatteryState& battery_state){
+mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferenceStamped& ref, const sensor_msgs::BatteryState& battery_state, const geometry_msgs::AccelStamped& accel_disturbance){
     // Resize ref to fit prediction horizon
     airo_message::ReferencePreview ref_preview;
     ref_preview.header = ref.header;
@@ -49,10 +54,14 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
         ref_preview.ref_preview[i].twist = ref.ref.twist;
         ref_preview.ref_preview[i].accel = ref.ref.accel;
     }
-    return MPC::solve(current_pose,current_twist,current_accel,ref_preview,battery_state);
+    return MPC::solve(current_pose,current_twist,current_accel,ref_preview,battery_state,accel_disturbance);
 }
 
-mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferencePreview& ref_preview, const sensor_msgs::BatteryState& battery_state){
+mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferencePreview& ref_preview, const sensor_msgs::BatteryState& battery_state, const geometry_msgs::AccelStamped& accel_disturbance){
+    if (param.apply_observer){
+        disturbance_to_apply.accel.linear = accel_disturbance.accel.linear;
+    }
+    
     // Set reference
     ref_euler = BASE_CONTROLLER::q2rpy(ref_preview.ref_preview[0].pose.orientation);
     for (int i = 0; i < QUADROTOR_N+1; i++){
@@ -87,6 +96,9 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
     for (int i = 0; i < QUADROTOR_N+1; i++){
         acados_param[i][0] = param.tau_phi;
         acados_param[i][1] = param.tau_theta;
+        acados_param[i][3] = disturbance_to_apply.accel.linear.x;
+        acados_param[i][4] = disturbance_to_apply.accel.linear.y;
+        acados_param[i][5] = disturbance_to_apply.accel.linear.z;
 
         // For yaw prediction
         if (i == 0){
@@ -134,6 +146,10 @@ mavros_msgs::AttitudeTarget MPC::solve(const geometry_msgs::PoseStamped& current
 
 double MPC::get_hover_thrust(){
     return param.hover_thrust;
+}
+
+double MPC::get_last_az(){
+    return acados_out.u0[0];
 }
 
 bool MPC::set_intermediate_weights(const std::vector<double>&diag_weight_x, const std::vector<double>&diag_weight_u){

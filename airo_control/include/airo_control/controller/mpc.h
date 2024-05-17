@@ -73,10 +73,11 @@ class MPC : public BASE_CONTROLLER{
         void pub_debug();
         void print_debug();
         double get_hover_thrust();
+        double get_last_az();
         bool set_intermediate_weights(const std::vector<double>&,const std::vector<double>&);
         bool set_terminal_weights(const std::vector<double>&);
-        mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferenceStamped&, const sensor_msgs::BatteryState& battery_state);
-        mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferencePreview&, const sensor_msgs::BatteryState& battery_state);
+        mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferenceStamped&, const sensor_msgs::BatteryState& battery_state,const geometry_msgs::AccelStamped&);
+        mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferencePreview&, const sensor_msgs::BatteryState& battery_state,const geometry_msgs::AccelStamped&);
 };
 
 #endif

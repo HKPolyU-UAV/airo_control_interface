@@ -4,6 +4,7 @@ SLIDINGMODE::SLIDINGMODE(ros::NodeHandle& nh){
     // Get Parameters
     nh.getParam("airo_control_node/slidingmode/pub_debug",param.pub_debug);
     nh.getParam("airo_control_node/slidingmode/enable_thrust_model",param.enable_thrust_model);
+    nh.getParam("airo_control_node/slidingmode/apply_observer",param.apply_observer);
     nh.getParam("airo_control_node/slidingmode/hover_thrust",param.hover_thrust);
     nh.getParam("airo_control_node/slidingmode/k_xe",param.k_xe);
     nh.getParam("airo_control_node/slidingmode/k_xs",param.k_xs);
@@ -21,6 +22,11 @@ SLIDINGMODE::SLIDINGMODE(ros::NodeHandle& nh){
         nh.getParam("airo_control_node/thrust_model/K2",thrust_model.K2);
         nh.getParam("airo_control_node/thrust_model/K3",thrust_model.K3);
     }
+
+    disturbance_to_apply.accel.linear.x = 0.0;
+    disturbance_to_apply.accel.linear.y = 0.0;
+    disturbance_to_apply.accel.linear.z = 0.0;
+
 
     debug_pub = nh.advertise<std_msgs::Float64MultiArray>("/airo_control/slidingmode/debug",1);
 }
@@ -46,7 +52,11 @@ void SLIDINGMODE::pub_debug(){
     debug_pub.publish(debug_msg);
 }
 
-mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferenceStamped& ref, const sensor_msgs::BatteryState& battery_state){  
+mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped& current_pose, const geometry_msgs::TwistStamped& current_twist, const geometry_msgs::AccelStamped& current_accel, const airo_message::ReferenceStamped& ref, const sensor_msgs::BatteryState& battery_state, const geometry_msgs::AccelStamped& accel_disturbance){  
+    if (param.apply_observer){
+        disturbance_to_apply.accel.linear = accel_disturbance.accel.linear;
+    }
+    
     current_euler = q2rpy(current_pose.pose.orientation);
     ref_euler = q2rpy(ref.ref.pose.orientation);
 
@@ -54,20 +64,20 @@ mavros_msgs::AttitudeTarget SLIDINGMODE::solve(const geometry_msgs::PoseStamped&
     e_z = ref.ref.pose.position.z - current_pose.pose.position.z;
     e_dz= ref.ref.twist.linear.z - current_twist.twist.linear.z;
     s_z = param.k_ze * e_z + e_dz;
-    a_z = (param.k_ze*e_dz+ref.ref.accel.linear.z+g+param.k_zs*tanh(param.k_zt*s_z))/(cos(current_euler.x())*cos(current_euler.y()));
+    a_z = (param.k_ze*e_dz+ref.ref.accel.linear.z+g+param.k_zs*tanh(param.k_zt*s_z))/(cos(current_euler.x())*cos(current_euler.y())) - disturbance_to_apply.accel.linear.z;
     attitude_target.thrust = inverse_thrust_model(a_z,battery_state.voltage,param,thrust_model);
     
     // X Translation Control
     e_x = ref.ref.pose.position.x - current_pose.pose.position.x;
     e_dx = ref.ref.twist.linear.x - current_twist.twist.linear.x;
     s_x = param.k_xe*e_x + e_dx;
-    u_x = (param.k_xe*e_dx+ref.ref.accel.linear.x+param.k_xs*tanh(param.k_xt*s_x))/a_z;
+    u_x = (param.k_xe*e_dx+ref.ref.accel.linear.x+param.k_xs*tanh(param.k_xt*s_x))/a_z - disturbance_to_apply.accel.linear.x;
 
     // Y Translation Control
     e_y = ref.ref.pose.position.y - current_pose.pose.position.y;
     e_dy = ref.ref.twist.linear.y - current_twist.twist.linear.y;
     s_y = param.k_ye*e_y + e_dy;
-    u_y = (param.k_ye*e_dy+ref.ref.accel.linear.y+param.k_ys*tanh(param.k_yt*s_y))/a_z;
+    u_y = (param.k_ye*e_dy+ref.ref.accel.linear.y+param.k_ys*tanh(param.k_yt*s_y))/a_z - disturbance_to_apply.accel.linear.y;
 
     // Calculate Target Eulers
     target_euler.x() = asin(u_x*sin(ref_euler.z()) - u_y*cos(ref_euler.z()));
@@ -96,4 +106,8 @@ int SLIDINGMODE::sign(double& value){
     else{
         return 0;
     }
+}
+
+double SLIDINGMODE::get_last_az(){
+    return a_z;
 }

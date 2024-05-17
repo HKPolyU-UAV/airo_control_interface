@@ -22,6 +22,8 @@
 #include "airo_control/controller/mpc.h"
 #include "airo_control/controller/backstepping.h"
 #include "airo_control/controller/slidingmode.h"
+#include "airo_control/observer/ekf_observer.h"
+#include "airo_control/observer/rd3_observer.h"
 
 class AIRO_CONTROL_FSM{
     private:
@@ -36,6 +38,7 @@ class AIRO_CONTROL_FSM{
 
 	// Parameters
 	std::string CONTROLLER_TYPE;
+	std::string OBSERVER_TYPE;
 	std::string POSE_TOPIC;
 	std::string TWIST_TOPIC;
 	double STATE_TIMEOUT,RC_TIMEOUT,ODOM_TIMEOUT,COMMAND_TIMEOUT;
@@ -48,7 +51,6 @@ class AIRO_CONTROL_FSM{
 	bool CHECK_SAFETY_VOLUMN;
 	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y max_z
 	bool WITHOUT_RC;
-
 
 	// Variables
 	STATE_FSM state_fsm;
@@ -78,12 +80,13 @@ class AIRO_CONTROL_FSM{
 	ros::Subscriber battery_state_sub;
 	ros::Publisher setpoint_pub;
 	ros::Publisher fsm_info_pub;
+	ros::Publisher disturbance_pub;
 
 	// ROS Services
 	ros::ServiceClient setmode_srv;
 	ros::ServiceClient arm_srv;
 	ros::ServiceClient reboot_srv;
-
+	
 	// Messages
 	airo_message::TakeoffLandTrigger takeoff_land_trigger; // 1 for takeoff 0 for landing
 	airo_message::FSMInfo fsm_info;
@@ -102,8 +105,12 @@ class AIRO_CONTROL_FSM{
 	mavros_msgs::ExtendedState current_extended_state;
 	sensor_msgs::BatteryState battery_state;
 
-	// Controller
+	// Controller & Observer
 	std::unique_ptr<BASE_CONTROLLER> controller;
+	std::unique_ptr<BASE_OBSERVER> disturbance_observer;
+
+	// Disturbance
+	geometry_msgs::AccelStamped accel_disturbance;
 
 	public:
 

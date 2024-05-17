@@ -1,5 +1,6 @@
 pub_debug: true
 enable_preview: true
+apply_observer: true
 
 # system parameters
 hover_thrust: 0.5656428200006485
@@ -9,9 +10,9 @@ tau_psi: 0.7410010081424614
 
 # costs
 diag_cost_x:
-  - 60.0
-  - 60.0
-  - 60.0
+  - 200.0
+  - 200.0
+  - 200.0
   - 30.0
   - 30.0
   - 30.0

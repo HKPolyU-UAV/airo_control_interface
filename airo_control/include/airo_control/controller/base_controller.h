@@ -14,34 +14,37 @@
 #include <eigen3/Eigen/Dense>
 
 class BASE_CONTROLLER{
-protected:
-    struct Param{
-        bool pub_debug = false;
-        bool enable_thrust_model = false;
-        double hover_thrust = 0.0;
-    };
+    protected:
+        struct Param{
+            bool pub_debug = false;
+            bool enable_thrust_model = false;
+            bool apply_observer = false;
+            double hover_thrust = 0.0;
+        };
 
-    struct ThrustModel{
-        float mass;
-        float K1;
-        float K2;
-        float K3;
-    };
+        struct ThrustModel{
+            float mass;
+            float K1;
+            float K2;
+            float K3;
+        };
 
-    Param param;
-    ThrustModel thrust_model;
-    double g = 9.80665;
-    Eigen::Vector3d ref_euler,current_euler,target_euler;
-    mavros_msgs::AttitudeTarget attitude_target;
+        Param param;
+        ThrustModel thrust_model;
+        double g = 9.80665;
+        Eigen::Vector3d ref_euler,current_euler,target_euler;
+        mavros_msgs::AttitudeTarget attitude_target;
+        geometry_msgs::AccelStamped disturbance_to_apply;
 
-    Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
-    geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
-    float inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model);
+        Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
+        geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
+        float inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model);
 
-public:
-    virtual void pub_debug() = 0;
-    virtual double get_hover_thrust() = 0;
-    virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferenceStamped&, const sensor_msgs::BatteryState&) = 0;
+    public:
+        virtual void pub_debug() = 0;
+        virtual double get_hover_thrust() = 0;
+        virtual double get_last_az() = 0;
+        virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferenceStamped&, const sensor_msgs::BatteryState&,const geometry_msgs::AccelStamped&) = 0;
 };
 
 #endif

@@ -32,7 +32,10 @@ def export_quadrotor_model() -> AcadosModel:
     tau_phi = SX.sym('tau_phi')
     tau_theta = SX.sym('tau_theta')
     psi = SX.sym('psi')             # yaw angle
-    sym_p = vertcat(tau_phi,tau_theta,psi)
+    delta_x = SX.sym('delta_x')
+    delta_y = SX.sym('delta_y')
+    delta_z = SX.sym('delta_z')
+    sym_p = vertcat(tau_phi,tau_theta,psi,delta_x,delta_y,delta_z)
 
     # xdot for f_impl
     x_dot = SX.sym('x_dot')
@@ -49,9 +52,9 @@ def export_quadrotor_model() -> AcadosModel:
     dx = u
     dy = v
     dz = w
-    du = (cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi)) * a_z
-    dv = (cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi)) * a_z
-    dw = -g + cos(theta) * cos(phi) * a_z
+    du = (cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi)) * a_z + delta_x
+    dv = (cos(phi)*sin(theta)*sin(psi) - sin(phi)*cos(psi)) * a_z + delta_y
+    dw = -g + cos(theta) * cos(phi) * a_z + delta_z
     dphi = (phi_cmd - phi) / tau_phi
     dtheta = (theta_cmd - theta) / tau_theta
     f_expl = vertcat(dx,dy,dz,du,dv,dw,dphi,dtheta)

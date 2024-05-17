@@ -33,3 +33,4 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
 
     return thrust;
 }
+

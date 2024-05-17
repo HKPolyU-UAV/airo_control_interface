@@ -52,12 +52,16 @@ add_executable(airo_control_node
   src/controller/backstepping.cpp
   src/controller/slidingmode.cpp
   src/rc_input.cpp
+  src/observer/ekf_observer.cpp
+  src/observer/rd3_observer.cpp
 )
+
 target_link_libraries(airo_control_node
   ${quadrotor_model}/libacados_ocp_solver_quadrotor.so
   ${acados_lib}/libacados.so
   ${catkin_LIBRARIES}
 )
+
 add_dependencies(airo_control_node airo_message_generate_messages_cpp)
 
 add_executable(system_identification src/system_identification.cpp)
