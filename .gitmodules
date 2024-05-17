@@ -1,3 +1,6 @@
 [submodule "airo_message"]
 	path = airo_message
 	url = https://github.com/pattylo/airo_message.git
+[submodule "airo_trajectory"]
+	path = airo_trajectory
+	url = https://github.com/HKPolyU-UAV/airo_trajectory.git
