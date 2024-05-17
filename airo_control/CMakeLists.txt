@@ -63,30 +63,5 @@ target_link_libraries(airo_control_node
 
 add_dependencies(airo_control_node airo_message_generate_messages_cpp)
 
-add_executable(system_identification src/system_identification.cpp)
-target_link_libraries(system_identification
-  ${catkin_LIBRARIES}
-  yaml-cpp
-)
 
-add_executable(example_mission_node src/example_mission_node.cpp)
-target_link_libraries(example_mission_node
-  ${catkin_LIBRARIES}
-)
-add_dependencies(example_mission_node airo_message_generate_messages_cpp)
-
-add_executable(applybodywrench src/applybodywrench.cpp)
-target_link_libraries(applybodywrench
-  ${catkin_LIBRARIES}
-)
-
-add_executable(aerial_grasping src/aerial_grasping.cpp)
-target_link_libraries(aerial_grasping
-  ${catkin_LIBRARIES}
-)
-
-add_executable(pwm_input src/pwm_input.cpp)
-target_link_libraries(pwm_input
-  ${catkin_LIBRARIES}
-)
 
