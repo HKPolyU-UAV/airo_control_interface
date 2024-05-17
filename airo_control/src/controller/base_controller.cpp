@@ -28,7 +28,6 @@ float BASE_CONTROLLER::inverse_thrust_model(const double& a_z,const float& volta
         thrust = 1.0;
     }
     else if (thrust < 0.0) {
-        ROS_ERROR("Thrust = %f",thrust);
         thrust = 0.0;
     }
 
