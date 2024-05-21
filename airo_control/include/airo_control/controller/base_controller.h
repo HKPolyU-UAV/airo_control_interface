@@ -36,15 +36,15 @@ class BASE_CONTROLLER{
         mavros_msgs::AttitudeTarget attitude_target;
         geometry_msgs::AccelStamped disturbance_to_apply;
 
-        Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
-        geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
-        float inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model);
-
     public:
         virtual void pub_debug() = 0;
         virtual double get_hover_thrust() = 0;
         virtual double get_last_az() = 0;
         virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferenceStamped&, const sensor_msgs::BatteryState&,const geometry_msgs::AccelStamped&) = 0;
+        Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
+        geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
+        float inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model);
+
 };
 
 #endif

@@ -4,6 +4,7 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
     // ROS Parameters
     nh.getParam("airo_control_node/fsm/controller_type",CONTROLLER_TYPE);
     nh.getParam("airo_control_node/fsm/observer_type",OBSERVER_TYPE);
+    nh.getParam("airo_control_node/fsm/enable_logging",ENABLE_LOGGING);
     nh.getParam("airo_control_node/fsm/pose_topic",POSE_TOPIC);
     nh.getParam("airo_control_node/fsm/twist_topic",TWIST_TOPIC);
     nh.getParam("airo_control_node/fsm/state_timeout",STATE_TIMEOUT);
@@ -58,6 +59,9 @@ AIRO_CONTROL_FSM::AIRO_CONTROL_FSM(ros::NodeHandle& nh){
 
     // Initialize FSM, Controller, and Observer
     state_fsm = RC_MANUAL;
+    if (ENABLE_LOGGING){
+        init_log();
+    }
     if (CONTROLLER_TYPE == "mpc"){
         controller = std::make_unique<MPC>(nh);
     }
@@ -145,13 +149,18 @@ void AIRO_CONTROL_FSM::process(){
     fsm_info.header.stamp = current_time;
     fsm_info.is_landed = is_landed;
     fsm_info_pub.publish(fsm_info);
-    
-    if (OBSERVER_TYPE == "ekf" || OBSERVER_TYPE == "rd3"){
+
+   if (OBSERVER_TYPE == "ekf" || OBSERVER_TYPE == "rd3"){
         accel_disturbance.header.stamp = current_time;
         disturbance_pub.publish(accel_disturbance);
     }
+    
+    // Step 6: log data if needed
+    if (ENABLE_LOGGING){
+        update_log();
+    }
 
-    // Step 6: Reset all variables
+    // Step 7: Reset all variables
 	rc_input.enter_fsm = false;
 	rc_input.enter_reboot = false;
     use_preview = false;
@@ -844,4 +853,129 @@ void AIRO_CONTROL_FSM::reboot(){
 	reboot_srv.call(reboot);
 
 	ROS_INFO("FCU Rebooted!");
+}
+
+void AIRO_CONTROL_FSM::init_log(){
+    // Define column headers
+    std::vector<std::string> column_headers = {"time","ros_time","fsm_state","solve_controller","is_landed","is_armed","takeoff_land_trigger","is_waiting_for_cmd","use_preview","ref_x","ref_y","ref_z","ref_u","ref_v","ref_w","ref_ax","ref_ay","ref_az","ref_phi","ref_theta","ref_psi","x","y","z","u","v","w","ax","ay","az","phi","theta","psi","throttle","battery_voltage"};
+
+    // Get the current time
+    std::time_t now = std::time(nullptr);
+    std::tm tm = *std::localtime(&now);
+
+    // Format the time as "yyyy-mm-dd-hh-mm"
+    std::ostringstream oss;
+    oss << std::put_time(&tm, "%Y_%m_%d_%H_%M");
+    std::string time_stamp = oss.str();
+
+    // Get the path to the "airo_control" package
+    std::string package_path = ros::package::getPath("airo_control");
+
+    if (!package_path.empty()) {
+        // Construct the full file path
+        log_path = package_path + "/logs/" + time_stamp + ".csv";
+
+        // Open the file for writing
+        std::ofstream out_file(log_path);
+
+        // Check if the file was successfully opened
+        if (out_file.is_open()) {
+            // Write column headers as the first row
+            for (size_t i = 0; i < column_headers.size(); ++i) {
+                out_file << column_headers[i];
+                if (i < column_headers.size() - 1) {
+                    out_file << ",";
+                }
+            }
+            out_file << "\n";
+
+            // Close the file
+            out_file.close();
+            ROS_INFO_STREAM("[AIRo Control] Data saving to " << log_path);
+        } else {
+            ROS_ERROR_STREAM("[AIRo Control] Failed to open the file for writing: " << log_path);
+        }
+    }
+}
+
+void AIRO_CONTROL_FSM::update_log(){
+    Eigen::Vector3d local_euler,target_euler;
+    line_to_push.clear();
+
+    if (!log_started){
+        log_started = true;
+        line_to_push.push_back(0.0); // time
+        log_start_time = current_time;
+    }
+    else{
+        line_to_push.push_back((current_time - log_start_time).toSec()); // time
+    }
+    line_to_push.push_back(current_time.toSec());
+    line_to_push.push_back(state_fsm);
+    line_to_push.push_back(solve_controller);
+    line_to_push.push_back(is_landed);
+    line_to_push.push_back(is_armed);
+    line_to_push.push_back(takeoff_land_trigger.takeoff_land_trigger);
+    line_to_push.push_back(fsm_info.is_waiting_for_command);
+    line_to_push.push_back(use_preview);
+    if (solve_controller){
+        if (!use_preview){
+            line_to_push.push_back(controller_ref.ref.pose.position.x);
+            line_to_push.push_back(controller_ref.ref.pose.position.y);
+            line_to_push.push_back(controller_ref.ref.pose.position.z);
+            line_to_push.push_back(controller_ref.ref.twist.linear.x);
+            line_to_push.push_back(controller_ref.ref.twist.linear.y);
+            line_to_push.push_back(controller_ref.ref.twist.linear.z);
+            line_to_push.push_back(controller_ref.ref.accel.linear.x);
+            line_to_push.push_back(controller_ref.ref.accel.linear.y);
+            line_to_push.push_back(controller_ref.ref.accel.linear.z);
+        }
+        else{
+            line_to_push.push_back(controller_ref_preview.ref_preview[0].pose.position.x);
+            line_to_push.push_back(controller_ref_preview.ref_preview[0].pose.position.y);
+            line_to_push.push_back(controller_ref_preview.ref_preview[0].pose.position.z);
+            line_to_push.push_back(controller_ref_preview.ref_preview[0].twist.linear.x);
+            line_to_push.push_back(controller_ref_preview.ref_preview[0].twist.linear.y);
+            line_to_push.push_back(controller_ref_preview.ref_preview[0].twist.linear.z);
+            line_to_push.push_back(controller_ref_preview.ref_preview[0].accel.linear.x);
+            line_to_push.push_back(controller_ref_preview.ref_preview[0].accel.linear.y);
+            line_to_push.push_back(controller_ref_preview.ref_preview[0].accel.linear.z);
+        }
+        target_euler = controller->q2rpy(attitude_target.orientation);
+        line_to_push.push_back(target_euler.x());
+        line_to_push.push_back(target_euler.y());
+        line_to_push.push_back(target_euler.z());
+    }
+    else{
+        for (int i = 0; i < 12; ++i) {
+            line_to_push.push_back(0.0);
+        }
+    }
+    line_to_push.push_back(local_pose.pose.position.x);
+    line_to_push.push_back(local_pose.pose.position.y);
+    line_to_push.push_back(local_pose.pose.position.z);
+    line_to_push.push_back(local_twist.twist.linear.x);
+    line_to_push.push_back(local_twist.twist.linear.y);
+    line_to_push.push_back(local_twist.twist.linear.z);
+    line_to_push.push_back(local_accel.accel.linear.x);
+    line_to_push.push_back(local_accel.accel.linear.y);
+    line_to_push.push_back(local_accel.accel.linear.z);
+    local_euler = controller->q2rpy(local_pose.pose.orientation);
+    line_to_push.push_back(local_euler.x());
+    line_to_push.push_back(local_euler.y());
+    line_to_push.push_back(local_euler.z());
+    line_to_push.push_back(attitude_target.thrust);
+    line_to_push.push_back(battery_state.voltage);
+
+    std::ofstream out_file(log_path,std::ios::app);
+    if (out_file.is_open()){
+        for (size_t i = 0; i < line_to_push.size(); ++i){
+            out_file << line_to_push[i];
+            if (i < line_to_push.size() -1){
+                out_file<<",";
+            }
+        }
+        out_file << "\n";
+        out_file.close();
+    }
 }

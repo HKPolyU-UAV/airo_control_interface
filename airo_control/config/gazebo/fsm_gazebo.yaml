@@ -12,6 +12,7 @@ controller_type: mpc
 observer_type: rd3
 # observer_type: none
 
+enable_logging: false
 fsm_frequency: 100
 state_timeout: 1.5
 rc_timeout: 0.25

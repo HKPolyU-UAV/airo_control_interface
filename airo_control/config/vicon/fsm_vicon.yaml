@@ -12,6 +12,7 @@ controller_type: backstepping
 observer_type: rd3
 # observer_type: none
 
+enable_logging: false
 fsm_frequency: 100
 state_timeout: 1.5
 rc_timeout: 0.25
@@ -42,4 +43,4 @@ reverse_pitch: true
 reverse_roll: false
 switch_threshold: 0.75
 joystick_deadzone: 0.10
-check_centered_threshold: 0.25
+check_centered_threshold: 1.0
