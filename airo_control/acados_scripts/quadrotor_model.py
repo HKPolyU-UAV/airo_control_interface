@@ -116,10 +116,10 @@ def main():
     ocp.cost.cost_type_e = 'NONLINEAR_LS'
 
     # set constraints
-    u_min = np.array([0, -math.pi/3, -math.pi/3])
-    u_max = np.array([20, math.pi/3, math.pi/3])
-    x_min = np.array([-math.pi/3,-math.pi/3])
-    x_max = np.array([math.pi/3,math.pi/3])
+    u_min = np.array([0, -math.pi/4, -math.pi/4])
+    u_max = np.array([20, math.pi/4, math.pi/4])
+    x_min = np.array([-math.pi/4,-math.pi/4])
+    x_max = np.array([math.pi/4,math.pi/4])
     ocp.constraints.lbu = u_min
     ocp.constraints.ubu = u_max
     ocp.constraints.idxbu = np.array([0,1,2])
