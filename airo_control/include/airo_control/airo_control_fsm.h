@@ -2,6 +2,9 @@
 #define AIRO_CONTROL_FSM_H
 
 #include <ros/ros.h>
+#include <ros/package.h>
+#include <fstream>
+#include <ctime>
 #include <eigen3/Eigen/Dense>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/TwistStamped.h>
@@ -48,7 +51,7 @@ class AIRO_CONTROL_FSM{
 	bool CHECK_SAFETY_VOLUMN;
 	std::vector<double> SAFETY_VOLUMN; // min_x max_x min_y max_y max_z
 	bool WITHOUT_RC;
-
+	bool ENABLE_LOGGING;
 
 	// Variables
 	STATE_FSM state_fsm;
@@ -93,7 +96,6 @@ class AIRO_CONTROL_FSM{
 	airo_message::ReferencePreview external_command_preview;
 	geometry_msgs::PoseStamped local_pose;
 	geometry_msgs::PoseStamped takeoff_land_pose;
-	geometry_msgs::PoseStamped ref_pose;
 	geometry_msgs::TwistStamped local_twist;
 	geometry_msgs::AccelStamped local_accel;
 	mavros_msgs::AttitudeTarget attitude_target;
@@ -104,6 +106,12 @@ class AIRO_CONTROL_FSM{
 
 	// Controller
 	std::unique_ptr<BASE_CONTROLLER> controller;
+
+	// For data logging
+    std::string log_path;
+    std::vector<double> line_to_push;
+	bool log_started = false;
+	ros::Time log_start_time;
 
 	public:
 
@@ -147,6 +155,8 @@ class AIRO_CONTROL_FSM{
 	bool land_trigered(const ros::Time&);
 	double twist_norm(const geometry_msgs::TwistStamped);
 	void reboot();
+	void init_log();
+	void update_log();
 };
 
 #endif

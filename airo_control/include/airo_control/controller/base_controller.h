@@ -33,15 +33,15 @@ protected:
     double g = 9.80665;
     Eigen::Vector3d ref_euler,current_euler,target_euler;
     mavros_msgs::AttitudeTarget attitude_target;
-
-    Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
-    geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
-    float inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model);
-
+    
 public:
     virtual void pub_debug() = 0;
     virtual double get_hover_thrust() = 0;
     virtual mavros_msgs::AttitudeTarget solve(const geometry_msgs::PoseStamped&, const geometry_msgs::TwistStamped&, const geometry_msgs::AccelStamped&, const airo_message::ReferenceStamped&, const sensor_msgs::BatteryState&) = 0;
+    Eigen::Vector3d q2rpy(const geometry_msgs::Quaternion&);
+    geometry_msgs::Quaternion rpy2q(const Eigen::Vector3d&);
+    float inverse_thrust_model(const double& a_z,const float& voltage,const Param& param,const ThrustModel& thrust_model);
+
 };
 
 #endif
