@@ -1,0 +1,14 @@
+r_vel_x: 0.0000000001
+r_vel_y: 0.0000000001
+r_vel_z: 0.0000000001
+r_control_x: 0.0000000001
+r_control_y: 0.0000000001
+r_control_z: 0.0000000001
+
+
+q_vel_x: 0.00000001
+q_vel_y: 0.00000001
+q_vel_z: 0.01
+q_disturbancez_x: 0.00000001
+q_disturbancez_y: 0.00000001
+q_disturbancez_z: 0.01
