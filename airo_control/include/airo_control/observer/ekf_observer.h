@@ -3,6 +3,7 @@
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include "airo_control/observer/base_observer.h"
+#include <eigen3/Eigen/Dense>
 
 class EKF : public BASE_OBSERVER{
     protected:
