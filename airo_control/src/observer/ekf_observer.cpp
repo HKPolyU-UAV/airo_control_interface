@@ -1,18 +1,18 @@
 #include "airo_control/observer/ekf_observer.h"
 
 EKF::EKF(ros::NodeHandle& nh){
-    nh.getParam("airo_control_node/ekf_observer/r_vel_x",R_VEL_X);
-    nh.getParam("airo_control_node/ekf_observer/r_vel_y",R_VEL_Y);
-    nh.getParam("airo_control_node/ekf_observer/r_vel_z",R_VEL_Z);
-    nh.getParam("airo_control_node/ekf_observer/r_control_x",R_CONTROL_X);
-    nh.getParam("airo_control_node/ekf_observer/r_control_y",R_CONTROL_Y);
-    nh.getParam("airo_control_node/ekf_observer/r_control_z",R_CONTROL_Z);
-    nh.getParam("airo_control_node/ekf_observer/q_vel_x",Q_VEL_X);
-    nh.getParam("airo_control_node/ekf_observer/q_vel_y",Q_VEL_Y);
-    nh.getParam("airo_control_node/ekf_observer/q_vel_z",Q_VEL_Z);
-    nh.getParam("airo_control_node/ekf_observer/q_disturbance_x",Q_DISTURBANCE_X);
-    nh.getParam("airo_control_node/ekf_observer/q_disturbance_y",Q_DISTURBANCE_Y);
-    nh.getParam("airo_control_node/ekf_observer/q_disturbance_z",Q_DISTURBANCE_Z);
+    nh.getParam("airo_control_node/ekf_observer/r_vel_x", R_VEL_X);
+    nh.getParam("airo_control_node/ekf_observer/r_vel_y", R_VEL_Y);
+    nh.getParam("airo_control_node/ekf_observer/r_vel_z", R_VEL_Z);
+    nh.getParam("airo_control_node/ekf_observer/r_control_x", R_CONTROL_X);
+    nh.getParam("airo_control_node/ekf_observer/r_control_y", R_CONTROL_Y);
+    nh.getParam("airo_control_node/ekf_observer/r_control_z", R_CONTROL_Z);
+    nh.getParam("airo_control_node/ekf_observer/q_vel_x", Q_VEL_X);
+    nh.getParam("airo_control_node/ekf_observer/q_vel_y", Q_VEL_Y);
+    nh.getParam("airo_control_node/ekf_observer/q_vel_z", Q_VEL_Z);
+    nh.getParam("airo_control_node/ekf_observer/q_disturbance_x", Q_DISTURBANCE_X);
+    nh.getParam("airo_control_node/ekf_observer/q_disturbance_y", Q_DISTURBANCE_Y);
+    nh.getParam("airo_control_node/ekf_observer/q_disturbance_z", Q_DISTURBANCE_Z);
     nh.getParam("airo_control_node/fsm/fsm_frequency",FSM_FREQUENCY);
 
     // Weights
