@@ -8,11 +8,11 @@ controller_type: mpc
 # controller_type: backstepping
 # controller_type: slidingmode
 
-# observer_type: ekf
-observer_type: rd3
+observer_type: ekf
+#observer_type: rd3
 # observer_type: none
 
-enable_logging: false
+enable_logging: true
 fsm_frequency: 100
 state_timeout: 1.5
 rc_timeout: 0.25

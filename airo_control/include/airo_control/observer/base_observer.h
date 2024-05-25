@@ -8,7 +8,6 @@
 #include <mavros_msgs/AttitudeTarget.h>
 #include <tf/transform_datatypes.h>
 #include <nav_msgs/Odometry.h>
-#include <Eigen/Eigen>
 
 class BASE_OBSERVER{
     protected:

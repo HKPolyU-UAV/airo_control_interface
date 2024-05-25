@@ -2,6 +2,7 @@
 #define RD3_H
 
 #include "airo_control/observer/base_observer.h"
+#include <eigen3/Eigen/Dense>
 
 class RD3 : public BASE_OBSERVER
 {
