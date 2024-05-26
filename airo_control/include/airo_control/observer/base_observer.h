@@ -10,7 +10,6 @@
 #include <nav_msgs/Odometry.h>
 #include <Eigen/Dense>
 
-
 class BASE_OBSERVER{
     protected:
 
