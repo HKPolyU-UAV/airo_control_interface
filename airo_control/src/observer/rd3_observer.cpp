@@ -26,6 +26,10 @@ RD3::RD3(ros::NodeHandle& nh)
     param.n1 = m1n1 * ones();
     param.n2 = m2n2 * ones();
     param.n3 = m3n3 * ones();
+    SetInit(Eigen::Vector3d(0,0,0),
+            Eigen::Vector3d(0,0,0), 
+            Eigen::Vector3d(0,0,0), 
+            false);
 }
 
 double RD3::sgn(double x)
@@ -64,12 +68,23 @@ Eigen::Vector3d RD3::fal(Eigen::Vector3d xi, double a)
 void RD3::SetInit(Eigen::Vector3d e0, Eigen::Vector3d de0, Eigen::Vector3d sys_dy, bool use)
 {
     if (use)
+    {
         z1 = e0;
         z2 = de0;
         z3 = 0 * ones();
         dz1 = z2;
         dz2 = z3 + sys_dy;
         dz3 = 0 * ones();
+    }
+    else
+    {
+        z1 = 0 * ones();
+        z2 = 0 * ones();
+        z3 = 0 * ones();
+        dz1 = z2;
+        dz2 = z3;
+        dz3 = 0 * ones();
+    }
 }
 
 geometry_msgs::AccelStamped RD3::observe(const geometry_msgs::PoseStamped& ros_pos, const geometry_msgs::TwistStamped& ros_vel, const geometry_msgs::AccelStamped& ros_acc, const double& tpm)
@@ -78,20 +93,27 @@ geometry_msgs::AccelStamped RD3::observe(const geometry_msgs::PoseStamped& ros_p
     tf::quaternionMsgToTF(ros_pos.pose.orientation, quat);
     double phi, theta, psi;
     tf::Matrix3x3(quat).getEulerYPR(phi, theta, psi);
+    // std::cout << "rd3 Attitude: [" << phi << "," << theta << "," << psi << ']' << std::endl;
 
-    geometry_msgs::Point _pos = ros_pos.pose.position;
+    geometry_msgs::Point _pos = ros_pos.pose.position;      // position
     Eigen::Vector3d pos(_pos.x, _pos.y, _pos.z);
-    Eigen::Vector3d A = tpm * Eigen::Vector3d(cos(phi) * cos(psi) * sin(theta) + sin(phi) * sin(psi),
-                                              cos(phi) * sin(psi) * sin(theta) - sin(phi) * cos(psi),
-                                              cos(phi) * cos(theta))
-                                              - Eigen::Vector3d(0., 0., param.g);
-    Eigen::Vector3d obs_e = Eigen::Vector3d() - z1;
+    Eigen::Vector3d mat = Eigen::Vector3d(cos(phi) * cos(psi) * sin(theta) + sin(phi) * sin(psi),
+                                          cos(phi) * sin(psi) * sin(theta) - sin(phi) * cos(psi),
+                                          cos(phi) * cos(theta));
+    Eigen::Vector3d A = tpm * mat - Eigen::Vector3d(0., 0., param.g);
+    Eigen::Vector3d obs_e = pos - z1;
+    // std::cout << "rd3 z1: [" << z1(0) << "," << z1(1) << "," << z1(2) << ']' << std::endl;
     dz1 = param.m1.cwiseProduct(sig(obs_e, param.alpha(0))) + param.n1.cwiseProduct(sig(obs_e, param.beta(0))) + z2;
     dz2 = param.m2.cwiseProduct(sig(obs_e, param.alpha(1))) + param.n2.cwiseProduct(sig(obs_e, param.beta(1))) + z3 + A;
     dz3 = param.m3.cwiseProduct(sig(obs_e, param.alpha(2))) + param.n3.cwiseProduct(sig(obs_e, param.beta(2)));
     z1 += dz1 * param.dt;
     z2 += dz2 * param.dt;
     z3 += dz3 * param.dt;
+
+    // std::cout << "rd3 Position: [" << pos(0) << "," << pos(1) << "," << pos(2) << ']' << std::endl;
+    // std::cout << "rd3 tpm: [" << tpm << std::endl;
+    // std::cout << "rd3 Mat: [" << mat(0) << "," << mat(1) << "," << mat(2) << ']' << std::endl;
+    // std::cout << "rd3 A: [" << A(0) << "," << A(1) << "," << A(2) << ']' << std::endl;
 
     geometry_msgs::AccelStamped res;
     res.accel.linear.x = z3(0);

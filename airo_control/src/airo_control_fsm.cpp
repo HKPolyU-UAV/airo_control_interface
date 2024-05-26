@@ -127,7 +127,11 @@ void AIRO_CONTROL_FSM::process(){
     // Step 3: Run observer and solve position controller if needed
     if(solve_controller){
         if (OBSERVER_TYPE == "ekf" || OBSERVER_TYPE == "rd3"){
-            accel_disturbance = disturbance_observer->observe(local_pose,local_twist,local_accel,controller->get_last_az());
+            accel_disturbance = disturbance_observer->observe(local_pose, local_twist, local_accel, controller->get_last_az());
+            std::cout << "[" << accel_disturbance.accel.linear.x 
+                      << "," << accel_disturbance.accel.linear.y
+                      << "," << accel_disturbance.accel.linear.z
+                      << "]" << std::endl;
         }
 
         if (!use_preview){
