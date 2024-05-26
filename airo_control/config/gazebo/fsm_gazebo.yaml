@@ -8,7 +8,7 @@ controller_type: mpc
 # controller_type: backstepping
 # controller_type: slidingmode
 
-# observer_type: ekf
+#observer_type: ekf
 observer_type: rd3
 # observer_type: none
 
