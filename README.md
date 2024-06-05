@@ -42,7 +42,6 @@ Create a catkin workspace and clone this repository to src folder (ex. ~/airo_co
 ```
 mkdir -p ~/airo_control_interface_ws/src
 cd ~/airo_control_interface_ws
-catkin_make
 cd src
 git clone https://github.com/HKPolyU-UAV/airo_control_interface.git
 cd airo_control_interface
