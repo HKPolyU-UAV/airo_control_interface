@@ -1,13 +1,9 @@
 pub_debug: true
 enable_preview: true
-
-# system parameters
-hover_thrust: 0.5656428200006485
-tau_phi: 0.1742504945971047
-tau_theta: 0.1704274688906173
-tau_psi: 0.7410010081424614
-
-# costs
+hover_thrust: 0.5661468612085475
+tau_phi: 0.1764560116270015
+tau_theta: 0.1742115395173661
+tau_psi: 0.7472237968505279
 diag_cost_x:
   - 80.0
   - 80.0

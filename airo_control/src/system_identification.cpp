@@ -32,7 +32,7 @@ ros::Time last_state_time;
 mavros_msgs::State current_state;
 geometry_msgs::PoseStamped local_pose,takeoff_pose,x_maneuver_pose,y_maneuver_pose,yaw_maneuver_pose;
 std::string package_path = ros::package::getPath("airo_control");
-std::string POSE_TOPIC, BACKSTEPPING_FILE, SLIDINGMODE_FILE, MPC_FILE;
+std::string POSE_TOPIC, YAML_FILE;
 tf::Quaternion tf_quaternion;
 
 enum State{
@@ -83,9 +83,9 @@ void sync_cb(const geometry_msgs::PoseStampedConstPtr& attitude_msg, const mavro
     }
 }
 
-void hover_thrust_cb(const mavros_msgs::AttitudeTarget::ConstPtr& msg){
+void target_actuator_control_cb(const mavros_msgs::ActuatorControl::ConstPtr& msg){
     if (hover_thrust_id){
-        thrust.push_back(msg->thrust);
+        thrust.push_back(msg->controls[3]);
     }
 }
 
@@ -145,41 +145,20 @@ double linear_regression(std::vector<double> x, std::vector<double> y){
     return a;
 }
 
-void write_hover_thrust_to_yaml(const std::string& yaml_path){
-    YAML::Node yaml_config =  YAML::LoadFile(yaml_path);
-    std::ofstream yaml_file(yaml_path);
-    yaml_config["hover_thrust"] = hover_thrust;
-    yaml_file << yaml_config;
-    yaml_file.close();
-}
-void write_innerloop_param_to_yaml(const std::string& yaml_path){
-    YAML::Node yaml_config =  YAML::LoadFile(yaml_path);
-    std::ofstream yaml_file(yaml_path);
-    yaml_config["tau_phi"] = tau_phi;
-    yaml_config["tau_theta"] = tau_theta;
-    yaml_config["tau_psi"] = tau_psi;
-    yaml_file << yaml_config;
-    yaml_file.close();
-}
-
 int main(int argc, char **argv){
 
     ros::init(argc, argv, "system_identification_node");
     ros::NodeHandle nh;
-    ros::Rate rate(100);
+    ros::Rate rate(40);
     State state = TAKEOFF;
 
-    nh.getParam("pose_topic", POSE_TOPIC);
-    nh.getParam("backstepping_file", BACKSTEPPING_FILE);
-    nh.getParam("mpc_file", MPC_FILE);
-    nh.getParam("slidingmode_file", SLIDINGMODE_FILE);
-    std::string backstepping_path = package_path + BACKSTEPPING_FILE;
-    std::string mpc_path = package_path + MPC_FILE;
-    std::string slidingmode_path = package_path + SLIDINGMODE_FILE;
-
+    nh.getParam("pose_topic",POSE_TOPIC);
+    nh.getParam("yaml_file",YAML_FILE);
+    std::string yaml_path = package_path + YAML_FILE;
+    
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>("/mavros/state",10,state_cb);
-    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,10,pose_cb);
-    ros::Subscriber hover_thrust_sub = nh.subscribe<mavros_msgs::AttitudeTarget>("/mavros/setpoint_raw/target_attitude",10,hover_thrust_cb);
+    ros::Subscriber local_pose_sub = nh.subscribe<geometry_msgs::PoseStamped>(POSE_TOPIC,100,pose_cb);
+    ros::Subscriber target_actuator_control_sub = nh.subscribe<mavros_msgs::ActuatorControl>("/mavros/target_actuator_control",100,target_actuator_control_cb);
     ros::Publisher command_pub = nh.advertise<geometry_msgs::PoseStamped>("/mavros/setpoint_position/local",10);
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>("/mavros/cmd/arming");
     ros::ServiceClient landing_client = nh.serviceClient<mavros_msgs::CommandTOL>("/mavros/cmd/land");
@@ -229,8 +208,6 @@ int main(int argc, char **argv){
     ros::Time last_request = ros::Time::now();
 
     while(ros::ok()){
-        ros::spinOnce();
-
         switch(state){
             case TAKEOFF:{
                 if( current_state.mode != "OFFBOARD" && (ros::Time::now() - last_request > ros::Duration(5.0))){
@@ -353,7 +330,7 @@ int main(int argc, char **argv){
                 std::cout<<"tau_phi = "<<tau_phi<<std::endl;
                 std::cout<<"tau_theta = "<<tau_theta<<std::endl;
                 std::cout<<"tau_psi = "<<tau_psi<<std::endl;
-                if (hover_thrust < 0.1 || hover_thrust > 0.5){
+                if (hover_thrust < 0.1 || hover_thrust > 0.7){
                     ROS_ERROR("Identified hover thrust out of normal range!");
                 }
                 else if (tau_phi < 0.1 || tau_phi > 0.25){
@@ -369,17 +346,22 @@ int main(int argc, char **argv){
                 std::string input;
                 std::cin>>input;
                 if (input == "y" || input == "\n"){
-                    write_hover_thrust_to_yaml(backstepping_path);
-                    write_hover_thrust_to_yaml(mpc_path);
-                    write_hover_thrust_to_yaml(slidingmode_path);
-                    write_innerloop_param_to_yaml(mpc_path);
+                    YAML::Node yaml_config =  YAML::LoadFile(yaml_path);
+                    std::ofstream yaml_file(yaml_path);
+                    yaml_config["hover_thrust"] = hover_thrust;
+                    yaml_config["tau_phi"] = tau_phi;
+                    yaml_config["tau_theta"] = tau_theta;
+                    yaml_config["tau_psi"] = tau_psi;
+                    yaml_file << yaml_config;
+                    yaml_file.close();
+                    std::cout<<"Parameters saved!"<<std::endl;
                 }
-                std::cout<<"Paramters saved to .yaml files."<<std::endl;
                 std::cout<<"Exiting!"<<std::endl;
                 return 0;
             }
         }
 
+        ros::spinOnce();
         ros::Duration(rate).sleep();
     }
 
