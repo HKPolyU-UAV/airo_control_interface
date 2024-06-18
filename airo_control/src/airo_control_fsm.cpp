@@ -127,7 +127,14 @@ void AIRO_CONTROL_FSM::process(){
     // Step 3: Run observer and solve position controller if needed
     if(solve_controller){
         if (OBSERVER_TYPE == "ekf" || OBSERVER_TYPE == "rd3"){
-            accel_disturbance = disturbance_observer->observe(local_pose, local_twist, local_accel, controller->get_last_az());
+            if (state_fsm == POS_COMMAND || state_fsm == AUTO_HOVER){
+                accel_disturbance = disturbance_observer->observe(local_pose, local_twist, local_accel, controller->get_last_az());
+            }
+            else{
+                accel_disturbance.accel.linear.x = 0;
+                accel_disturbance.accel.linear.y = 0;
+                accel_disturbance.accel.linear.z = 0;
+            }
             std::cout << "[" << accel_disturbance.accel.linear.x 
                       << "," << accel_disturbance.accel.linear.y
                       << "," << accel_disturbance.accel.linear.z
@@ -861,7 +868,7 @@ void AIRO_CONTROL_FSM::reboot(){
 
 void AIRO_CONTROL_FSM::init_log(){
     // Define column headers
-    std::vector<std::string> column_headers = {"time","ros_time","fsm_state","solve_controller","is_landed","is_armed","takeoff_land_trigger","is_waiting_for_cmd","use_preview","ref_x","ref_y","ref_z","ref_u","ref_v","ref_w","ref_ax","ref_ay","ref_az","ref_phi","ref_theta","ref_psi","x","y","z","u","v","w","ax","ay","az","phi","theta","psi","throttle","battery_voltage"};
+    std::vector<std::string> column_headers = {"time","ros_time","fsm_state","solve_controller","is_landed","is_armed","takeoff_land_trigger","is_waiting_for_cmd","use_preview","ref_x","ref_y","ref_z","ref_u","ref_v","ref_w","ref_ax","ref_ay","ref_az","ref_phi","ref_theta","ref_psi","x","y","z","u","v","w","ax","ay","az","phi","theta","psi","throttle","battery_voltage","accel_disturbance_x","accel_disturbance_y","accel_disturbance_z"};
 
     // Get the current time
     std::time_t now = std::time(nullptr);
@@ -970,6 +977,9 @@ void AIRO_CONTROL_FSM::update_log(){
     line_to_push.push_back(local_euler.z());
     line_to_push.push_back(attitude_target.thrust);
     line_to_push.push_back(battery_state.voltage);
+    line_to_push.push_back(accel_disturbance.accel.linear.x);
+    line_to_push.push_back(accel_disturbance.accel.linear.y);
+    line_to_push.push_back(accel_disturbance.accel.linear.z);
 
     std::ofstream out_file(log_path,std::ios::app);
     if (out_file.is_open()){

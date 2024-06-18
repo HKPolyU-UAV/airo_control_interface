@@ -8,7 +8,7 @@
 #include <mavros_msgs/AttitudeTarget.h>
 #include <tf/transform_datatypes.h>
 #include <nav_msgs/Odometry.h>
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 
 class BASE_OBSERVER{
     protected:
