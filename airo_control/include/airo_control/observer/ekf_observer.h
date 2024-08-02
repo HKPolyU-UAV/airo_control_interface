@@ -5,16 +5,17 @@
 #include "airo_control/observer/base_observer.h"
 #include <eigen3/Eigen/Dense>
 
+
 class EKF : public BASE_OBSERVER{
     protected:
 
     struct MEASUREMENT_STATES{
-        double u,v,w;                                // thrust_x_b = thrust_y_b = 0
+        double x,y,z,u,v,w;                                // thrust_x_b = thrust_y_b = 0
     };
     MEASUREMENT_STATES measurement_states;
 
     struct SYSTEM_STATES{
-        double u,v,w,disturbance_x,disturbance_y,disturbance_z;
+        double x,y,z,u,v,w,disturbance_x,disturbance_y,disturbance_z;
     };
     SYSTEM_STATES system_states;
     
@@ -25,20 +26,20 @@ class EKF : public BASE_OBSERVER{
 
     // Parameters
     double FSM_FREQUENCY,R_POS_X,R_POS_Y,R_POS_Z,R_VEL_X,R_VEL_Y,R_VEL_Z,R_CONTROL_X,R_CONTROL_Y,R_CONTROL_Z,Q_POS_X,Q_POS_Y,Q_POS_Z,Q_VEL_X,Q_VEL_Y,Q_VEL_Z,Q_DISTURBANCE_X,Q_DISTURBANCE_Y,Q_DISTURBANCE_Z;
-    double dt;
+    double dt,safe_dis;
     int cout_counter = 0;
     double thrust_per_mass;
     
     // Weights
-    int m = 6;
-    int n = 6;
-    Eigen::Matrix<double,6,6> Q_noise,R_noise,P0,esti_P;         // Process noise matrix, Measurement noise matrix, Initial covariance, Estimate covariance
-    Eigen::Matrix<double,1,6> Q_cov,R_cov;                       // Process noise value, Measurement noise value
+    int m = 9;
+    int n = 9;
+    Eigen::Matrix<double,9,9> Q_noise,R_noise,P0,esti_P;         // Process noise matrix, Measurement noise matrix, Initial covariance, Estimate covariance
+    Eigen::Matrix<double,1,9> Q_cov,R_cov;                       // Process noise value, Measurement noise value
 
     // EKF Parameters
     Eigen::Matrix<double,3,1> input_u;                           // Inputs
-    Eigen::Matrix<double,6,1> meas_y;                            // Measurement vector
-    Eigen::Matrix<double,6,1> esti_x;                            // Estimate states
+    Eigen::Matrix<double,9,1> meas_y;                            // Measurement vector
+    Eigen::Matrix<double,9,1> esti_x;                            // Estimate states
 
     public:
         EKF(ros::NodeHandle&);
