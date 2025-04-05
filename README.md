@@ -51,7 +51,7 @@ git submodule update --init --recursive
 
 Build the package.
 ```
-cd ~/airo_control_interface_ws
+cd ~/observer_class_ws
 catkin_make
 ```
 
@@ -63,7 +63,7 @@ echo 'export ACADOS_SOURCE_DIR="<path_to_acados>/acados"' >> ~/.bashrc
 
 Add source ```setup.bash``` file to ```.bashrc```.
 ```
-echo 'source ~/airo_control_interface_ws/devel/setup.bash' >> ~/.bashrc
+echo 'source ~/observer_class_ws/devel/setup.bash' >> ~/.bashrc
 ```
 
 ## Running Simulation
