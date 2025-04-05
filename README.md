@@ -38,14 +38,14 @@ cmake -DACADOS_WITH_QPOASES=ON -DACADOS_WITH_OSQP=OFF/ON -DACADOS_INSTALL_DIR=~/
 sudo make install -j4
 ```
 
-Create a catkin workspace and clone this repository to src folder (ex. ~/airo_control_interface_ws/src)
+Create a catkin workspace and clone this repository to src folder (ex. ~/observer_class_ws/src)
 ```
-mkdir -p ~/airo_control_interface_ws/src
-cd ~/airo_control_interface_ws
+mkdir -p ~/observer_class_ws/src
+cd ~/observer_class_ws
 catkin_make
 cd src
-git clone https://github.com/HKPolyU-UAV/airo_control_interface.git
-cd airo_control_interface
+git clone https://github.com/HKPolyU-UAV/airo_control_interface.git observer_class
+cd observer_class
 git submodule update --init --recursive
 ```
 
