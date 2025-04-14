@@ -45,7 +45,7 @@ cd ~/observer_class_ws
 catkin_make
 cd src
 git clone https://github.com/HKPolyU-UAV/airo_control_interface.git -b observer_class
-cd observer_class
+cd airo_control_interface
 git submodule update --init --recursive
 ```
 
