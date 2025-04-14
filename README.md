@@ -44,7 +44,7 @@ mkdir -p ~/observer_class_ws/src
 cd ~/observer_class_ws
 catkin_make
 cd src
-git clone https://github.com/HKPolyU-UAV/airo_control_interface.git observer_class
+git clone https://github.com/HKPolyU-UAV/airo_control_interface.git -b observer_class
 cd observer_class
 git submodule update --init --recursive
 ```
