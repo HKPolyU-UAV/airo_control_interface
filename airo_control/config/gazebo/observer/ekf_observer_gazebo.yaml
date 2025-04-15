@@ -1,14 +1,22 @@
-r_vel_x: 0.0000000001
-r_vel_y: 0.0000000001
-r_vel_z: 0.0000000001
-r_control_x: 0.0000000001
-r_control_y: 0.0000000001
-r_control_z: 0.0000000001
+# q smaller: trust prediction more
+# r smaller: trust measurement more
 
+r_pos_x: 4 
+r_pos_y: 4
+r_pos_z: 4
+r_vel_x: 4
+r_vel_y: 4
+r_vel_z: 4
+r_control_x: 2
+r_control_y: 2
+r_control_z: 2
 
-q_vel_x: 0.00000001
-q_vel_y: 0.00000001
-q_vel_z: 0.01
-q_disturbancez_x: 0.00000001
-q_disturbancez_y: 0.00000001
-q_disturbancez_z: 0.01
+q_pos_x: 2
+q_pos_y: 2
+q_pos_z: 2
+q_vel_x: 2
+q_vel_y: 2
+q_vel_z: 2
+q_disturbance_x: 4.2
+q_disturbance_y: 4.2
+q_disturbance_z: 3.5
