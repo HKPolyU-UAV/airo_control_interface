@@ -3,6 +3,14 @@ This project provides a PX4 based quadrotor UAV control interfaces that supports
 
 If you use this package in your research, please kindly cite the follow reference:
 ```
+@article{cheung2024aerial,
+  title={Aerial Grasping with Soft Aerial Vehicle Using Disturbance Observer-Based Model Predictive Control},
+  author={Cheung, Hiu Ching and Jiang, Bailun and Hu, Yang and Chu, Henry K and Wen, Chih-Yung and Chang, Ching-Wei},
+  journal={arXiv preprint arXiv:2409.14115},
+  year={2024}
+}
+```
+```
 @article{jiang2022neural,
   title={Neural network based model predictive control for a quadrotor UAV},
   author={Jiang, Bailun and Li, Boyang and Zhou, Weifeng and Lo, Li-Yu and Chen, Chih-Keng and Wen, Chih-Yung},
